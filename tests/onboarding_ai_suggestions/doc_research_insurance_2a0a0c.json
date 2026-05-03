@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_research_insurance_2a0a0c",
+  "title": "Luenendonk-Studie_Digital_Outlook_Insurance_f240206",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "research_institution",
+    "jurisdiction": "Germany",
+    "confidence": 0.92,
+    "origin_source": "llm",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

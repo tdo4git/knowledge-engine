@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_playbookbearingpointversicherung2030_2030_717627",
+  "title": "Playbook_BearingPoint_Versicherung_2030",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "topic": "insurance_business",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

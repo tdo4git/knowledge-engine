@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_industry_insurance_2025_588dcd",
+  "title": "2025-insurance-trends-to-watch",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "topic": "market_analysis",
+    "origin": "industry_association",
+    "jurisdiction": "Global",
+    "confidence": 0.72,
+    "origin_source": "llm",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

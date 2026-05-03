@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_insurance_2030_131197",
+  "title": "claims-2030-a-talent-strategy-for-the-future-of-insurance-claims-f",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "topic": "insurance_business",
+    "origin": "consulting_firm",
+    "jurisdiction": "Global",
+    "confidence": 0.92,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_insurance_474aeb",
+  "title": "Efficient claims management benefits customers and insurers - msg-insurance-suit",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "topic": "insurance_business",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_bafin_stellungnahmemenschundmaschinekurzfassung_6ba9b6",
+  "title": "stellungnahme-mensch-und-maschine-kurzfassung",
+  "ai": {
+    "document_type": "expert_opinion",
+    "domain_layer": "regulation",
+    "knowledge_domain": "ai_genai_agentic",
+    "topic": "transformation_strategy",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

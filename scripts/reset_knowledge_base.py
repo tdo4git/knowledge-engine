@@ -47,36 +47,43 @@ def backup_directory(path: Path):
 
 
 # --------------------------------------------------
-# STEP 0 – CLEAN INTAKE
+# STEP 1 – MOVE ARCHIVE → INTAKE
 # --------------------------------------------------
 
-#def reset_intake():
-#    print("\n🧹 Clearing intake directory")
-#    ensure_directory(INTAKE_PATH)
-#    clear_directory(INTAKE_PATH)
-#    print("✅ Intake cleared")
+def restore_documents_to_intake():
+    """
+    Moves documents from archive/ back to intake/ for re-onboarding.
+    
+    This prepares the system for a full re-processing cycle.
+    After this, intake/ contains all previously processed documents,
+    ready to be re-onboarded with potentially updated classifiers/governance rules.
+    """
+    
+    if not ARCHIVE_PATH.exists():
+        print("⚠ Archive directory not found — nothing to restore")
+        return 0
 
-
-# --------------------------------------------------
-# STEP 1 – COPY ARCHIVE → INTAKE
-# --------------------------------------------------
-
-def copy_archive_to_intake():
-    print("\n🔁 Copying documents from archive → intake")
-
+    print("\n🔁 Moving documents from archive → intake (for re-onboarding)")
+    
+    ensure_directory(INTAKE_PATH)
+    
     count = 0
-
+    
     for file in ARCHIVE_PATH.rglob("*"):
         if file.is_file():
+            # Preserve directory structure relative to archive
             relative_path = file.relative_to(ARCHIVE_PATH)
             target_path = INTAKE_PATH / relative_path
-
-            ensure_directory(target_path.parent)
-            shutil.copy2(file, target_path)
-
+            
+            # Create parent directories if needed
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Move file (not copy)
+            shutil.move(str(file), str(target_path))
             count += 1
-
-    print(f"✅ {count} documents copied to intake")
+    
+    print(f"✅ {count} document(s) moved to intake")
+    return count
 
 
 # --------------------------------------------------
@@ -84,6 +91,16 @@ def copy_archive_to_intake():
 # --------------------------------------------------
 
 def reset_knowledge_base():
+    """
+    Clears all knowledge base artifacts:
+    - registry (document_registry.json)
+    - chunks (chunks.json)
+    - vector_index (FAISS index, embeddings, chunk_ids)
+    - audit logs
+    
+    After this, the knowledge base is empty and ready for fresh onboarding.
+    """
+    
     print("\n🧹 Resetting Knowledge Base")
 
     if BACKUP_ENABLED:
@@ -109,21 +126,26 @@ def reset_knowledge_base():
 # --------------------------------------------------
 
 def main():
-    print("🚀 Knowledge Base Reset & Re-Onboarding Preparation")
-
-    if not ARCHIVE_PATH.exists():
-        raise ValueError(f"Archive path not found: {ARCHIVE_PATH}")
-
-    # Step 0
-    #reset_intake()
-
-    # Step 1
-    copy_archive_to_intake()
-
-    # Step 2
+    print("\n" + "=" * 60)
+    print("🚀 RESET KNOWLEDGE BASE & PREPARE FOR RE-ONBOARDING")
+    print("=" * 60)
+    
+    # Step 1: Move archive → intake
+    doc_count = restore_documents_to_intake()
+    
+    # Step 2: Reset knowledge base
     reset_knowledge_base()
-
-    print("\n🎯 System ready for full re-onboarding")
+    
+    print("\n" + "=" * 60)
+    print("✅ RESET COMPLETE")
+    print("=" * 60)
+    print(f"\nState after reset:")
+    print(f"  intake/:     {doc_count} documents (ready for re-onboarding)")
+    print(f"  archive/:    empty")
+    print(f"  knowledge_base/: empty")
+    print(f"\nNext step:")
+    print(f"  python -m scripts.run_onboarding")
+    print()
 
 
 if __name__ == "__main__":
