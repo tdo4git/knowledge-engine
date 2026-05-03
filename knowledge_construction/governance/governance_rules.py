@@ -87,10 +87,16 @@ def _set_with_priority(result, field, value, source):
 
 # ------------------------------------------------
 # ORIGIN DETECTION
+#
+# FIX: Preview-Text wird NICHT für Origin-Detection
+# verwendet. Origin = wer hat das Dokument geschrieben,
+# erkennbar an Titel und Dateiname — nicht am Inhalt.
+# Ein heise-Whitepaper das BaFin erwähnt, ist trotzdem
+# von heise, nicht von BaFin.
 # ------------------------------------------------
 def _apply_origin(result, title, preview_text, file_path: Path):
 
-    text = f"{title} {preview_text}".lower()
+    text = title.lower()                    # ← nur Titel, kein Preview-Text
     filename = str(file_path).lower()
     combined = f"{text} {filename}"
 

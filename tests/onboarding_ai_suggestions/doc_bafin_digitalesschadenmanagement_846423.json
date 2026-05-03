@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_bafin_digitalesschadenmanagement_846423",
+  "title": "digitales-schadenmanagement",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

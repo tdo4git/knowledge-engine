@@ -14,7 +14,6 @@ CHUNK_SIZE = 600
 CHUNK_OVERLAP = 80
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
-
 EMBEDDINGS_PATH = "knowledge_base/vector_index/embeddings.pt"
 FAISS_INDEX_PATH = "knowledge_base/vector_index/index.faiss"
 CHUNK_IDS_PATH = "knowledge_base/vector_index/chunk_ids.json"
@@ -26,3 +25,13 @@ CHUNK_IDS_PATH = "knowledge_base/vector_index/chunk_ids.json"
 LLM_MODEL = "claude-sonnet-4-6"
 LLM_TEMPERATURE = 0.0
 LLM_TIMEOUT = 30
+
+# ----------------------------------
+# Review Configuration
+# ----------------------------------
+
+# Minimale Confidence für automatische Akzeptanz.
+# Dokumente unterhalb dieses Schwellwerts werden zur
+# manuellen Prüfung geflaggt und nicht in die
+# Knowledge Base übernommen.
+REVIEW_LOW_CONFIDENCE_THRESHOLD = 0.70

@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_bafin_insurance_2025_abeb26",
+  "title": "global-insurance-report-2025-the-pursuit-of-growth",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

@@ -140,7 +140,6 @@ class OnboardingPipeline:
             print(f"⚠ Validation error: {validation_error}")
 
         if validation_error:
-            # Dokument bleibt in intake — kein Registry-Eintrag, keine Archivierung
             self._review_items.append({
                 "file": file_path.name,
                 "doc_id": doc_id,
@@ -160,7 +159,12 @@ class OnboardingPipeline:
             raise ValueError(f"Validation failed: {validation_error}")
 
         # -------------------------------------------------
-        # 8. Review Decision (Audit-Signal, kein harter Stop)
+        # 8. Review Decision
+        #
+        # review_required → kein Registry-Eintrag, kein Chunking,
+        # keine Archivierung. Dokument bleibt in intake/ bis es
+        # manuell freigegeben wird (z.B. durch Umbenennung oder
+        # Threshold-Anpassung).
         # -------------------------------------------------
 
         review_decision_result = review_decision(classification)
@@ -172,12 +176,26 @@ class OnboardingPipeline:
         )
 
         if review_info.get("review_required"):
+
             self._review_items.append({
                 "file": file_path.name,
                 "doc_id": doc_id,
                 "reason": "review_required",
                 "detail": review_info.get("review_reasons", [])
             })
+
+            log_classification({
+                "file": file_path.name,
+                "doc_id": doc_id,
+                "classification": classification,
+                "review": review_info,
+                "validation_error": None,
+                "is_new": is_new_document
+            })
+
+            print(f"⚠ Review required — skipping registry, chunking, archiving: {file_path.name}")
+
+            return None
 
         # -------------------------------------------------
         # 9. Registry (nur bei neu)
@@ -232,7 +250,7 @@ class OnboardingPipeline:
             print("ℹ Skipping chunking/embedding (already processed)")
 
         # -------------------------------------------------
-        # 11. Archivierung — nur bei neuen, validen Dokumenten (TD-003)
+        # 11. Archivierung
         # -------------------------------------------------
 
         if is_new_document:

@@ -1,11 +1,11 @@
 ONBOARDING REVIEW REPORT
-Generated: 2026-05-03T11:01:04.147948
+Generated: 2026-05-03T19:19:39.192383
 ==================================================
 
 1 Dokument(e) benoetigen Aufmerksamkeit:
 
-Datei:   2025-insurance-trends-to-watch.pdf
-Doc-ID:  doc_industry_insurance_2025_588dcd
+Datei:   Blog - ChatGPT wird zum Versicherungsvermittler.pdf
+Doc-ID:  doc_unknown_blog_ff0eb5
 Grund:   review_required
-Detail:  ['low_confidence']
+Detail:  ['unknown_origin']
 ----------------------------------------

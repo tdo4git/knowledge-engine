@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_vendor_ambermcpansatz_440506",
+  "title": "amber-MCP-Ansatz vs. Indexbasierte KI-Ansa\u0308tze",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_architecture",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

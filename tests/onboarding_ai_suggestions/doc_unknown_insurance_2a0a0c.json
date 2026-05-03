@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_unknown_insurance_2a0a0c",
+  "title": "Luenendonk-Studie_Digital_Outlook_Insurance_f240206",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

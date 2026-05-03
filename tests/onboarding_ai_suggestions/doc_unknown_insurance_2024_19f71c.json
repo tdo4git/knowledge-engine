@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_unknown_insurance_2024_19f71c",
+  "title": "Capgemini-Property-and-Casualty-Insurance-Top-Trends-2024_Slide-deck",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "topic": "market_analysis",
+    "origin": "corporate",
+    "jurisdiction": "Global",
+    "confidence": 0.95,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

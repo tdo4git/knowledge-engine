@@ -19,7 +19,7 @@ def _format_list(name: str, values: list) -> str:
 
 
 # -------------------------------------------------
-# MAIN BUILDER
+# MAIN BUILDER (IMPROVED V2)
 # -------------------------------------------------
 
 def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str, str]:
@@ -58,44 +58,47 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
             "Classify the document strictly according to the allowed taxonomy values."
         )
 
-        # =============================================
-        # ORIGIN DETECTION GUIDANCE (NEW)
-        # =============================================
+        # ================================================
+        # CLOUD VENDOR DETECTION — PRIORITY SECTION (NEW)
+        # ================================================
+        
+        system_parts.append("\n---\nCLOUD VENDOR DETECTION (HIGH PRIORITY)\n---")
+        
+        system_parts.append(
+            "Check for these cloud vendor signals FIRST, before other origin analysis:"
+        )
+        
+        system_parts.append("""
+1. AUTHOR/PUBLISHER SIGNAL (HIGHEST PRIORITY):
+   - Amazon Web Services, AWS, Inc. (author/publisher) → origin = cloud_vendor
+   - Microsoft Azure, Microsoft Corporation → cloud_vendor
+   - Google Cloud, Alphabet Inc. → cloud_vendor
+   - Name appears in: document header, footer, copyright, or publication metadata
+   
+2. DOMAIN SIGNAL:
+   - aws.amazon.com in URL/references → cloud_vendor
+   - azure.microsoft.com → cloud_vendor
+   - cloud.google.com → cloud_vendor
+   
+3. SERVICE REFERENCES:
+   - Amazon EC2, S3, Lambda, SageMaker, Connect, Personalize, etc. → cloud_vendor
+   - Azure Virtual Machines, Cosmos DB, etc. → cloud_vendor
+   - GCP Compute Engine, Dataflow, etc. → cloud_vendor
 
-        system_parts.append("\n--- IMPORTANT: ORIGIN DETECTION ---")
-        system_parts.append(
-            "Identifying the ORIGIN (who created/published this document) is critical."
-        )
-        system_parts.append(
-            "Look for the following signals (in order of reliability):"
-        )
-        system_parts.append(
-            "1. AUTHOR/PUBLISHER NAME: BaFin, EBA, EU Commission → legislator/supervisory_authority"
-        )
-        system_parts.append(
-            "2. COMPANY/ORG: Deloitte, PWC, Accenture, Exxeta → consulting_firm"
-        )
-        system_parts.append(
-            "3. CLOUD VENDORS: AWS, Azure, Google Cloud → cloud_vendor"
-        )
-        system_parts.append(
-            "4. INSURERS: Allianz, Munich Re, AXA → corporate"
-        )
-        system_parts.append(
-            "5. INDUSTRY GROUPS: GDV, BITKOM → industry_association"
-        )
-        system_parts.append(
-            "6. RESEARCH ORGS: Academic institutions, think tanks → research_institution"
-        )
-        system_parts.append(
-            "7. If none match clearly, mark as 'unknown' and set lower confidence."
-        )
+4. MARKETING PATTERN FOR VENDORS:
+   - Cloud vendors use case studies, strategic frameworks, best practices
+   - This is NORMAL vendor_marketing behavior (not consulting_firm behavior)
+   - DO NOT confuse "vendor consulting guidance" with "consulting_firm origin"
+   
+RULE: If author is a cloud vendor (signals 1-3), origin = cloud_vendor
+      REGARDLESS of content being marketing, advisory, or thought leadership
+""")
 
-        # =============================================
+        # -------------------------------------------------
         # TAXONOMY (Single Source of Truth)
-        # =============================================
+        # -------------------------------------------------
 
-        system_parts.append("\n--- ALLOWED VALUES ---")
+        system_parts.append("\nAllowed Values:")
 
         system_parts.append(_format_list("document_type", DOCUMENT_TYPES))
         system_parts.append(_format_list("domain_layer", DOMAIN_LAYERS))
@@ -104,37 +107,54 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         system_parts.append(_format_list("origin", ORIGINS))
         system_parts.append(_format_list("jurisdiction", JURISDICTIONS))
 
-        # =============================================
-        # CONFIDENCE GUIDANCE (NEW)
-        # =============================================
+        # ================================================
+        # ORIGIN DETECTION GUIDANCE (REFINED)
+        # ================================================
 
-        system_parts.append("\n--- CONFIDENCE ASSESSMENT ---")
-        system_parts.append(
-            "confidence: float between 0.0 and 1.0"
-        )
-        system_parts.append(
-            "- 0.95+: Document clearly signals its origin/type (e.g., BaFin letterhead, regulatory text)"
-        )
-        system_parts.append(
-            "- 0.85-0.94: Strong signals but some ambiguity"
-        )
-        system_parts.append(
-            "- 0.75-0.84: Reasonable but not certain (will trigger review)"
-        )
-        system_parts.append(
-            "- <0.75: Unclear or ambiguous (will trigger review)"
-        )
-        system_parts.append(
-            "Be conservative: if unsure, lower the confidence."
-        )
+        system_parts.append("\n---\nORIGIN DETECTION GUIDANCE\n---")
+        
+        system_parts.append("""
+STEP 1: Check Cloud Vendor Signals (see section above first)
 
-        # =============================================
+STEP 2: If NOT a cloud vendor, apply these rules in order:
+
+LEGISLATOR (EU Parliament, European Commission, etc.):
+- Keywords: "Verordnung", "Regulation (EU)", "European Commission", "legislator"
+- Example: "DORA Verordnung EU 2022"
+
+SUPERVISORY_AUTHORITY (BaFin, EBA, EIOPA, FINMA):
+- Keywords: "BaFin", "EBA", "EIOPA", "FINMA", "regulatory guidance"
+- Example: "BaFin Stellungnahme zu Cloud Outsourcing"
+
+CONSULTING_FIRM (Deloitte, PWC, KPMG, Accenture, Exxeta, BearingPoint, etc.):
+- Keywords: firm name + consulting service
+- Pattern: Framework/playbook that is NOT from vendor or regulator
+- Rule: Must be written by a consulting firm for third parties, not by vendor for vendor promotion
+- Example: "BearingPoint Playbook für Versicherung 2030"
+- Counter-example: AWS whitepaper is vendor_marketing, NOT consulting_firm
+
+INDUSTRY_ASSOCIATION (GDV, Bitkom):
+- Keywords: association name
+- Example: "GDV Stellungnahme"
+
+RESEARCH_INSTITUTION (Research, Whitepaper, Study):
+- Keywords: "whitepaper", "study", "research", "OECD", "analysis"
+- Pattern: Academic or neutral third-party analysis
+- Example: "OECD Global Insurance Market Trends 2025"
+
+CORPORATE (Allianz, Munich Re, AXA, Zurich, Deutsche Bank):
+- Keywords: company name (insurer, bank, corporate)
+- Pattern: Blog, internal strategy, corporate perspective
+- Example: "Allianz - Wie wir zum Tech-Konzern werden"
+""")
+
+        # -------------------------------------------------
         # RULES
-        # =============================================
+        # -------------------------------------------------
 
         rules = contract.get("rules", {})
 
-        system_parts.append("\n--- RULES ---")
+        system_parts.append("\nClassification Rules:")
 
         if rules.get("strict_enum_usage", True):
             system_parts.append("- Use only the allowed values above.")
@@ -148,9 +168,9 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         if rules.get("output_format") == "json_only":
             system_parts.append("- Return valid JSON only.")
 
-        # =============================================
+        # -------------------------------------------------
         # OUTPUT SCHEMA
-        # =============================================
+        # -------------------------------------------------
 
         schema = contract.get("output_schema", {})
         required_fields = schema.get("required_fields", [])
@@ -242,8 +262,8 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
 Document:
 {context}
 
-Classify this document according to the taxonomy and origin detection guidance above.
-Output valid JSON only.
+Classify this document according to the taxonomy.
+IMPORTANT: Check cloud vendor signals FIRST (see system rules above).
 """.strip()
 
     else:

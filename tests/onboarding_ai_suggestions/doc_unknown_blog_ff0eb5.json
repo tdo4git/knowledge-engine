@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_unknown_blog_ff0eb5",
+  "title": "Blog - ChatGPT wird zum Versicherungsvermittler",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "topic": "insurance_business",
+    "origin": "unknown",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "elevated"
+  }
+}

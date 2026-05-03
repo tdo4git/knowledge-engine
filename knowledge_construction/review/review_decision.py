@@ -1,10 +1,6 @@
 from typing import Dict, List
 
-
-# ------------------------------------------------
-# CONFIG
-# ------------------------------------------------
-LOW_CONFIDENCE_THRESHOLD = 0.75
+from config.construction_config import REVIEW_LOW_CONFIDENCE_THRESHOLD
 
 
 # ------------------------------------------------
@@ -19,8 +15,8 @@ def review_decision(classification: Dict) -> Dict:
     - Unknown document type → review
     - Unknown origin → review
 
-    Note: regulatory_content is NOT a review trigger —
-    Claude classifies regulatory documents reliably at high confidence.
+    Threshold is configured in config/construction_config.py:
+    REVIEW_LOW_CONFIDENCE_THRESHOLD
     """
 
     reasons: List[str] = []
@@ -35,7 +31,7 @@ def review_decision(classification: Dict) -> Dict:
 
     if confidence is not None:
         try:
-            if float(confidence) < LOW_CONFIDENCE_THRESHOLD:
+            if float(confidence) < REVIEW_LOW_CONFIDENCE_THRESHOLD:
                 reasons.append("low_confidence")
         except (TypeError, ValueError):
             reasons.append("invalid_confidence")

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_industry_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f",
+  "title": "digitale-souveraenitaet-beltios-gdv-whitepaper-ausgabe-2-2025",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "sovereign_cloud",
+    "origin": "industry_association",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

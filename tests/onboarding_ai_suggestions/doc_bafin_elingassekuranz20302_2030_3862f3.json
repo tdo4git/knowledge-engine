@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_bafin_elingassekuranz20302_2030_3862f3",
+  "title": "Eling-Assekuranz-2030-2",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.93,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

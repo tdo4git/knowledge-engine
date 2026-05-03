@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_unknown_dsstore_d65165",
+  "title": ".DS_Store",
+  "ai": {
+    "document_type": "unknown",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_architecture",
+    "origin": "unknown",
+    "jurisdiction": "unknown",
+    "confidence": 0.05,
+    "origin_source": "llm",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "llm",
+    "bias": "elevated"
+  }
+}
