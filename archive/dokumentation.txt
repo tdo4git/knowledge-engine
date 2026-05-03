@@ -1,4 +1,4 @@
-=== ./docs/🟢 Projektkontext-Insurance Advisory Portfolio Lab.txt ===
+=== ./docs/🟢 Projektkontext-Insurance Advisory Portfolio Lab.txt ====
 🟢 Projektkontext: Insurance Advisory Portfolio Lab (CONET)
 
 Ich entwickle ein strukturiertes, marktfähiges Beratungsportfolio für CONET im Zielmarkt Versicherungen.
