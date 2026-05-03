@@ -58,11 +58,44 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
             "Classify the document strictly according to the allowed taxonomy values."
         )
 
-        # -----------------------------
-        # TAXONOMY (Single Source of Truth)
-        # -----------------------------
+        # =============================================
+        # ORIGIN DETECTION GUIDANCE (NEW)
+        # =============================================
 
-        system_parts.append("\nAllowed Values:")
+        system_parts.append("\n--- IMPORTANT: ORIGIN DETECTION ---")
+        system_parts.append(
+            "Identifying the ORIGIN (who created/published this document) is critical."
+        )
+        system_parts.append(
+            "Look for the following signals (in order of reliability):"
+        )
+        system_parts.append(
+            "1. AUTHOR/PUBLISHER NAME: BaFin, EBA, EU Commission → legislator/supervisory_authority"
+        )
+        system_parts.append(
+            "2. COMPANY/ORG: Deloitte, PWC, Accenture, Exxeta → consulting_firm"
+        )
+        system_parts.append(
+            "3. CLOUD VENDORS: AWS, Azure, Google Cloud → cloud_vendor"
+        )
+        system_parts.append(
+            "4. INSURERS: Allianz, Munich Re, AXA → corporate"
+        )
+        system_parts.append(
+            "5. INDUSTRY GROUPS: GDV, BITKOM → industry_association"
+        )
+        system_parts.append(
+            "6. RESEARCH ORGS: Academic institutions, think tanks → research_institution"
+        )
+        system_parts.append(
+            "7. If none match clearly, mark as 'unknown' and set lower confidence."
+        )
+
+        # =============================================
+        # TAXONOMY (Single Source of Truth)
+        # =============================================
+
+        system_parts.append("\n--- ALLOWED VALUES ---")
 
         system_parts.append(_format_list("document_type", DOCUMENT_TYPES))
         system_parts.append(_format_list("domain_layer", DOMAIN_LAYERS))
@@ -71,13 +104,37 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         system_parts.append(_format_list("origin", ORIGINS))
         system_parts.append(_format_list("jurisdiction", JURISDICTIONS))
 
-        # -----------------------------
+        # =============================================
+        # CONFIDENCE GUIDANCE (NEW)
+        # =============================================
+
+        system_parts.append("\n--- CONFIDENCE ASSESSMENT ---")
+        system_parts.append(
+            "confidence: float between 0.0 and 1.0"
+        )
+        system_parts.append(
+            "- 0.95+: Document clearly signals its origin/type (e.g., BaFin letterhead, regulatory text)"
+        )
+        system_parts.append(
+            "- 0.85-0.94: Strong signals but some ambiguity"
+        )
+        system_parts.append(
+            "- 0.75-0.84: Reasonable but not certain (will trigger review)"
+        )
+        system_parts.append(
+            "- <0.75: Unclear or ambiguous (will trigger review)"
+        )
+        system_parts.append(
+            "Be conservative: if unsure, lower the confidence."
+        )
+
+        # =============================================
         # RULES
-        # -----------------------------
+        # =============================================
 
         rules = contract.get("rules", {})
 
-        system_parts.append("\nRules:")
+        system_parts.append("\n--- RULES ---")
 
         if rules.get("strict_enum_usage", True):
             system_parts.append("- Use only the allowed values above.")
@@ -91,9 +148,9 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         if rules.get("output_format") == "json_only":
             system_parts.append("- Return valid JSON only.")
 
-        # -----------------------------
+        # =============================================
         # OUTPUT SCHEMA
-        # -----------------------------
+        # =============================================
 
         schema = contract.get("output_schema", {})
         required_fields = schema.get("required_fields", [])
@@ -185,7 +242,8 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
 Document:
 {context}
 
-Classify this document according to the taxonomy.
+Classify this document according to the taxonomy and origin detection guidance above.
+Output valid JSON only.
 """.strip()
 
     else:
