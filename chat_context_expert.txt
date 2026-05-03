@@ -3,7 +3,7 @@ Ich arbeite an einer Strategic Knowledge Engine.
 
 System Context:
 
-=== docs/operations/working_style.md ===
+=== docs/operations/working_style.md ==
 # Working Style – Strategic Knowledge Engine
 
 ## Ziel
