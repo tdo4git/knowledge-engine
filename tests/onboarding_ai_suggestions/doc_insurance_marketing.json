@@ -1,0 +1,12 @@
+{
+  "doc_id": "doc_insurance_marketing",
+  "title": "AWS-insurance-copy",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Global",
+    "confidence": 0.97
+  }
+}

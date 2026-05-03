@@ -1,0 +1,146 @@
+🟢 Projektkontext: Insurance Advisory Portfolio Lab (CONET)
+
+Ich entwickle ein strukturiertes, marktfähiges Beratungsportfolio für CONET im Zielmarkt Versicherungen.
+
+CONET ist ein umsetzungsstarker IT-Dienstleister mit Kompetenzen in Consulting, Architektur, Data & AI, Cloud, Softwareentwicklung und Managed Services. Ziel ist es, ein klar positioniertes Insurance-Portfolio zu entwickeln, das CONET im Versicherungsmarkt differenziert und vertrieblich nutzbar macht.
+
+🎯 Zielsetzung
+
+Entwicklung eines modularen, strategisch anschlussfähigen und operativ belastbaren Beratungsportfolios für Versicherungen mit Schwerpunkt auf:
+
+Business Consulting im Versicherungsumfeld
+
+Facharchitektur
+
+Datenanalyse & Data-Driven Transformation
+
+Solution Architektur
+
+Testmanagement
+
+Das Portfolio soll Transformation nicht nur konzipieren, sondern umsetzbar machen.
+
+🧭 Markt- und Zielkundenperspektive
+
+Versicherungen unterscheiden sich erheblich hinsichtlich:
+
+Sparte (Komposit, Leben, Kranken, Rückversicherung)
+
+Transformationsreife
+
+IT-Architektur (Legacy, Hybrid, Cloud-native)
+
+Innovationsdruck
+
+Regulatorischer Betroffenheit
+
+Strategischer Ambition
+
+Das Portfolio muss daher flexibel adaptierbar sein – abhängig vom jeweiligen Zielkunden.
+
+🏗 Strukturprinzip des Portfolios
+
+Das Portfolio soll zwei komplementäre Strukturprinzipien integrieren:
+
+1️⃣ Vertikale Struktur (Versicherungsdomänen)
+
+Strukturierung entlang fachlicher Domänen, z. B.:
+
+Produktentwicklung & Produktarchitektur
+
+Underwriting
+
+Schaden-/Leistungsmanagement
+
+Bestandsführung
+
+Vertrieb & Customer Experience
+
+Finance & Regulatory Reporting
+
+Datenmanagement
+
+Diese Perspektive ist besonders relevant für kundenspezifische Angebotsgespräche.
+
+2️⃣ Horizontale Struktur (Transformationsfähigkeiten)
+
+Strukturierung entlang übergreifender Fähigkeiten:
+
+Business Transformation & Operating Model
+
+Fach- und Lösungsarchitektur
+
+Cloud-Transformation
+
+Data & AI
+
+Regulatorik & Compliance
+
+Digitale Souveränität
+
+Test- & Qualitätsmanagement
+
+Diese Perspektive ist relevant für strategische Positionierung und Differenzierung.
+
+🔁 Zwei Entwicklungslogiken
+
+Das Portfolio soll zwei Perspektiven systematisch abbilden:
+
+A. Fachlich getrieben (Business → Technology)
+
+Fachliche Anforderungen stehen im Mittelpunkt.
+Technologie, Cloud, KI, Regulatorik und Souveränität werden als Enabler und Designparameter integriert.
+
+Cloud und Regulatorik sind integrale Bestandteile der Lösung – keine isolierten Angebote.
+
+B. Innovationsgetrieben (Technology → Business)
+
+Neue Technologien, neue KI-Funktionalitäten, neue regulatorische Anforderungen oder Markttrends erzeugen neue fachliche Möglichkeiten und Umsatzchancen.
+
+Diese Perspektive soll:
+
+neue Beratungsfelder identifizieren
+
+Innovation als Business Opportunity darstellen
+
+Differenzierung gegenüber Wettbewerbern ermöglichen
+
+⚙️ Querschnittsdimensionen
+
+Folgende Themen sind integrative Leitplanken:
+
+Cloud & Hyperscaler-Integration
+
+Digitale Souveränität
+
+DORA, VAIT, FINMA etc.
+
+Data Governance
+
+Architektur-Governance
+
+Security & Compliance
+
+🏆 Positionierung von CONET
+
+CONET soll im Versicherungsmarkt positioniert werden als:
+
+Umsetzungsstarker Transformationspartner mit fachlicher Tiefe, Architekturkompetenz und technologischer Delivery-Fähigkeit.
+
+Nicht als reine Strategieberatung.
+Nicht als reiner Implementierungspartner.
+Sondern als integrierter Beratungs- und Umsetzungspartner.
+
+🚦 Arbeitsmodus dieses Chats
+
+Dieser Chat dient ausschließlich der Entwicklung des Insurance-Portfolios.
+
+Nicht Gegenstand:
+
+Knowledge-Engine-Architektur
+
+Retrieval-Logik
+
+Bot-Optimierung
+
+Bitte arbeite strukturiert, strategisch und portfolio-orientiert.

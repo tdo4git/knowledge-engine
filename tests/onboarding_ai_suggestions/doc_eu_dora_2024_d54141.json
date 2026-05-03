@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_eu_dora_2024_d54141",
+  "title": "exxeta_dora_practical_guide_financial_services_2024",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "regulation",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_governance",
+    "origin": "legislator",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "doc_id": "doc_dora_regulation_2022",
+  "title": "Dora Verordnung EU 2022 2554",
+  "ai": {
+    "document_type": "regulatory_text",
+    "domain_layer": "regulation",
+    "knowledge_domain": "misc",
+    "origin": "legislator",
+    "jurisdiction": "EU",
+    "confidence": 0.95
+  }
+}

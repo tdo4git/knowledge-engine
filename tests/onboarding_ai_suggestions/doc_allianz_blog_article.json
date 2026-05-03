@@ -1,0 +1,12 @@
+{
+  "doc_id": "doc_allianz_blog_article",
+  "title": "Allianz- Wie der Versicherer zum Tech-Konzern werden will",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "industry_association",
+    "jurisdiction": "Germany",
+    "confidence": 0.9
+  }
+}

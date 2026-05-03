@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_eu_dora_2022_0eb896",
+  "title": "Dora Verordnung EU 2022 2554",
+  "ai": {
+    "document_type": "regulatory_text",
+    "domain_layer": "regulation",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_governance",
+    "origin": "legislator",
+    "jurisdiction": "EU",
+    "confidence": 0.99,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "elevated"
+  }
+}

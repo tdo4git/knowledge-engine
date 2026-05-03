@@ -1,0 +1,912 @@
+
+Ich arbeite an einer Strategic Knowledge Engine.
+
+System Context:
+
+=== docs/operations/working_style.md ===
+# Working Style – Strategic Knowledge Engine
+
+## Ziel
+
+Dieses Dokument definiert, wie im Kontext der Strategic Knowledge Engine gearbeitet und kommuniziert wird.
+
+Es stellt sicher, dass Antworten effizient, präzise und umsetzungsorientiert sind.
+
+---
+
+## Antwortstil
+
+Bitte antworte:
+
+- kurz und präzise
+- mit Fokus auf konkrete Umsetzung (Code, Schritte, Entscheidungen)
+- ohne unnötige Erklärungen
+
+---
+
+## Erklärungen
+
+- nur auf explizite Nachfrage
+- keine langen Herleitungen
+
+---
+
+## Vermeiden
+
+- unnötige Bestätigung („gute Frage“, „sehr gut gesehen“)
+- Wiederholung bereits bekannter Inhalte
+- lange theoretische Ausführungen
+
+---
+
+## Erwartetes Verhalten
+
+Sei:
+
+- kritisch bei fachlichen und architektonischen Entscheidungen
+- klar, wenn etwas nicht sinnvoll ist
+- direkt in Empfehlungen
+
+---
+
+## Priorität
+
+1. Korrektheit
+2. Umsetzbarkeit
+3. Klarheit
+4. Kürze
+
+---
+
+## Kontext
+
+Dieses Dokument gilt insbesondere für:
+
+- Chat-basierte Zusammenarbeit
+- Code-Generierung
+- Architekturentscheidungen
+
+=== docs/operations/system_context.md ===
+# System Context – Strategic Knowledge Engine
+
+## Zweck
+
+Dieses Dokument definiert den operativen Nutzungskontext der Strategic Knowledge Engine.
+
+Es ergänzt die Architektur-Dokumentation um die Perspektive:
+→ Wie wird das System korrekt verwendet (insbesondere im Chat-Kontext)?
+
+---
+
+# 1. Grundprinzip
+
+Die Knowledge Engine ist ein strukturiertes, mehrschichtiges System:
+
+Document Sources  
+→ Knowledge Construction  
+→ Knowledge Base  
+→ Knowledge Engine  
+→ Bots
+
+Wissen entsteht ausschließlich durch diese Pipeline.
+
+---
+
+# 2. Trennung von Wissen und Nutzung
+
+Wichtig:
+
+Wissen liegt in:
+- Dokumentation
+- Knowledge Base
+- Config (Python)
+
+Ein Chat hat keinen automatischen Zugriff auf dieses Wissen.
+
+---
+
+# 3. Chat-Kontext
+
+Ein neuer Chat startet ohne:
+
+- Architekturverständnis
+- Retrieval-Logik
+- Governance-Kontext
+- Taxonomie
+
+Daher muss ein System-Kontext bereitgestellt werden.
+
+---
+
+# 4. System Context Loader
+
+Der Loader erfüllt folgende Funktion:
+
+- selektiert relevante Informationen aus dem Projekt
+- reduziert sie auf entscheidungsrelevanten Kontext
+- stellt sie für den Chat bereit
+
+Der Loader erzeugt kein Wissen, sondern nutzt bestehende Quellen.
+
+---
+
+# 5. Script Execution
+
+Alle Skripte werden als Module gestartet:
+
+python -m scripts.<script_name>
+
+Beispiel:
+
+python -m scripts.reset_knowledge_base
+
+Voraussetzung:
+
+- Ausführung im Verzeichnis: knowledge-engine/
+
+---
+
+# 6. Pfadlogik
+
+BASE_PATH entspricht dem Projekt-Root:
+
+knowledge-engine/
+
+Empfohlen:
+
+BASE_PATH = Path(__
+
+=== docs/architecture/system/architecture_overview_v3.md ===
+# Architecture Overview – Strategic Knowledge Engine
+Version: 3.3
+
+## Status
+This document replaces the previous `architecture_overview_v3.md`.
+
+---
+
+# High Level Architecture
+
+Document Sources  
+→ Knowledge Construction Pipeline  
+→ Knowledge Base  
+→ Retrieval Engine  
+→ Context Generation  
+→ LLM Answer Generation
+
+---
+
+# Retrieval Engine Architecture
+
+Query
+↓
+Query Embedder
+↓
+Vector Search (FAISS)
+↓
+Candidate Chunks
+↓
+Document Aggregator
+↓
+Scoring Engine
+↓
+Context Builder
+↓
+Prompt Governance
+↓
+LLM
+
+---
+
+# Retrieval Engine Components
+
+Query Embedder
+
+Encodes user queries into semantic vectors.
+
+Candidate Retriever
+
+Performs vector search over the FAISS index.
+
+Document Aggregator
+
+Groups chunk candidates into document candidates.
+
+Scoring Engine
+
+Applies governance‑aware ranking using registry metadata.
+
+Context Builder
+
+Constructs a balanced multi‑document context for the LLM.
+
+---
+
+# Key Design Principles
+
+Document‑centric retrieval  
+Governance‑aware ranking  
+Explainable retrieval decisions  
+Immutable knowledge base  
+Modular architecture
+
+## Knowledge Construction (Updated)
+
+The construction pipeline is governance-first:
+
+Classification → Governance → Validation → Storage → Chunking → Embedding → Indexing
+
+Key principle:
+Governance is centralized and applied immediately after classification.
+
+=== docs/architecture/engine/retrieval_architecture_guideline.md ===
+# Retrieval Architecture Guideline – Strategic Knowledge Engine
+Version: 3.3
+Layer: Architecture
+
+## Status
+This document replaces the previous version of `retrieval_architecture_guideline.md`.
+
+## Purpose
+The Retrieval Engine transforms a user query into a structured, explainable knowledge context for the reasoning model. 
+It operates exclusively on the curated Knowledge Base and ensures governance‑aware knowledge selection.
+
+---
+
+# Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunk Retrieval
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+This pipeline ensures high recall during retrieval and high precision through governance‑aware ranking.
+
+---
+
+# Step 1 – Query Embedding
+
+The user query is embedded using the same embedding model that was used to generate chunk embeddings.
+
+Example model:
+sentence-transformers/all-MiniLM-L6-v2
+
+Consistency between document and query embeddings ensures meaningful semantic similarity.
+
+---
+
+# Step 2 – Vector Search
+
+The query embedding is compared with the FAISS vector index.
+
+Input:
+query embedding
+
+Output:
+Top‑K similar chunks
+
+The goal of this step is **high recall**, not final ranking.
+
+---
+
+# Step 3 – Candidate Chunk Retrieval
+
+The indices returned by FAISS are mapped to chunks in:
+
+knowledge_base/chunks/chunks.json
+
+Each candidate chunk includes:
+
+- chunk_id
+- doc_id
+- chunk_index
+- text
+- similarity_score
+- document metadata
+
+---
+
+# Step 4 – Document Aggregation
+
+Chunks are grouped by the
+
+=== REPOSITORY_MAP ===
+[MISSING: /Users/thomas/projects/knowledge-engine/REPOSITORY_MAP]
+
+=== docs/operations/working_style.md ===
+# Working Style – Strategic Knowledge Engine
+
+## Ziel
+
+Dieses Dokument definiert, wie im Kontext der Strategic Knowledge Engine gearbeitet und kommuniziert wird.
+
+Es stellt sicher, dass Antworten effizient, präzise und umsetzungsorientiert sind.
+
+---
+
+## Antwortstil
+
+Bitte antworte:
+
+- kurz und präzise
+- mit Fokus auf konkrete Umsetzung (Code, Schritte, Entscheidungen)
+- ohne unnötige Erklärungen
+
+---
+
+## Erklärungen
+
+- nur auf explizite Nachfrage
+- keine langen Herleitungen
+
+---
+
+## Vermeiden
+
+- unnötige Bestätigung („gute Frage“, „sehr gut gesehen“)
+- Wiederholung bereits bekannter Inhalte
+- lange theoretische Ausführungen
+
+---
+
+## Erwartetes Verhalten
+
+Sei:
+
+- kritisch bei fachlichen und architektonischen Entscheidungen
+- klar, wenn etwas nicht sinnvoll ist
+- direkt in Empfehlungen
+
+---
+
+## Priorität
+
+1. Korrektheit
+2. Umsetzbarkeit
+3. Klarheit
+4. Kürze
+
+---
+
+## Kontext
+
+Dieses Dokument gilt insbesondere für:
+
+- Chat-basierte Zusammenarbeit
+- Code-Generierung
+- Architekturentscheidungen
+
+=== docs/operations/system_context.md ===
+# System Context – Strategic Knowledge Engine
+
+## Zweck
+
+Dieses Dokument definiert den operativen Nutzungskontext der Strategic Knowledge Engine.
+
+Es ergänzt die Architektur-Dokumentation um die Perspektive:
+→ Wie wird das System korrekt verwendet (insbesondere im Chat-Kontext)?
+
+---
+
+# 1. Grundprinzip
+
+Die Knowledge Engine ist ein strukturiertes, mehrschichtiges System:
+
+Document Sources  
+→ Knowledge Construction  
+→ Knowledge Base  
+→ Knowledge Engine  
+→ Bots
+
+Wissen entsteht ausschließlich durch diese Pipeline.
+
+---
+
+# 2. Trennung von Wissen und Nutzung
+
+Wichtig:
+
+Wissen liegt in:
+- Dokumentation
+- Knowledge Base
+- Config (Python)
+
+Ein Chat hat keinen automatischen Zugriff auf dieses Wissen.
+
+---
+
+# 3. Chat-Kontext
+
+Ein neuer Chat startet ohne:
+
+- Architekturverständnis
+- Retrieval-Logik
+- Governance-Kontext
+- Taxonomie
+
+Daher muss ein System-Kontext bereitgestellt werden.
+
+---
+
+# 4. System Context Loader
+
+Der Loader erfüllt folgende Funktion:
+
+- selektiert relevante Informationen aus dem Projekt
+- reduziert sie auf entscheidungsrelevanten Kontext
+- stellt sie für den Chat bereit
+
+Der Loader erzeugt kein Wissen, sondern nutzt bestehende Quellen.
+
+---
+
+# 5. Script Execution
+
+Alle Skripte werden als Module gestartet:
+
+python -m scripts.<script_name>
+
+Beispiel:
+
+python -m scripts.reset_knowledge_base
+
+Voraussetzung:
+
+- Ausführung im Verzeichnis: knowledge-engine/
+
+---
+
+# 6. Pfadlogik
+
+BASE_PATH entspricht dem Projekt-Root:
+
+knowledge-engine/
+
+Empfohlen:
+
+BASE_PATH = Path(__
+
+=== docs/architecture/system/architecture_overview_v3.md ===
+# Architecture Overview – Strategic Knowledge Engine
+Version: 3.3
+
+## Status
+This document replaces the previous `architecture_overview_v3.md`.
+
+---
+
+# High Level Architecture
+
+Document Sources  
+→ Knowledge Construction Pipeline  
+→ Knowledge Base  
+→ Retrieval Engine  
+→ Context Generation  
+→ LLM Answer Generation
+
+---
+
+# Retrieval Engine Architecture
+
+Query
+↓
+Query Embedder
+↓
+Vector Search (FAISS)
+↓
+Candidate Chunks
+↓
+Document Aggregator
+↓
+Scoring Engine
+↓
+Context Builder
+↓
+Prompt Governance
+↓
+LLM
+
+---
+
+# Retrieval Engine Components
+
+Query Embedder
+
+Encodes user queries into semantic vectors.
+
+Candidate Retriever
+
+Performs vector search over the FAISS index.
+
+Document Aggregator
+
+Groups chunk candidates into document candidates.
+
+Scoring Engine
+
+Applies governance‑aware ranking using registry metadata.
+
+Context Builder
+
+Constructs a balanced multi‑document context for the LLM.
+
+---
+
+# Key Design Principles
+
+Document‑centric retrieval  
+Governance‑aware ranking  
+Explainable retrieval decisions  
+Immutable knowledge base  
+Modular architecture
+
+## Knowledge Construction (Updated)
+
+The construction pipeline is governance-first:
+
+Classification → Governance → Validation → Storage → Chunking → Embedding → Indexing
+
+Key principle:
+Governance is centralized and applied immediately after classification.
+
+=== docs/architecture/engine/retrieval_architecture_guideline.md ===
+# Retrieval Architecture Guideline – Strategic Knowledge Engine
+Version: 3.3
+Layer: Architecture
+
+## Status
+This document replaces the previous version of `retrieval_architecture_guideline.md`.
+
+## Purpose
+The Retrieval Engine transforms a user query into a structured, explainable knowledge context for the reasoning model. 
+It operates exclusively on the curated Knowledge Base and ensures governance‑aware knowledge selection.
+
+---
+
+# Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunk Retrieval
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+This pipeline ensures high recall during retrieval and high precision through governance‑aware ranking.
+
+---
+
+# Step 1 – Query Embedding
+
+The user query is embedded using the same embedding model that was used to generate chunk embeddings.
+
+Example model:
+sentence-transformers/all-MiniLM-L6-v2
+
+Consistency between document and query embeddings ensures meaningful semantic similarity.
+
+---
+
+# Step 2 – Vector Search
+
+The query embedding is compared with the FAISS vector index.
+
+Input:
+query embedding
+
+Output:
+Top‑K similar chunks
+
+The goal of this step is **high recall**, not final ranking.
+
+---
+
+# Step 3 – Candidate Chunk Retrieval
+
+The indices returned by FAISS are mapped to chunks in:
+
+knowledge_base/chunks/chunks.json
+
+Each candidate chunk includes:
+
+- chunk_id
+- doc_id
+- chunk_index
+- text
+- similarity_score
+- document metadata
+
+---
+
+# Step 4 – Document Aggregation
+
+Chunks are grouped by the
+
+=== REPOSITORY STRUCTURE (LIVE) ===
+
+├── .vscode
+│   └── settings.json
+├── archive
+│   ├── ArchitekturV2.png
+│   ├── Retrieval Architecture Guideline.docx
+│   ├── Retrieval Architecture Guideline.pdf
+│   ├── retrieval_architecture_guideline.md
+│   ├── Retrieval_Architecture_Guideline_DE.docx
+│   └── retrieval_architecture_guideline_v1.md
+├── bots
+│   └── __init__.py
+├── config
+│   ├── __init__.py
+│   ├── base_config.py
+│   ├── construction_config.py
+│   ├── engine_config.py
+│   ├── llm_config.py
+│   ├── scoring_config.py
+│   └── taxonomy.py
+├── docs
+│   ├── architecture
+│   │   ├── engine
+│   │   │   ├── ENGINE_PIPELINE_DIAGRAM.md
+│   │   │   ├── retrieval_architecture_guideline.md
+│   │   │   └── retrieval_engine_design.md
+│   │   ├── knowledge
+│   │   │   ├── Knowledge Base Schema.pdf
+│   │   │   ├── knowledge_base_data_flow.md
+│   │   │   ├── knowledge_base_schema.md
+│   │   │   └── knowledge_construction_pipeline.md
+│   │   ├── system
+│   │   │   ├── ARCHITECTURE_DIAGRAM.md
+│   │   │   ├── architecture_overview_v3.md
+│   │   │   ├── ARCHITECTURE_V3_REFERENCE_LAYER_INTEGRATED.md
+│   │   │   ├── query_execution_pipeline.md
+│   │   │   └── system_overview.md
+│   ├── evolution
+│   │   ├── Evolution Log – Strategic Knowledge Engine V3.md
+│   │   ├── evolution_log_v3_2_knowledge_construction.md
+│   │   ├── evolution_log_v3_3_retrieval.md
+│   │   └── evolution_log_v3_4_query_execution_pipeline
+│   ├── governance
+│   │   ├── explainability_principles.md
+│   │   ├── Spielregeln Knowledge Bot – Governance & Nutzung (Version 2).md
+│   │   └── taxonomy_definition.md
+│   ├── meta
+│   │   ├── META_OVERVIEW_V3.1.md
+│   │   └── META_OVERVIEW_V3.md
+│   ├── operations
+│   │   ├── system_context.md
+│   │   └── working_style.md
+│   ├── scope
+│   │   └── knowledge_bot_strategy_marketing_extension.docx
+│   ├── status
+│   │   ├── status_20260317.md
+│   │   └── updated_project_context.docx
+│   ├── strategy
+│   │   └── strategic_knowledge_engine_full_architecture.md
+│   ├── dev_chat_bootstrap_prompt.md
+│   ├── knowledge_bot_mvp_storyline_full.docx
+│   ├── REPOSITORY_MAP_old.md
+│   ├── repository_v3.txt
+│   ├── 🟢 Projektkontext-Insurance Advisory Portfolio Lab.txt
+│   └── 🟣 Projektkontext- Knowledge Base Expansion & Curat
+├── knowledge_base
+│   ├── audit
+│   │   ├── __init__.py
+│   │   └── onboarding_audit_log.jsonl
+│   ├── registry
+│   │   └── document_registry.json
+│   └── knowledge_base.py
+├── knowledge_construction
+│   ├── audit
+│   │   ├── __init__.py
+│   │   └── audit_logger.py
+│   ├── chunking
+│   │   ├── __init__.py
+│   │   └── chunker.py
+│   ├── document_processing
+│   │   ├── __init__.py
+│   │   └── document_text_extractor.py
+│   ├── embedding
+│   │   ├── __init__.py
+│   │   ├── embedding_generator.py
+│   │   └── index_consistency_check.py
+│   ├── governance
+│   │   ├── __init__.py
+│   │   ├── bias.py
+│   │   ├── governance.py
+│   │   ├── governance_pipeline.py
+│   │   └── governance_rules.py
+│   ├── llm
+│   │   ├── contracts
+│   │   │   └── classification.yaml
+│   │   ├── contract_loader.py
+│   │   ├── llm_client.py
+│   │   └── prompt_builder.py
+│   ├── metadata
+│   │   ├── __init__.py
+│   │   ├── classifier.py
+│   │   └── preview_extractor.py
+│   ├── registry
+│   │   ├── __init__.py
+│   │   └── registry_builder.py
+│   ├── review
+│   │   ├── __init__.py
+│   │   ├── governance_review.py
+│   │   └── review_decision.py
+│   ├── validation
+│   │   ├── __init__.py
+│   │   ├── cross_field_rules.py
+│   │   └── validation.py
+│   ├── __init__.py
+│   ├── build_embeddings.py
+│   ├── knowledge_base_validator.py
+│   ├── metadata_extractor.py
+│   ├── onboarding_pipeline.py
+│   └── registry_builder.py
+├── knowledge_core
+│   ├── answer
+│   │   └── __init__.py
+│   ├── audit
+│   │   ├── __init__.py
+│   │   └── retrieval_decision_log.py
+│   ├── intent
+│   │   ├── __init__.py
+│   │   └── intent_engine.py
+│   ├── llm
+│   │   └── __init__.py
+│   ├── perspectives
+│   │   ├── __init__.py
+│   │   ├── perspective_config.yaml
+│   │   ├── perspective_mapping.py
+│   │   └── perspective_orchestrator.py
+│   ├── pipeline
+│   │   ├── __init__.py
+│   │   ├── context_builder.py
+│   │   ├── query_context.py
+│   │   └── query_pipeline.py
+│   ├── prompt
+│   │   ├── __init__.py
+│   │   └── prompt_governance.py
+│   ├── retrieval
+│   │   ├── __init__.py
+│   │   ├── candidate_retriever.py
+│   │   ├── document_aggregator.py
+│   │   ├── query_embedder.py
+│   │   ├── retrieval_engine.py
+│   │   └── retrieval_models.py
+│   ├── roles
+│   │   ├── __init__.py
+│   │   └── role_engine.py
+│   ├── scoring
+│   │   ├── __init__.py
+│   │   └── scoring_engine.py
+│   ├── __init__.py
+│   └── knowledge_engine.py
+├── knowledge_sources
+│   ├── archive
+│   │   ├── AWS Digital_Sovereignty_Messaging Framework 3.pdf
+│   │   ├── bafin_aufsichtsmitteilung_cloud_auslagerung_2024.pdf
+│   │   ├── bafin_cloud_outsourcing_2024.pdf
+│   │   ├── exxeta_dora_practical_guide_financial_services_2024.pdf
+│   │   └── test_dora.txt
+│   ├── intake
+│   ├── raw_sensitive
+├── notebooks
+├── scripts
+│   ├── __init__.py
+│   ├── generate_repo_map.py
+│   ├── reset_knowledge_base.py
+│   ├── run_onboarding.py
+│   └── system_context_loader.py
+├── tests
+│   ├── __init__.py
+│   ├── dummy_llm.py
+│   ├── query_pipeline.py
+│   ├── retrieval_aggregation_test.py
+│   ├── retrieval_smoketest.py
+│   ├── run_onboarding_test.py
+│   ├── test_classifier.py
+│   ├── test_llm_client.py
+│   └── test_preview_extractor.py
+├── chat_context_expert.txt
+├── chat_context_retrieval_test.txt
+├── pyproject.toml
+└── requirements.txt
+
+=== TAXONOMY (STRICT) ===
+
+DOCUMENT_TYPES:
+- regulatory_text
+- supervisory_guidance
+- industry_position
+- expert_opinion
+- consulting_framework
+- research_report
+- vendor_marketing
+- blog_article
+- internal_strategy
+- unknown
+
+DOMAIN_LAYERS:
+- regulation
+- business
+- technology
+- strategy
+- market
+
+KNOWLEDGE_DOMAINS:
+- trusted_advisor
+- insurance_domain
+- cloud_technology
+- portfolio_gtm
+- ai_genai_agentic
+- misc
+
+TOPICS:
+- cloud_governance
+- cloud_architecture
+- cloud_security
+- sovereign_cloud
+- insurance_business
+- transformation_strategy
+- vendor_landscape
+- advisory_methods
+- market_analysis
+
+ORIGINS:
+- supervisory_authority
+- legislator
+- industry_association
+- consulting_firm
+- research_institution
+- cloud_vendor
+- software_vendor
+- internal
+- unknown
+
+JURISDICTIONS:
+- EU
+- Germany
+- Switzerland
+- UK
+- Global
+- unknown
+
+=== SCORING MODEL ===
+
+Origin Weights:
+- supervisory_authority: 0.3
+- regulator: 0.25
+- advisor: 0.1
+- vendor: -0.05
+- community: -0.1
+
+Confidence Weights:
+- high: 0.1
+- medium: 0.0
+- low: -0.1
+
+Document Type Weights:
+- regulation: 0.2
+- regulatory_guidance: 0.15
+- research_report: 0.05
+- blog: -0.1
+- marketing: -0.2
+
+=== RETRIEVAL CONTEXT ===
+max_documents: 5
+max_chunks_per_document: 2
+
+
+Arbeitsprinzipien:
+- strikt entlang bestehender Architektur arbeiten
+- keine ad-hoc Lösungen
+- Governance und Explainability priorisieren
+
+Mode: coding
+
+Ziel dieses Chats:
+Fehler in skripten beheben

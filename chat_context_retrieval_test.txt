@@ -1,0 +1,455 @@
+
+Ich arbeite an einer Strategic Knowledge Engine.
+
+System Context:
+
+=== docs/operations/working_style.md ===
+# Working Style – Strategic Knowledge Engine
+
+## Ziel
+
+Dieses Dokument definiert, wie im Kontext der Strategic Knowledge Engine gearbeitet und kommuniziert wird.
+
+Es stellt sicher, dass Antworten effizient, präzise und umsetzungsorientiert sind.
+
+---
+
+## Antwortstil
+
+Bitte antworte:
+
+- kurz und präzise
+- mit Fokus auf konkrete Umsetzung (Code, Schritte, Entscheidungen)
+- ohne unnötige Erklärungen
+
+---
+
+## Erklärungen
+
+- nur auf explizite Nachfrage
+- keine langen Herleitungen
+
+---
+
+## Vermeiden
+
+- unnötige Bestätigung („gute Frage“, „sehr gut gesehen“)
+- Wiederholung bereits bekannter Inhalte
+- lange theoretische Ausführungen
+
+---
+
+## Erwartetes Verhalten
+
+Sei:
+
+- kritisch bei fachlichen und architektonischen Entscheidungen
+- klar, wenn etwas nicht sinnvoll ist
+- direkt in Empfehlungen
+
+---
+
+## Priorität
+
+1. Korrektheit
+2. Umsetzbarkeit
+3. Klarheit
+4. Kürze
+
+---
+
+## Kontext
+
+Dieses Dokument gilt insbesondere für:
+
+- Chat-basierte Zusammenarbeit
+- Code-Generierung
+- Architekturentscheidungen
+
+=== docs/architecture/engine/retrieval_architecture_guideline.md ===
+# Retrieval Architecture Guideline – Strategic Knowledge Engine
+Version: 3.3
+Layer: Architecture
+
+## Status
+This document replaces the previous version of `retrieval_architecture_guideline.md`.
+
+## Purpose
+The Retrieval Engine transforms a user query into a structured, explainable knowledge context for the reasoning model. 
+It operates exclusively on the curated Knowledge Base and ensures governance‑aware knowledge selection.
+
+---
+
+# Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunk Retrieval
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+This pipeline ensures high recall during retrieval and high precision through governance‑aware ranking.
+
+---
+
+# Step 1 – Query Embedding
+
+The user query is embedded using the same embedding model that was used to generate chunk embeddings.
+
+Example model:
+sentence-transformers/all-MiniLM-L6-v2
+
+Consistency between document and query embeddings ensures meaningful semantic similarity.
+
+---
+
+# Step 2 – Vector Search
+
+The query embedding is compared with the FAISS vector index.
+
+Input:
+query embedding
+
+Output:
+Top‑K similar chunks
+
+The goal of this step is **high recall**, not final ranking.
+
+---
+
+# Step 3 – Candidate Chunk Retrieval
+
+The indices returned by FAISS are mapped to chunks in:
+
+knowledge_base/chunks/chunks.json
+
+Each candidate chunk includes:
+
+- chunk_id
+- doc_id
+- chunk_index
+- text
+- similarity_score
+- document metadata
+
+---
+
+# Step 4 – Document Aggregation
+
+Chunks are grouped by the
+
+=== docs/architecture/query_execution_pipeline.md ===
+[MISSING: /Users/thomas/projects/knowledge-engine/docs/architecture/query_execution_pipeline.md]
+
+=== docs/governance/explainability_principles.md ===
+# Explainability & Trust Principles
+
+## 1. Quellenpriorisierung
+- Regulatorische Dokumente haben Vorrang vor Advisory-Quellen.
+- Advisory-Quellen dienen ausschließlich der Einordnung.
+
+## 2. Rollenmodell
+- Dokumente sind fachlichen Rollen zugeordnet (z. B. regulatorisch, advisor).
+- Das Rollenmodell steuert Retrieval und Gewichtung.
+
+## 3. LLM-Nutzung
+- Das LLM generiert keine neuen Fakten.
+- Es formuliert ausschließlich auf Basis vorselektierter Inhalte.
+
+## 4. Transparenz
+- Jede Antwort kann in ihrer Entstehung erklärt werden (C1).
+- Die Systemarchitektur ist nachvollziehbar dokumentiert (C2).
+
+## 5. Grenzen
+- Kein Ersatz für Rechtsberatung.
+- Kein Anspruch auf Vollständigkeit.
+- Fokus auf kuratierte Inhalte.
+
+## Governance Execution Model (Update)
+
+All governance rules are executed via a centralized pipeline:
+
+apply_governance()
+
+This ensures:
+- deterministic behavior
+- traceability
+- no duplicated logic
+
+Derived attributes:
+- bias
+- confidence
+
+RULE:
+Governance must not be implemented outside the central pipeline.
+
+
+## Retrieval Explainability (Update)
+
+Explainability includes:
+
+- which documents were retrieved
+- how they were ranked (scoring signals)
+- which chunks were selected
+
+This is enabled by:
+
+- document-centric retrieval
+- governance-aware scoring
+- QueryContext tracking
+
+Every answer can be traced back to:
+doc_id → chunk_id → registry metadata → scoring decision
+
+=== docs/operations/working_style.md ===
+# Working Style – Strategic Knowledge Engine
+
+## Ziel
+
+Dieses Dokument definiert, wie im Kontext der Strategic Knowledge Engine gearbeitet und kommuniziert wird.
+
+Es stellt sicher, dass Antworten effizient, präzise und umsetzungsorientiert sind.
+
+---
+
+## Antwortstil
+
+Bitte antworte:
+
+- kurz und präzise
+- mit Fokus auf konkrete Umsetzung (Code, Schritte, Entscheidungen)
+- ohne unnötige Erklärungen
+
+---
+
+## Erklärungen
+
+- nur auf explizite Nachfrage
+- keine langen Herleitungen
+
+---
+
+## Vermeiden
+
+- unnötige Bestätigung („gute Frage“, „sehr gut gesehen“)
+- Wiederholung bereits bekannter Inhalte
+- lange theoretische Ausführungen
+
+---
+
+## Erwartetes Verhalten
+
+Sei:
+
+- kritisch bei fachlichen und architektonischen Entscheidungen
+- klar, wenn etwas nicht sinnvoll ist
+- direkt in Empfehlungen
+
+---
+
+## Priorität
+
+1. Korrektheit
+2. Umsetzbarkeit
+3. Klarheit
+4. Kürze
+
+---
+
+## Kontext
+
+Dieses Dokument gilt insbesondere für:
+
+- Chat-basierte Zusammenarbeit
+- Code-Generierung
+- Architekturentscheidungen
+
+=== docs/architecture/engine/retrieval_architecture_guideline.md ===
+# Retrieval Architecture Guideline – Strategic Knowledge Engine
+Version: 3.3
+Layer: Architecture
+
+## Status
+This document replaces the previous version of `retrieval_architecture_guideline.md`.
+
+## Purpose
+The Retrieval Engine transforms a user query into a structured, explainable knowledge context for the reasoning model. 
+It operates exclusively on the curated Knowledge Base and ensures governance‑aware knowledge selection.
+
+---
+
+# Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunk Retrieval
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+This pipeline ensures high recall during retrieval and high precision through governance‑aware ranking.
+
+---
+
+# Step 1 – Query Embedding
+
+The user query is embedded using the same embedding model that was used to generate chunk embeddings.
+
+Example model:
+sentence-transformers/all-MiniLM-L6-v2
+
+Consistency between document and query embeddings ensures meaningful semantic similarity.
+
+---
+
+# Step 2 – Vector Search
+
+The query embedding is compared with the FAISS vector index.
+
+Input:
+query embedding
+
+Output:
+Top‑K similar chunks
+
+The goal of this step is **high recall**, not final ranking.
+
+---
+
+# Step 3 – Candidate Chunk Retrieval
+
+The indices returned by FAISS are mapped to chunks in:
+
+knowledge_base/chunks/chunks.json
+
+Each candidate chunk includes:
+
+- chunk_id
+- doc_id
+- chunk_index
+- text
+- similarity_score
+- document metadata
+
+---
+
+# Step 4 – Document Aggregation
+
+Chunks are grouped by the
+
+=== docs/architecture/query_execution_pipeline.md ===
+[MISSING: /Users/thomas/projects/knowledge-engine/docs/architecture/query_execution_pipeline.md]
+
+=== docs/governance/explainability_principles.md ===
+# Explainability & Trust Principles
+
+## 1. Quellenpriorisierung
+- Regulatorische Dokumente haben Vorrang vor Advisory-Quellen.
+- Advisory-Quellen dienen ausschließlich der Einordnung.
+
+## 2. Rollenmodell
+- Dokumente sind fachlichen Rollen zugeordnet (z. B. regulatorisch, advisor).
+- Das Rollenmodell steuert Retrieval und Gewichtung.
+
+## 3. LLM-Nutzung
+- Das LLM generiert keine neuen Fakten.
+- Es formuliert ausschließlich auf Basis vorselektierter Inhalte.
+
+## 4. Transparenz
+- Jede Antwort kann in ihrer Entstehung erklärt werden (C1).
+- Die Systemarchitektur ist nachvollziehbar dokumentiert (C2).
+
+## 5. Grenzen
+- Kein Ersatz für Rechtsberatung.
+- Kein Anspruch auf Vollständigkeit.
+- Fokus auf kuratierte Inhalte.
+
+## Governance Execution Model (Update)
+
+All governance rules are executed via a centralized pipeline:
+
+apply_governance()
+
+This ensures:
+- deterministic behavior
+- traceability
+- no duplicated logic
+
+Derived attributes:
+- bias
+- confidence
+
+RULE:
+Governance must not be implemented outside the central pipeline.
+
+
+## Retrieval Explainability (Update)
+
+Explainability includes:
+
+- which documents were retrieved
+- how they were ranked (scoring signals)
+- which chunks were selected
+
+This is enabled by:
+
+- document-centric retrieval
+- governance-aware scoring
+- QueryContext tracking
+
+Every answer can be traced back to:
+doc_id → chunk_id → registry metadata → scoring decision
+
+Taxonomy: fixed categories defined in system config.
+
+=== SCORING MODEL ===
+
+Origin Weights:
+- supervisory_authority: 0.3
+- regulator: 0.25
+- advisor: 0.1
+- vendor: -0.05
+- community: -0.1
+
+Confidence Weights:
+- high: 0.1
+- medium: 0.0
+- low: -0.1
+
+Document Type Weights:
+- regulation: 0.2
+- regulatory_guidance: 0.15
+- research_report: 0.05
+- blog: -0.1
+- marketing: -0.2
+
+=== RETRIEVAL CONTEXT ===
+max_documents: 5
+max_chunks_per_document: 2
+
+
+Arbeitsprinzipien:
+- strikt entlang bestehender Architektur arbeiten
+- keine ad-hoc Lösungen
+- Governance und Explainability priorisieren
+
+Mode: retrieval_test
+
+Ziel dieses Chats:
+Ich möchte Retrieval systematisch testen.
+Bitte führe mich durch strukturierte Tests.
+
+Ich teste die Retrieval Engine.
+
+Ich gebe dir Queries.
+
+Analysiere für jede Query:
+- Retrieval Qualität
+- Ranking
+- Context Qualität
+- mögliche Fehlerursachen
+
+warte, bis ich dir die erste query gebe.

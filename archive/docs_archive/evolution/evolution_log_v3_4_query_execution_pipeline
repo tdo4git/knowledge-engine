@@ -1,0 +1,70 @@
+VERSION 3.4 – Query Execution Pipeline
+
+Context
+
+After completing the Retrieval Engine implementation, the runtime
+execution pipeline of the Knowledge Engine was finalized.
+
+Goal
+
+Provide a deterministic orchestration layer that coordinates all
+engine components during query execution.
+
+Implemented Components
+
+QueryPipeline
+
+Central orchestrator executing the engine pipeline:
+
+Query
+→ Intent Engine
+→ Role Engine
+→ Retrieval Engine
+→ Scoring Engine
+→ Perspective Orchestrator
+→ Context Builder
+→ Prompt Governance
+→ LLM
+
+QueryContext
+
+A central state object was introduced to capture the full execution
+state of a query.
+
+The QueryContext stores:
+
+query
+intent
+role
+retrieval_result
+ranked_documents
+perspective
+context_package
+prompt
+response
+
+Benefits
+
+- simplified pipeline structure
+- improved debugging
+- easier explainability
+- support for audit logging
+
+Retrieval Decision Log
+
+A new audit component logs retrieval decisions for each query.
+
+Logged data includes:
+
+query
+intent
+role
+document scores
+context chunks
+sources
+
+Purpose
+
+- explainability
+- debugging
+- governance transparency

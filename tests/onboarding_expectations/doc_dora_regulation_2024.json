@@ -1,0 +1,14 @@
+{
+  "doc_id": "doc_dora_regulation_2024",
+  "title": "exxeta_dora_practical_guide_financial_services_2024",
+  "expected": {
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.9,
+    "bias": "medium",
+    "domain_layer": "regulation"
+  },
+  "status": "APPROVED"
+}

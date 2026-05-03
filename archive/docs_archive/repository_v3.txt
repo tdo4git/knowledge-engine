@@ -1,0 +1,68 @@
+project-root/
+│
+└── knowledge-engine/             # strategisches System
+│
+│   ├── kb_core/                  # Engine (Runtime)
+│   │
+│   │   ├── intent/
+│   │   │    intent_engine.py
+│   │   │
+│   │   ├── roles/
+│   │   │    role_engine.py
+│   │   │
+│   │   ├── retrieval/
+│   │   │    retrieval_engine.py
+│   │   │
+│   │   ├── scoring/
+│   │   │    scoring_engine.py
+│   │   │
+│   │   ├── perspective/
+│   │   │    perspective_orchestrator.py
+│   │   │    perspective_mapping.py
+│   │   │    perspective_config.yaml
+│   │   │
+│   │   ├── prompt/
+│   │   │    prompt_governance.py
+│   │   │
+│   │   └── pipeline/
+│   │        query_pipeline.py
+│   │
+│   ├── knowledge_construction/   # Onboarding / Build Pipeline
+│   │
+│   │   ├── metadata_extractor.py
+│   │   ├── registry_builder.py
+│   │   ├── chunker.py
+│   │   ├── embedding_generator.py
+│   │   └── onboarding_pipeline.py
+│   │
+│   ├── knowledge_base/           # generierte Wissensbasis
+│   │
+│   │   ├── registry/
+│   │   │     document_registry.json
+│   │   │
+│   │   ├── chunks/
+│   │   │     chunks.json
+│   │   │
+│   │   └── vector_index/
+│   │         index.faiss
+│   │
+│   ├── bots/                     # Anwendungen auf der Engine
+│   │
+│   │   ├── trusted_advisor_bot/
+│   │   ├── marketing_bot/
+│   │   └── insurance_portfolio_bot/
+│   │
+│   ├── knowledge_sources/        # Dokumentquellen
+│   │
+│   │   ├── intake/               # neue Dokumente (Dropzone)
+│   │   ├── archive/              # kuratierte Originale
+│   │   └── raw_sensitive/        # interne Dokumente
+│   │
+│   ├── config/
+│   │     engine_config.yaml
+│   │
+│   ├── notebooks/
+│   │
+│   └── docs/
+│        governance/
+│        architecture/

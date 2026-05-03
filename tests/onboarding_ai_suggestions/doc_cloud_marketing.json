@@ -1,0 +1,12 @@
+{
+  "doc_id": "doc_cloud_marketing",
+  "title": "AWS-insurance-on-the-cloud",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "unknown",
+    "confidence": 0.9
+  }
+}

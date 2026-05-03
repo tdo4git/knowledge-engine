@@ -1,0 +1,6044 @@
+=== ./archive/registry_builder.py ===
+import json
+from pathlib import Path
+
+
+class RegistryBuilder:
+
+    def __init__(self, registry_path):
+
+        self.registry_path = Path(registry_path)
+
+        if self.registry_path.exists():
+            with open(self.registry_path, "r", encoding="utf-8") as f:
+                self.registry = json.load(f)
+        else:
+            self.registry = []
+
+    # ----------------------------------------
+
+    def add_document(self, metadata, classification):
+        """
+        metadata:
+            - doc_id (REQUIRED, generated in pipeline)
+            - title
+            - source_file
+            - optional: year, doc_hash
+
+        classification:
+            - result of classification + governance + enrichment
+        """
+
+        # 🔥 Single Source of Truth: doc_id comes from pipeline
+        doc_id = metadata.get("doc_id")
+
+        if not doc_id:
+            raise ValueError("doc_id must be provided in metadata")
+
+        entry = {
+
+            "doc_id": doc_id,
+
+            "title": metadata.get("title"),
+            "source_file": metadata.get("source_file"),
+            "year": metadata.get("year"),
+
+            "origin": classification.get("origin"),
+            "document_type": classification.get("document_type"),
+
+            "knowledge_domain": classification.get("knowledge_domain"),
+            "content_domain": classification.get("content_domain"),
+
+            "vendor": classification.get("vendor"),
+
+            "confidence_level": classification.get("confidence_level"),
+            "confidentiality": classification.get("confidentiality"),
+
+            "doc_hash": metadata.get("doc_hash")
+        }
+
+        self._check_duplicate(entry)
+
+        self.registry.append(entry)
+
+        return entry
+
+    # ----------------------------------------
+
+    def save(self):
+
+        self.registry_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(self.registry_path, "w", encoding="utf-8") as f:
+            json.dump(self.registry, f, indent=2)
+
+    # ----------------------------------------
+
+    def _check_duplicate(self, entry):
+
+        for doc in self.registry:
+
+            if doc.get("doc_hash") and doc["doc_hash"] == entry.get("doc_hash"):
+                raise ValueError(
+                    f"Document already exists in registry: {entry.get('source_file')}"
+                )
+=== ./bots/__init__.py ===
+
+=== ./config/__init__.py ===
+
+=== ./config/base_config.py ===
+PROJECT_NAME = "Strategic Knowledge Engine"
+DEFAULT_ENCODING = "utf-8"
+=== ./config/construction_config.py ===
+PREVIEW_MAX_CHARS = 6000
+
+MAX_PDF_PAGES_PREVIEW = 5
+DOCX_PARAGRAPH_PREVIEW = 80
+
+CLASSIFIER_TEMPERATURE = 0.0
+CLASSIFIER_MAX_TOKENS = 400
+
+GOVERNANCE_REVIEW_TEMPERATURE = 0.0
+GOVERNANCE_REVIEW_MAX_TOKENS = 600
+
+CHUNKS_PATH = "knowledge_base/chunks/chunks.json"
+CHUNK_SIZE = 600
+CHUNK_OVERLAP = 80
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+
+EMBEDDINGS_PATH = "knowledge_base/vector_index/embeddings.pt"
+FAISS_INDEX_PATH = "knowledge_base/vector_index/index.faiss"
+CHUNK_IDS_PATH = "knowledge_base/vector_index/chunk_ids.json"
+
+# ----------------------------------
+# LLM Configuration
+# ----------------------------------
+
+LLM_MODEL = "claude-sonnet-4-6"
+LLM_TEMPERATURE = 0.0
+LLM_TIMEOUT = 30
+=== ./config/engine_config.py ===
+"""
+Engine Configuration
+Strategic Knowledge Engine
+"""
+
+# ---------------------------------------------------
+# Retrieval Configuration
+# ---------------------------------------------------
+
+RETRIEVAL_CONFIG = {
+
+    # Anzahl der Kandidaten aus der Vektor-Suche
+    "vector_top_k": 60,
+
+    # Document Aggregation
+    "document_aggregation": {
+
+        # wie viele der besten Chunks pro Dokument
+        # zur Score-Bildung verwendet werden
+        "top_k_chunks": 3
+
+    },
+
+    # Context Construction (später genutzt)
+    "context_construction": {
+
+        # maximale Dokumente im Kontext
+        "max_documents": 5,
+
+        # maximale Chunks pro Dokument
+        "max_chunks_per_document": 2
+    }
+}
+
+# ---------------------------------------------------
+# Context Configuration
+# ---------------------------------------------------
+
+CONTEXT_CONFIG = {
+
+    "max_documents": 5,
+    "max_chunks_per_document": 2
+}
+=== ./config/file_config.py ===
+# =========================
+# FILE HANDLING CONFIG
+# =========================
+
+ALLOWED_EXTENSIONS = [
+    ".pdf",
+    ".txt",
+    ".doc",
+    ".docx"
+]
+
+# optionale Erweiterung (future-proof)
+IGNORE_HIDDEN_FILES = True
+=== ./config/governance_config.py ===
+# =========================================================
+# GOVERNANCE CONFIG – PRODUCTION VERSION
+# =========================================================
+
+# =========================================================
+# 1. ORIGIN DETECTION
+# =========================================================
+
+AUTHOR_ORIGIN_MAP = {
+    # Legislator
+    "europäische union": "legislator",
+    "european parliament": "legislator",
+    "rat der europäischen union": "legislator",
+    "european commission": "legislator",
+
+    # Supervisory
+    "eba": "supervisory_authority",
+    "eiopa": "supervisory_authority",
+    "bafin": "supervisory_authority",
+
+    # Consulting
+    "deloitte": "consulting_firm",
+    "pwc": "consulting_firm",
+    "kpmg": "consulting_firm",
+    "accenture": "consulting_firm",
+    "msg group": "consulting_firm",
+    "msg systems": "consulting_firm",
+    "ernst & young": "consulting_firm",
+    "ernst and young": "consulting_firm",
+    "bain": "consulting_firm",
+    "bcg": "consulting_firm",
+    "mckinsey": "consulting_firm",
+    "exxeta": "consulting_firm",
+
+    # Cloud Vendors
+    "amazon web services": "cloud_vendor",
+    "aws": "cloud_vendor",
+    "microsoft azure": "cloud_vendor",
+    "google cloud": "cloud_vendor",
+
+    # Corporate (Versicherer, Banken, Unternehmen)
+    "allianz": "corporate",
+    "munich re": "corporate",
+    "hannover re": "corporate",
+    "axa": "corporate",
+    "zurich": "corporate",
+    "generali": "corporate",
+    "deutsche bank": "corporate",
+    "commerzbank": "corporate",
+
+    # Industry
+    "gdv": "industry_association",
+    "bitkom": "industry_association",
+
+    # Research
+    "whitepaper": "research_institution",
+    "study": "research_institution"
+}
+
+
+FILENAME_KEYWORDS = {
+    "consulting_firm": ["deloitte", "pwc", "kpmg", "accenture", "exxeta"],
+    "cloud_vendor": ["aws", "azure", "gcp"],
+    "corporate": ["allianz", "munichre", "axa", "zurich"],
+    "research_institution": ["whitepaper", "study", "report"]
+}
+
+
+# =========================================================
+# 2. JURISDICTION DETECTION
+# =========================================================
+
+JURISDICTION_KEYWORDS = {
+    "EU": [
+        "eu",
+        "european union",
+        "verordnung",
+        "regulation (eu)"
+    ],
+    "Germany": [
+        "deutschland",
+        "bundesrepublik",
+        "bafin"
+    ],
+    "Switzerland": [
+        "finma",
+        "schweiz"
+    ]
+}
+
+
+# =========================================================
+# 3. DOCUMENT TYPE CORRECTIONS
+# =========================================================
+
+DOCUMENT_TYPE_CORRECTIONS = [
+    {
+        "if": {
+            "origin": "supervisory_authority",
+            "document_type": "regulatory_text"
+        },
+        "then": {
+            "document_type": "supervisory_guidance"
+        }
+    },
+    {
+        "if": {
+            "origin": "consulting_firm",
+            "document_type": "regulatory_text"
+        },
+        "then": {
+            "document_type": "consulting_framework"
+        }
+    },
+    {
+        "if": {
+            "origin": "corporate",
+            "document_type": "vendor_marketing"
+        },
+        "then": {
+            "document_type": "blog_article"
+        }
+    }
+]
+
+
+# =========================================================
+# 4. DOMAIN CLASSIFICATION
+# =========================================================
+
+DOMAIN_KEYWORDS = {
+    "insurance_domain": [
+        "versicherung",
+        "insurance",
+        "financial",
+        "finanz",
+        "bank",
+        "regulation",
+        "dora",
+        "solvency",
+        "risk management"
+    ],
+    "cloud_technology": [
+        "cloud",
+        "infrastructure",
+        "devops",
+        "aws",
+        "azure",
+        "gcp"
+    ],
+    "ai_genai_agentic": [
+        "ai",
+        "artificial intelligence",
+        "llm",
+        "generative ai",
+        "machine learning"
+    ]
+}
+
+
+# =========================================================
+# 5. DOMAIN PRIORITY
+# =========================================================
+
+DOMAIN_PRIORITY = [
+    "insurance_domain",
+    "cloud_technology",
+    "ai_genai_agentic"
+]
+
+
+# =========================================================
+# 6. DOMAIN LAYER → DOMAIN MAPPING
+# =========================================================
+
+DOMAIN_LAYER_MAPPING = [
+    {
+        "if": {
+            "domain_layer": "regulation"
+        },
+        "then": "insurance_domain"
+    }
+]
+
+
+# =========================================================
+# 7. ANTI-MISC CONTROL
+# =========================================================
+
+ENABLE_ANTI_MISC = True
+ANTI_MISC_FALLBACK_DOMAIN = "insurance_domain"
+
+
+# =========================================================
+# 8. CONFIDENCE RULES
+# =========================================================
+
+CONFIDENCE_RULES = [
+    {
+        "if": {"origin": "legislator"},
+        "min_confidence": 0.9
+    },
+    {
+        "if": {"document_type": "regulatory_text"},
+        "min_confidence": 0.85
+    }
+]
+
+
+# =========================================================
+# 9. FIELD PRIORITY (CORE GOVERNANCE MECHANISM)
+# =========================================================
+
+FIELD_PRIORITY = {
+    "origin": [
+        "preview_rule",
+        "filename_rule",
+        "llm"
+    ],
+    "jurisdiction": [
+        "rule_based",
+        "llm"
+    ],
+    "knowledge_domain": [
+        "rule_based",
+        "llm"
+    ]
+}
+
+
+# =========================================================
+# 10. FEATURE SWITCHES
+# =========================================================
+
+ENABLE_ORIGIN_RULES = True
+ENABLE_JURISDICTION_RULES = True
+ENABLE_DOCUMENT_TYPE_RULES = True
+ENABLE_DOMAIN_RULES = True
+ENABLE_CONFIDENCE_RULES = True
+ENABLE_ANTI_MISC = True
+
+
+# =========================================================
+# 11. LLM DOMAIN NORMALIZATION
+# Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
+# Claude verwendet präzise Topic-Begriffe die nicht in
+# KNOWLEDGE_DOMAINS stehen — diese werden hier korrigiert.
+# =========================================================
+
+LLM_DOMAIN_NORMALIZATION = {
+    # Cloud-Topics → cloud_technology
+    "cloud_governance":     "cloud_technology",
+    "cloud_architecture":   "cloud_technology",
+    "cloud_security":       "cloud_technology",
+    "sovereign_cloud":      "cloud_technology",
+    "cloud_infrastructure": "cloud_technology",
+
+    # Insurance-Topics → insurance_domain
+    "insurance_business":   "insurance_domain",
+    "insurance_regulation": "insurance_domain",
+    "financial_regulation": "insurance_domain",
+
+    # AI-Topics → ai_genai_agentic
+    "generative_ai":        "ai_genai_agentic",
+    "agentic_ai":           "ai_genai_agentic",
+
+    # Advisory → trusted_advisor
+    "advisory_methods":     "trusted_advisor",
+}
+=== ./config/llm_config.py ===
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+def get_openai_api_key():
+    key = os.getenv("OPENAI_API_KEY")
+    if not key:
+        raise ValueError("OPENAI_API_KEY missing")
+    return key
+
+
+CLASSIFIER_TEMPERATURE = 0.0
+CLASSIFIER_MAX_TOKENS = 400
+
+GOVERNANCE_REVIEW_MAX_TOKENS = 600
+=== ./config/registry_schema.py ===
+# config/registry_schema.py
+
+KEEP_FIELDS = [
+    "doc_id",
+    "title",
+    "source_file",
+    "document_type",
+    "knowledge_domain",
+    "origin",
+    "jurisdiction",
+    "confidence",
+    "bias",
+    "domain_layer",
+]
+
+
+def filter_registry_fields(metadata: dict) -> dict:
+    """
+    Enforces strict registry schema.
+    Drops all non-allowed fields.
+    """
+    return {k: metadata[k] for k in KEEP_FIELDS if k in metadata}
+=== ./config/scoring_config.py ===
+"""
+Governance Scoring Configuration
+"""
+
+SCORING_CONFIG = {
+
+    "origin_weights": {
+
+        "legislator": 0.6,
+        "supervisory_authority": 0.2,
+        "consulting_firm": 0.1,
+        "cloud_vendor": -0.05,
+        "unknown": 0.0
+    },
+
+    "confidence_weights": {
+
+        "high": 0.10,
+        "medium": 0.0,
+        "low": -0.10
+    },
+
+    "document_type_weights": {
+
+        "regulatory_text": 0.4,
+        "supervisory_guidance": 0.2,
+        "expert_opinion": 0.05,
+        "consulting_framework": 0.05,
+        "research_report": 0.05,
+        "vendor_marketing": -0.2,
+        "blog_article": -0.1,
+        "unknown": 0.0
+    }
+
+}
+
+=== ./config/taxonomy.py ===
+DOCUMENT_TYPES = [
+    "regulatory_text",        # Gesetz / Verordnung (DORA etc.)
+    "supervisory_guidance",   # BaFin, EBA Guidelines
+    "industry_position",      # Verbände
+    "expert_opinion",         # Fachartikel
+    "consulting_framework",   # Beratungsansätze
+    "research_report",        # Studien
+    "vendor_marketing",       # Anbieter-Marketing
+    "blog_article",           # Blog / LinkedIn
+    "internal_strategy",      # interne Dokumente
+    "unknown"
+]
+
+DOMAIN_LAYERS = [
+    "regulation",     # regulatorisch / normativ
+    "business",       # Fachprozesse Versicherung
+    "technology",     # IT / Architektur
+    "strategy",       # Transformation / Zielbild
+    "market"          # Wettbewerb / Anbieter
+]
+
+KNOWLEDGE_DOMAINS = [
+    "trusted_advisor",
+    "insurance_domain",
+    "cloud_technology",
+    "portfolio_gtm",
+    "ai_genai_agentic",
+    "misc"
+]
+
+TOPICS = [
+    "cloud_governance",
+    "cloud_architecture",
+    "cloud_security",
+    "sovereign_cloud",
+    "insurance_business",
+    "transformation_strategy",
+    "vendor_landscape",
+    "advisory_methods",
+    "market_analysis"
+]
+
+ORIGINS = [
+    "supervisory_authority",   # BaFin, EBA
+    "legislator",              # EU Gesetzgeber
+    "industry_association",    # GDV etc.
+    "consulting_firm",
+    "research_institution",
+    "cloud_vendor",
+    "software_vendor",
+    "corporate",               # Unternehmen (Versicherer, Banken etc.)
+    "internal",
+    "unknown"
+]
+
+JURISDICTIONS = [
+    "EU",
+    "Germany",
+    "Switzerland",
+    "UK",
+    "Global",
+    "unknown"
+]
+
+BIAS_LEVELS = {
+    "very_low",
+    "low",
+    "medium",
+    "high",
+    "elevated"
+}
+=== ./knowledge_base/knowledge_base.py ===
+from pathlib import Path
+from typing import List, Dict, Any
+import json
+import torch
+import faiss
+
+
+class KnowledgeBase:
+    """
+    Immutable container for all structured knowledge artifacts.
+
+    The KnowledgeBase is created by the Knowledge Construction pipeline
+    and used read-only by the Knowledge Engine.
+    """
+
+    def __init__(
+        self,
+        chunks: List[Dict[str, Any]],
+        embeddings,
+        registry: List[Dict[str, Any]],
+        vector_index: faiss.Index
+    ):
+        self._chunks = chunks
+        self._embeddings = embeddings
+
+        # original registry (list, as stored)
+        self._registry = registry
+
+        # runtime index for fast lookup
+        self._registry_index = {doc["doc_id"]: doc for doc in registry}
+
+        self._vector_index = vector_index
+
+    # ------------------------------------------------
+    # Read-only accessors
+    # ------------------------------------------------
+
+    @property
+    def chunks(self) -> List[Dict[str, Any]]:
+        return self._chunks
+
+    @property
+    def embeddings(self):
+        return self._embeddings
+
+    @property
+    def registry(self) -> List[Dict[str, Any]]:
+        return self._registry
+
+    @property
+    def vector_index(self) -> faiss.Index:
+        return self._vector_index
+
+    # ------------------------------------------------
+    # Metadata helper
+    # ------------------------------------------------
+
+    def get_document_metadata(self, doc_id: str) -> Dict[str, Any]:
+        """
+        Retrieve metadata for a specific document from the registry.
+        """
+        return self._registry_index.get(doc_id)
+
+    # ------------------------------------------------
+    # Factory loader
+    # ------------------------------------------------
+
+    @classmethod
+    def load_from_disk(cls, base_path: str):
+        """
+        Load a KnowledgeBase from the knowledge_base directory.
+        """
+
+        base = Path(base_path)
+
+        chunks_path = base / "chunks" / "chunks.json"
+        embeddings_path = base / "vector_index" / "embeddings.pt"
+        registry_path = base / "registry" / "document_registry.json"
+        vector_index_path = base / "vector_index" / "index.faiss"
+
+        # Load chunks
+        with open(chunks_path, "r", encoding="utf-8") as f:
+            chunks = json.load(f)
+
+        # Load embeddings
+        embeddings = torch.load(embeddings_path, map_location="cpu")
+
+        # Load registry (LIST – original format)
+        with open(registry_path, "r", encoding="utf-8") as f:
+            registry_list = json.load(f)
+
+        # Load FAISS vector index
+        vector_index = faiss.read_index(str(vector_index_path))
+
+        return cls(
+            chunks=chunks,
+            embeddings=embeddings,
+            registry=registry_list,
+            vector_index=vector_index
+        )
+
+    # ------------------------------------------------
+    # Utility
+    # ------------------------------------------------
+
+    def __repr__(self):
+        return (
+            f"KnowledgeBase("
+            f"documents={len(self._registry)}, "
+            f"chunks={len(self._chunks)}, "
+            f"embeddings={len(self._embeddings)})"
+        )
+=== ./knowledge_construction/__init__.py ===
+
+=== ./knowledge_construction/audit/__init__.py ===
+
+=== ./knowledge_construction/audit/audit_logger.py ===
+import json
+from pathlib import Path
+from datetime import datetime
+
+
+AUDIT_LOG_PATH = Path("knowledge_base/audit/onboarding_audit_log.jsonl")
+
+
+def log_classification(event: dict):
+    """
+    Writes an onboarding event to the audit log.
+
+    Uses JSONL format so entries can be appended efficiently.
+    """
+
+    AUDIT_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    record = {
+        "timestamp": datetime.utcnow().isoformat(),
+        **event
+    }
+
+    with open(AUDIT_LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record))
+        f.write("\n")
+=== ./knowledge_construction/audit/review_logger.py ===
+import json
+from pathlib import Path
+from datetime import datetime
+from typing import Dict
+
+
+class ReviewLogger:
+    """
+    Logs review decisions into audit log.
+
+    Purpose:
+    - Persist review_required + reasons
+    - Keep registry clean
+    - Enable traceability
+    """
+
+    def __init__(self, audit_path: Path):
+        self.audit_path = audit_path
+        self.audit_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # ------------------------------------------------
+
+    def log_review(
+        self,
+        doc_id: str,
+        review_info: Dict
+    ):
+        """
+        Writes a single review decision entry.
+        """
+
+        entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "doc_id": doc_id,
+            "review_required": review_info.get("review_required"),
+            "review_reasons": review_info.get("review_reasons", [])
+        }
+
+        with open(self.audit_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry) + "\n")
+=== ./knowledge_construction/build_embeddings.py ===
+from knowledge_construction.embedding.embedding_generator import EmbeddingGenerator
+
+
+def main():
+
+    generator = EmbeddingGenerator()
+
+    generator.generate_embeddings()
+
+
+if __name__ == "__main__":
+
+    main()
+=== ./knowledge_construction/chunking/__init__.py ===
+
+=== ./knowledge_construction/chunking/chunker.py ===
+from pathlib import Path
+from typing import List, Dict
+import json
+
+from transformers import AutoTokenizer
+
+from config.construction_config import (
+    CHUNK_SIZE,
+    CHUNK_OVERLAP,
+    EMBEDDING_MODEL
+)
+
+
+class Chunker:
+
+    def __init__(self):
+        self.tokenizer = AutoTokenizer.from_pretrained(EMBEDDING_MODEL)
+        self.chunk_size = CHUNK_SIZE
+        self.overlap = CHUNK_OVERLAP
+
+    # ------------------------------------------------
+    # PUBLIC
+    # ------------------------------------------------
+
+    def chunk_document(self, text: str, doc_id: str) -> List[Dict]:
+        """
+        Token-based chunking (production-safe)
+
+        Guarantees:
+        - no token overflow
+        - deterministic chunk boundaries
+        - stable overlap (token-aligned)
+        """
+
+        if not text:
+            return []
+
+        words = self._safe_split(text)
+
+        chunks = []
+
+        current_tokens = []
+        current_words = []
+
+        index = 0
+
+        for word in words:
+
+            word_tokens = self._encode_word(word)
+
+            # skip pathological tokens (extremely long)
+            if len(word_tokens) > self.chunk_size:
+                continue
+
+            # flush if overflow
+            if current_tokens and (len(current_tokens) + len(word_tokens) > self.chunk_size):
+
+                chunk = self._build_chunk(
+                    current_words,
+                    current_tokens,
+                    doc_id,
+                    index
+                )
+
+                if chunk:
+                    chunks.append(chunk)
+                    index += 1
+
+                # -------------------------
+                # TOKEN-ALIGNED OVERLAP
+                # -------------------------
+                if self.overlap > 0 and len(current_tokens) > self.overlap:
+                    overlap_tokens = current_tokens[-self.overlap:]
+
+                    # IMPORTANT: keep tokens only (no word reconstruction drift)
+                    current_tokens = overlap_tokens.copy()
+                    current_words = self._tokens_to_words(overlap_tokens)
+
+                else:
+                    current_tokens = []
+                    current_words = []
+
+            # add word
+            current_tokens.extend(word_tokens)
+            current_words.append(word)
+
+        # final chunk
+        if current_words:
+            chunk = self._build_chunk(
+                current_words,
+                current_tokens,
+                doc_id,
+                index
+            )
+            if chunk:
+                chunks.append(chunk)
+
+        return chunks
+
+    # ------------------------------------------------
+    # INTERNAL
+    # ------------------------------------------------
+
+    def _encode_word(self, word: str) -> List[int]:
+        return self.tokenizer.encode(
+            word,
+            add_special_tokens=False
+        )
+
+    def _tokens_to_words(self, tokens: List[int]) -> List[str]:
+        """
+        Safe reconstruction (best-effort)
+        """
+        text = self.tokenizer.decode(tokens).strip()
+        return text.split()
+
+    def _build_chunk(self, words: List[str], tokens: List[int], doc_id: str, index: int) -> Dict:
+
+        text = " ".join(words).strip()
+
+        if not text:
+            return None
+
+        return {
+            "chunk_id": f"{doc_id}_chunk_{index}",
+            "doc_id": doc_id,
+            "chunk_index": index,
+            "text": text,
+            "tokens": len(tokens)
+        }
+
+    def _safe_split(self, text: str) -> List[str]:
+        """
+        Normalize whitespace safely
+        """
+        text = " ".join(text.split())
+        return text.split(" ")
+
+    # ------------------------------------------------
+    # STORAGE
+    # ------------------------------------------------
+
+    def save_chunks(self, chunks: List[Dict], path: str):
+
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        if path.exists():
+            try:
+                existing = json.loads(path.read_text())
+            except json.JSONDecodeError:
+                existing = []
+        else:
+            existing = []
+
+        existing.extend(chunks)
+
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(existing, f, indent=2)
+=== ./knowledge_construction/document_processing/__init__.py ===
+
+=== ./knowledge_construction/document_processing/document_text_extractor.py ===
+from pathlib import Path
+from typing import Optional
+
+from pypdf import PdfReader
+from docx import Document
+
+
+# ------------------------------------------------
+# Text Cleaning (NEU)
+# ------------------------------------------------
+
+def _clean_text(text: str) -> str:
+    return (
+        text
+        .replace("\n", " ")
+        .replace("\t", " ")
+        .replace("[UNK]", "")
+        .replace("  ", " ")
+        .strip()
+    )
+
+
+# ------------------------------------------------
+# Public API
+# ------------------------------------------------
+
+def extract_document_text(file_path: Path) -> str:
+    """
+    Extracts full text from supported document types.
+    Applies basic cleaning before returning.
+    """
+
+    suffix = file_path.suffix.lower()
+
+    if suffix == ".pdf":
+        text = _extract_pdf(file_path)
+        return _clean_text(text)
+
+    if suffix == ".docx":
+        text = _extract_docx(file_path)
+        return _clean_text(text)
+
+    if suffix in [".txt", ".md"]:
+        text = _extract_text(file_path)
+        return _clean_text(text)
+
+    raise ValueError(f"Unsupported file type: {suffix}")
+
+
+# ------------------------------------------------
+# PDF
+# ------------------------------------------------
+
+def _extract_pdf(file_path: Path) -> str:
+
+    reader = PdfReader(file_path)
+
+    text_parts = []
+
+    for page in reader.pages:
+
+        page_text = page.extract_text()
+
+        if page_text:
+            text_parts.append(page_text)
+
+    return "\n".join(text_parts)
+
+
+# ------------------------------------------------
+# DOCX
+# ------------------------------------------------
+
+def _extract_docx(file_path: Path) -> str:
+
+    doc = Document(file_path)
+
+    text_parts = []
+
+    for p in doc.paragraphs:
+        if p.text.strip():
+            text_parts.append(p.text)
+
+    return "\n".join(text_parts)
+
+
+# ------------------------------------------------
+# TXT / MD
+# ------------------------------------------------
+
+def _extract_text(file_path: Path) -> str:
+
+    return file_path.read_text(
+        encoding="utf-8",
+        errors="ignore"
+    )
+=== ./knowledge_construction/embedding/__init__.py ===
+
+=== ./knowledge_construction/embedding/embedding_generator.py ===
+import json
+from pathlib import Path
+from typing import List, Dict
+
+import torch
+import faiss
+import numpy as np
+
+from sentence_transformers import SentenceTransformer
+
+from config.construction_config import (
+    EMBEDDING_MODEL,
+    CHUNKS_PATH,
+    EMBEDDINGS_PATH,
+    FAISS_INDEX_PATH,
+    CHUNK_IDS_PATH
+)
+
+
+class EmbeddingGenerator:
+
+    def __init__(self):
+        self.model = SentenceTransformer(EMBEDDING_MODEL)
+
+    # ------------------------------------------------
+
+    def run(self):
+
+        chunks = self._load_chunks()
+
+        if not chunks:
+            print("No chunks found.")
+            return
+
+        existing_chunk_ids = self._load_existing_chunk_ids()
+
+        # 🔒 deterministic ordering
+        chunks = sorted(chunks, key=lambda x: x["chunk_id"])
+
+        new_chunks = [
+            c for c in chunks
+            if c["chunk_id"] not in existing_chunk_ids
+        ]
+
+        if not new_chunks:
+            print("No new chunks to embed.")
+            return
+
+        texts = [c["text"] for c in new_chunks]
+
+        embeddings = self.model.encode(
+            texts,
+            show_progress_bar=True,
+            convert_to_numpy=True
+        )
+
+        embeddings = self._validate_embeddings(embeddings)
+
+        # 🔥 atomic update sequence
+        self._update_all(new_chunks, embeddings)
+
+        print(f"New embeddings created: {len(new_chunks)}")
+
+    # ------------------------------------------------
+    # LOADERS
+    # ------------------------------------------------
+
+    def _load_chunks(self) -> List[Dict]:
+
+        path = Path(CHUNKS_PATH)
+
+        if not path.exists():
+            return []
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return []
+
+    def _load_existing_chunk_ids(self):
+
+        path = Path(CHUNK_IDS_PATH)
+
+        if not path.exists():
+            return set()
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+        except json.JSONDecodeError:
+            return set()
+
+    # ------------------------------------------------
+    # CORE UPDATE (ATOMIC)
+    # ------------------------------------------------
+
+    def _update_all(self, new_chunks, new_embeddings):
+
+        # load existing
+        existing_embeddings = self._load_existing_embeddings()
+        existing_ids = self._load_existing_chunk_ids()
+
+        new_ids = [c["chunk_id"] for c in new_chunks]
+
+        # consistency check
+        if any(cid in existing_ids for cid in new_ids):
+            raise ValueError("Duplicate chunk_id detected")
+
+        # combine embeddings
+        combined_embeddings = (
+            np.vstack([existing_embeddings, new_embeddings])
+            if existing_embeddings is not None
+            else new_embeddings
+        )
+
+        # rebuild index (safe, deterministic)
+        index = self._build_faiss_index(combined_embeddings)
+
+        # persist ALL artifacts together
+        self._save_embeddings(combined_embeddings)
+        self._save_index(index)
+        self._save_chunk_ids(existing_ids.union(new_ids))
+
+    # ------------------------------------------------
+    # EMBEDDINGS
+    # ------------------------------------------------
+
+    def _load_existing_embeddings(self):
+
+        path = Path(EMBEDDINGS_PATH)
+
+        if not path.exists():
+            return None
+
+        return torch.load(path).numpy()
+
+    def _save_embeddings(self, embeddings):
+
+        path = Path(EMBEDDINGS_PATH)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        torch.save(torch.tensor(embeddings), path)
+
+    # ------------------------------------------------
+    # INDEX
+    # ------------------------------------------------
+
+    def _build_faiss_index(self, embeddings):
+
+        embeddings = embeddings.astype("float32")
+
+        dimension = embeddings.shape[1]
+
+        index = faiss.IndexFlatL2(dimension)
+        index.add(embeddings)
+
+        return index
+
+    def _save_index(self, index):
+
+        path = Path(FAISS_INDEX_PATH)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        faiss.write_index(index, str(path))
+
+    # ------------------------------------------------
+    # IDS
+    # ------------------------------------------------
+
+    def _save_chunk_ids(self, chunk_ids):
+
+        path = Path(CHUNK_IDS_PATH)
+
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(sorted(list(chunk_ids)), f, indent=2)
+
+    # ------------------------------------------------
+    # VALIDATION
+    # ------------------------------------------------
+
+    def _validate_embeddings(self, embeddings):
+
+        if embeddings is None or len(embeddings) == 0:
+            raise ValueError("Empty embeddings")
+
+        if not isinstance(embeddings, np.ndarray):
+            raise ValueError("Embeddings must be numpy array")
+
+        if len(embeddings.shape) != 2:
+            raise ValueError("Embeddings must be 2D")
+
+        return embeddings
+=== ./knowledge_construction/embedding/index_consistency_check.py ===
+import json
+from pathlib import Path
+from typing import List, Set
+
+import torch
+import faiss
+
+from config.construction_config import (
+    CHUNKS_PATH,
+    EMBEDDINGS_PATH,
+    FAISS_INDEX_PATH,
+    CHUNK_IDS_PATH
+)
+
+
+class IndexConsistencyCheck:
+
+    def run(self):
+
+        chunks = self._load_chunks()
+        embeddings = self._load_embeddings()
+        chunk_ids = self._load_chunk_ids()
+        index = self._load_index()
+
+        chunk_id_set = {c["chunk_id"] for c in chunks}
+
+        n_chunks = len(chunks)
+        n_embeddings = len(embeddings)
+        n_chunk_ids = len(chunk_ids)
+        n_index = index.ntotal
+
+        print("\nKnowledge Base Consistency Check")
+        print("---------------------------------")
+
+        print(f"Chunks:        {n_chunks}")
+        print(f"Embeddings:    {n_embeddings}")
+        print(f"Chunk IDs:     {n_chunk_ids}")
+        print(f"FAISS entries: {n_index}")
+
+        # ------------------------------------------------
+        # 1. Size consistency
+        # ------------------------------------------------
+
+        if not (n_embeddings == n_chunk_ids == n_index):
+            raise ValueError(
+                "\n❌ Size mismatch detected:\n"
+                f"embeddings={n_embeddings}, chunk_ids={n_chunk_ids}, index={n_index}"
+            )
+
+        # ------------------------------------------------
+        # 2. Chunk ID consistency (chunks ↔ ids)
+        # ------------------------------------------------
+
+        missing_in_ids = chunk_id_set - set(chunk_ids)
+        extra_in_ids = set(chunk_ids) - chunk_id_set
+
+        if missing_in_ids or extra_in_ids:
+            raise ValueError(
+                "\n❌ Chunk ID mismatch:\n"
+                f"Missing in chunk_ids: {list(missing_in_ids)[:5]}\n"
+                f"Extra in chunk_ids: {list(extra_in_ids)[:5]}"
+            )
+
+        # ------------------------------------------------
+        # 3. Duplicate detection
+        # ------------------------------------------------
+
+        if len(chunk_ids) != len(set(chunk_ids)):
+            raise ValueError("\n❌ Duplicate chunk_ids detected")
+
+        # ------------------------------------------------
+        # 4. Order consistency (critical for retrieval!)
+        # ------------------------------------------------
+
+        expected_order = sorted(chunk_ids)
+
+        if chunk_ids != expected_order:
+            raise ValueError(
+                "\n❌ Chunk ID order is not deterministic.\n"
+                "Expected sorted order."
+            )
+
+        # ------------------------------------------------
+        # 5. Embedding dimension consistency
+        # ------------------------------------------------
+
+        if len(embeddings.shape) != 2:
+            raise ValueError("\n❌ Embeddings must be 2D tensor")
+
+        dimension = embeddings.shape[1]
+
+        if index.d != dimension:
+            raise ValueError(
+                "\n❌ Embedding dimension mismatch:\n"
+                f"embeddings={dimension}, index={index.d}"
+            )
+
+        print("\n✔ Knowledge Base fully consistent.")
+
+    # ------------------------------------------------
+    # LOADERS
+    # ------------------------------------------------
+
+    def _load_chunks(self) -> List[dict]:
+
+        path = Path(CHUNKS_PATH)
+
+        if not path.exists():
+            raise ValueError("chunks.json missing")
+
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _load_embeddings(self):
+
+        path = Path(EMBEDDINGS_PATH)
+
+        if not path.exists():
+            raise ValueError("embeddings.pt missing")
+
+        return torch.load(path)
+
+    def _load_chunk_ids(self) -> List[str]:
+
+        path = Path(CHUNK_IDS_PATH)
+
+        if not path.exists():
+            raise ValueError("chunk_ids.json missing")
+
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _load_index(self):
+
+        path = Path(FAISS_INDEX_PATH)
+
+        if not path.exists():
+            raise ValueError("faiss index missing")
+
+        return faiss.read_index(str(path))
+=== ./knowledge_construction/governance/__init__.py ===
+
+=== ./knowledge_construction/governance/bias.py ===
+BIAS_BY_ORIGIN = {
+    "legislator":           "very_low",    # TD-006 fix: war fälschlich "regulator"
+    "supervisory_authority": "very_low",
+    "industry_association": "low",
+    "research_institution": "low",
+    "consulting_firm":      "medium",
+    "corporate":            "medium",      # Unternehmen — eigene Interessen
+    "software_vendor":      "high",
+    "cloud_vendor":         "high",
+    "internal":             "medium",
+    "unknown":              "elevated"
+}
+
+
+def derive_bias(origin: str) -> str:
+    return BIAS_BY_ORIGIN.get(origin, "elevated")
+=== ./knowledge_construction/governance/governance_pipeline.py ===
+from pathlib import Path
+from typing import Tuple, Dict
+
+from knowledge_construction.governance.governance import enforce_internal_origin
+from knowledge_construction.governance.governance_rules import apply_governance
+from knowledge_construction.governance.bias import derive_bias
+
+
+# ------------------------------------------------
+# GOVERNANCE PIPELINE
+# ------------------------------------------------
+def apply_governance_pipeline(
+    result: dict,
+    title: str,
+    preview_text: str,
+    file_path: Path
+) -> Tuple[Dict, Dict]:
+    """
+    FINAL governance pipeline (single entry point)
+
+    Responsibilities:
+    - enforce internal overrides
+    - apply rule engine
+    - derive secondary attributes
+    - extract review signals (for audit layer)
+
+    Returns:
+    - cleaned_result (for registry)
+    - review_info (for audit logging)
+    """
+
+    # ----------------------------------
+    # 0. defaults (stability + SOURCE FIX)
+    # ----------------------------------
+
+    result.setdefault("origin", "unknown")
+
+    # 🔥 CRITICAL FIX: ensure source tracking exists
+    # Without this, priority logic does not work correctly
+    for field in ["origin", "jurisdiction", "knowledge_domain"]:
+        source_field = f"{field}_source"
+
+        if field in result and source_field not in result:
+            result[source_field] = "llm"
+
+    # ----------------------------------
+    # 1. deterministic overrides (pre-rules)
+    # ----------------------------------
+
+    result = enforce_internal_origin(
+        title=title,
+        preview_text=preview_text,
+        result=result
+    )
+
+    # ----------------------------------
+    # 2. central governance engine
+    # ----------------------------------
+
+    result = apply_governance(
+        result=result,
+        title=title,
+        preview_text=preview_text,
+        file_path=file_path
+    )
+
+    # ----------------------------------
+    # 3. derived attributes
+    # ----------------------------------
+
+    result["bias"] = derive_bias(result.get("origin", "unknown"))
+
+    # ----------------------------------
+    # 4. extract review signals (strict separation)
+    # ----------------------------------
+
+    review_info = {
+        "review_required": result.pop("review_required", False),
+        "review_reasons": result.pop("review_reasons", [])
+    }
+
+    return result, review_info
+=== ./knowledge_construction/governance/governance_rules.py ===
+from pathlib import Path
+
+from config import governance_config
+
+
+# ------------------------------------------------
+# SAFE CONFIG ACCESS
+# ------------------------------------------------
+FIELD_PRIORITY = getattr(governance_config, "FIELD_PRIORITY", {})
+AUTHOR_ORIGIN_MAP = getattr(governance_config, "AUTHOR_ORIGIN_MAP", {})
+FILENAME_KEYWORDS = getattr(governance_config, "FILENAME_KEYWORDS", {})
+JURISDICTION_KEYWORDS = getattr(governance_config, "JURISDICTION_KEYWORDS", {})
+DOCUMENT_TYPE_CORRECTIONS = getattr(governance_config, "DOCUMENT_TYPE_CORRECTIONS", [])
+
+DOMAIN_KEYWORDS = getattr(governance_config, "DOMAIN_KEYWORDS", {})
+DOMAIN_PRIORITY = getattr(governance_config, "DOMAIN_PRIORITY", [])
+DOMAIN_LAYER_MAPPING = getattr(governance_config, "DOMAIN_LAYER_MAPPING", [])
+
+ENABLE_DOMAIN_RULES = getattr(governance_config, "ENABLE_DOMAIN_RULES", True)
+ENABLE_ANTI_MISC = getattr(governance_config, "ENABLE_ANTI_MISC", True)
+ANTI_MISC_FALLBACK_DOMAIN = getattr(governance_config, "ANTI_MISC_FALLBACK_DOMAIN", "insurance_domain")
+
+LLM_DOMAIN_NORMALIZATION = getattr(governance_config, "LLM_DOMAIN_NORMALIZATION", {})
+
+# ------------------------------------------------
+# ORIGIN PRIORITY — vollständige Liste aller Origins
+# Reihenfolge bestimmt welche Origin bevorzugt wird
+# wenn mehrere Regeln matchen.
+# ------------------------------------------------
+ORIGIN_PRIORITY = [
+    "legislator",
+    "supervisory_authority",
+    "consulting_firm",
+    "industry_association",
+    "research_institution",
+    "cloud_vendor",
+    "software_vendor",
+    "corporate",
+]
+
+
+# ------------------------------------------------
+# LLM DOMAIN NORMALIZATION
+# ------------------------------------------------
+def _normalize_llm_domain(result):
+    current = result.get("knowledge_domain")
+    if current and current in LLM_DOMAIN_NORMALIZATION:
+        normalized = LLM_DOMAIN_NORMALIZATION[current]
+        result["knowledge_domain"] = normalized
+        result["knowledge_domain_source"] = "normalization"
+        print(f"  ↳ Domain normalization: {current} → {normalized}")
+
+
+# ------------------------------------------------
+# PRIORITY HANDLING
+# ------------------------------------------------
+def _set_with_priority(result, field, value, source):
+
+    current_source = result.get(f"{field}_source")
+
+    if not current_source:
+        result[field] = value
+        result[f"{field}_source"] = source
+        return
+
+    priority = FIELD_PRIORITY.get(field, [])
+
+    if not priority:
+        result[field] = value
+        result[f"{field}_source"] = source
+        return
+
+    if source not in priority:
+        result[field] = value
+        result[f"{field}_source"] = source
+        return
+
+    if current_source not in priority:
+        result[field] = value
+        result[f"{field}_source"] = source
+        return
+
+    if priority.index(source) < priority.index(current_source):
+        result[field] = value
+        result[f"{field}_source"] = source
+
+
+# ------------------------------------------------
+# ORIGIN DETECTION
+# ------------------------------------------------
+def _apply_origin(result, title, preview_text, file_path: Path):
+
+    text = f"{title} {preview_text}".lower()
+    filename = str(file_path).lower()
+    combined = f"{text} {filename}"
+
+    matches = []
+
+    for key, origin in AUTHOR_ORIGIN_MAP.items():
+        if key in combined:
+            matches.append(origin)
+
+    if not matches:
+        _set_with_priority(result, "origin", result.get("origin", "unknown"), "llm")
+        return
+
+    for preferred in ORIGIN_PRIORITY:
+        if preferred in matches:
+            _set_with_priority(result, "origin", preferred, "preview_rule")
+            return
+
+
+# ------------------------------------------------
+# FILENAME RULES
+# ------------------------------------------------
+def _apply_filename_rules(result, file_path: Path):
+
+    filename = str(file_path).lower()
+
+    for origin, keywords in FILENAME_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in filename:
+                _set_with_priority(result, "origin", origin, "filename_rule")
+                return
+
+
+# ------------------------------------------------
+# JURISDICTION
+# ------------------------------------------------
+def _apply_jurisdiction(result, title, preview_text):
+
+    text = f"{title} {preview_text}".lower()
+
+    for jurisdiction, keywords in JURISDICTION_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in text:
+                _set_with_priority(result, "jurisdiction", jurisdiction, "rule_based")
+                return
+
+
+# ------------------------------------------------
+# DOMAIN DETECTION
+# ------------------------------------------------
+def _apply_knowledge_domain(result, title, preview_text):
+
+    if not ENABLE_DOMAIN_RULES:
+        return
+
+    text = f"{title} {preview_text}".lower()
+
+    matches = set()
+
+    for domain, keywords in DOMAIN_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in text:
+                matches.add(domain)
+
+    if not matches:
+        return
+
+    for preferred in DOMAIN_PRIORITY:
+        if preferred in matches:
+            _set_with_priority(result, "knowledge_domain", preferred, "rule_based")
+            return
+
+
+# ------------------------------------------------
+# DOMAIN LAYER MAPPING
+# ------------------------------------------------
+def _apply_domain_layer_mapping(result):
+
+    for rule in DOMAIN_LAYER_MAPPING:
+        conditions = rule.get("if", {})
+
+        if all(result.get(k) == v for k, v in conditions.items()):
+            _set_with_priority(
+                result,
+                "knowledge_domain",
+                rule["then"],
+                "rule_based"
+            )
+
+
+# ------------------------------------------------
+# ANTI-MISC CONTROL
+# ------------------------------------------------
+def _apply_anti_misc(result):
+
+    if not ENABLE_ANTI_MISC:
+        return
+
+    if result.get("knowledge_domain") == "misc":
+        result["knowledge_domain"] = ANTI_MISC_FALLBACK_DOMAIN
+
+
+# ------------------------------------------------
+# DOCUMENT TYPE CORRECTIONS
+# ------------------------------------------------
+def _apply_document_type_corrections(result):
+
+    for rule in DOCUMENT_TYPE_CORRECTIONS:
+        conditions = rule.get("if", {})
+        match = all(result.get(k) == v for k, v in conditions.items())
+
+        if match:
+            for field, value in rule.get("then", {}).items():
+                _set_with_priority(result, field, value, "rule_based")
+
+
+# ------------------------------------------------
+# MAIN ENTRY
+# ------------------------------------------------
+def apply_governance(result, title, preview_text, file_path: Path):
+
+    # Schritt 0: LLM-Ausgaben normalisieren
+    _normalize_llm_domain(result)
+
+    _apply_filename_rules(result, file_path)
+    _apply_origin(result, title, preview_text, file_path)
+    _apply_jurisdiction(result, title, preview_text)
+
+    _apply_knowledge_domain(result, title, preview_text)
+    _apply_domain_layer_mapping(result)
+    _apply_anti_misc(result)
+
+    _apply_document_type_corrections(result)
+
+    return result
+=== ./knowledge_construction/governance/governance.py ===
+from pathlib import Path
+
+
+def enforce_internal_origin(title: str, preview_text: str, result: dict) -> dict:
+    """
+    Deterministic override rules for origin detection.
+    Prevents LLM misclassification.
+    """
+
+    text = f"{title} {preview_text}".lower()
+
+    # simple internal detection
+    if "internal strategy" in text or "internal document" in text:
+        result["origin"] = "internal"
+
+    return result
+=== ./knowledge_construction/knowledge_base_validator.py ===
+from pathlib import Path
+import json
+import torch
+import faiss
+
+
+class KnowledgeBaseValidator:
+
+    def __init__(self, base_path: str):
+
+        base = Path(base_path)
+
+        self.registry_path = base / "registry" / "document_registry.json"
+        self.chunks_path = base / "chunks" / "chunks.json"
+        self.embeddings_path = base / "vector_index" / "embeddings.pt"
+        self.index_path = base / "vector_index" / "index.faiss"
+
+    # ------------------------------------------------
+    # Public validation entrypoint
+    # ------------------------------------------------
+
+    def validate(self):
+
+        print("Running Knowledge Base validation...")
+
+        registry = self._load_registry()
+        chunks = self._load_chunks()
+        embeddings = self._load_embeddings()
+        index = self._load_index()
+
+        self._validate_doc_ids(registry)
+        self._validate_chunk_doc_links(registry, chunks)
+        self._validate_embedding_alignment(chunks, embeddings)
+        self._validate_index_dimension(index, embeddings)
+
+        print("Knowledge Base validation successful.")
+
+    # ------------------------------------------------
+    # Loaders
+    # ------------------------------------------------
+
+    def _load_registry(self):
+
+        with open(self.registry_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _load_chunks(self):
+
+        with open(self.chunks_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    def _load_embeddings(self):
+
+        return torch.load(self.embeddings_path, map_location="cpu")
+
+    def _load_index(self):
+
+        return faiss.read_index(str(self.index_path))
+
+    # ------------------------------------------------
+    # Validation checks
+    # ------------------------------------------------
+
+    def _validate_doc_ids(self, registry):
+
+        doc_ids = [doc["doc_id"] for doc in registry]
+
+        if len(doc_ids) != len(set(doc_ids)):
+            raise ValueError("Duplicate doc_id detected in registry.")
+
+    def _validate_chunk_doc_links(self, registry, chunks):
+
+        registry_ids = {doc["doc_id"] for doc in registry}
+
+        for chunk in chunks:
+
+            if chunk["doc_id"] not in registry_ids:
+                raise ValueError(
+                    f"Chunk {chunk['chunk_id']} references unknown doc_id {chunk['doc_id']}"
+                )
+
+    def _validate_embedding_alignment(self, chunks, embeddings):
+
+        if len(chunks) != len(embeddings):
+            raise ValueError(
+                f"Mismatch: {len(chunks)} chunks but {len(embeddings)} embeddings."
+            )
+
+    def _validate_index_dimension(self, index, embeddings):
+
+        embedding_dim = embeddings.shape[1]
+        index_dim = index.d
+
+        if embedding_dim != index_dim:
+            raise ValueError(
+                f"Embedding dimension {embedding_dim} does not match index dimension {index_dim}"
+            )
+=== ./knowledge_construction/llm/contract_loader.py ===
+import yaml
+from pathlib import Path
+from typing import Dict, Any
+
+
+CONTRACT_DIR = Path(__file__).parent / "contracts"
+
+
+# -------------------------------------------------
+# Load by name (PRIMARY)
+# -------------------------------------------------
+
+def load_contract(name: str) -> Dict[str, Any]:
+
+    path = CONTRACT_DIR / f"{name}.yaml"
+
+    if not path.exists():
+        raise FileNotFoundError(f"Contract not found: {path}")
+
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+# -------------------------------------------------
+# Load by role (for compatibility with MVP)
+# -------------------------------------------------
+
+def load_contract_by_role(role_name: str) -> Dict[str, Any]:
+
+    mapping = {
+        "Trusted Advisor": "advisor_regulatory_explanation",
+        "Document Classifier": "classification"
+    }
+
+    contract_name = mapping.get(role_name)
+
+    if not contract_name:
+        raise ValueError(f"No contract defined for role: {role_name}")
+
+    return load_contract(contract_name)
+
+
+# -------------------------------------------------
+# Load by task (NEW – preferred going forward)
+# -------------------------------------------------
+
+def load_contract_by_task(task_type: str) -> Dict[str, Any]:
+
+    mapping = {
+        "classification": "classification",
+        "advisory": "advisor_regulatory_explanation"
+    }
+
+    contract_name = mapping.get(task_type)
+
+    if not contract_name:
+        raise ValueError(f"No contract defined for task: {task_type}")
+
+    return load_contract(contract_name)
+=== ./knowledge_construction/llm/llm_client.py ===
+import os
+import json
+import re
+from typing import Any, Dict, Optional
+
+import anthropic
+
+from config.construction_config import (
+    LLM_MODEL,
+    LLM_TEMPERATURE
+)
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+
+
+class LLMClient:
+    """
+    Pure execution client — Anthropic Claude.
+    - No prompt logic
+    - Contract-driven usage
+    - Robust JSON handling
+    """
+
+    def __init__(self):
+        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.model = LLM_MODEL
+        self.temperature = LLM_TEMPERATURE
+
+    # -------------------------------------------------
+
+    def run(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
+
+        temperature = temperature if temperature is not None else self.temperature
+        max_tokens = max_tokens or 1024
+
+        # Anthropic API: system is a top-level param, not a message
+        kwargs_call = dict(
+            model=self.model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        if system_prompt:
+            kwargs_call["system"] = system_prompt
+
+        response = self.client.messages.create(**kwargs_call)
+
+        content = response.content[0].text.strip()
+
+        cleaned = self._clean_json(content)
+
+        try:
+            return json.loads(cleaned)
+        except json.JSONDecodeError:
+            raise ValueError(f"LLM returned invalid JSON:\n{content}")
+
+    # -------------------------------------------------
+
+    def _clean_json(self, content: str) -> str:
+        cleaned = content.strip()
+        cleaned = re.sub(r"```json\s*", "", cleaned)
+        cleaned = re.sub(r"```", "", cleaned)
+        return cleaned.strip()
+=== ./knowledge_construction/llm/prompt_builder.py ===
+from typing import Dict, Any
+
+from config.taxonomy import (
+    DOCUMENT_TYPES,
+    DOMAIN_LAYERS,
+    KNOWLEDGE_DOMAINS,
+    TOPICS,
+    ORIGINS,
+    JURISDICTIONS
+)
+
+
+# -------------------------------------------------
+# Helper
+# -------------------------------------------------
+
+def _format_list(name: str, values: list) -> str:
+    return f"{name}:\n" + "\n".join(f"- {v}" for v in values)
+
+
+# -------------------------------------------------
+# MAIN BUILDER
+# -------------------------------------------------
+
+def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str, str]:
+
+    role = contract.get("role", {})
+    policies = contract.get("policies", {})
+    reasoning_rules = contract.get("reasoning_rules", {})
+    output_rules = contract.get("output_rules", {})
+    task = contract.get("task", {})
+
+    system_parts = []
+
+    # -------------------------------------------------
+    # ROLE
+    # -------------------------------------------------
+
+    role_name = role.get("name", "Assistant")
+    system_parts.append(f"You act as a {role_name}.")
+    system_parts.append("Follow all governance rules strictly.")
+
+    # -------------------------------------------------
+    # TASK TYPE
+    # -------------------------------------------------
+
+    task_type = task.get("type")
+
+    # =================================================
+    # CLASSIFICATION
+    # =================================================
+
+    if task_type == "classification":
+
+        system_parts.append("\nTask: Document Classification")
+
+        system_parts.append(
+            "Classify the document strictly according to the allowed taxonomy values."
+        )
+
+        # -----------------------------
+        # TAXONOMY (Single Source of Truth)
+        # -----------------------------
+
+        system_parts.append("\nAllowed Values:")
+
+        system_parts.append(_format_list("document_type", DOCUMENT_TYPES))
+        system_parts.append(_format_list("domain_layer", DOMAIN_LAYERS))
+        system_parts.append(_format_list("knowledge_domain", KNOWLEDGE_DOMAINS))
+        system_parts.append(_format_list("topic", TOPICS))
+        system_parts.append(_format_list("origin", ORIGINS))
+        system_parts.append(_format_list("jurisdiction", JURISDICTIONS))
+
+        # -----------------------------
+        # RULES
+        # -----------------------------
+
+        rules = contract.get("rules", {})
+
+        system_parts.append("\nRules:")
+
+        if rules.get("strict_enum_usage", True):
+            system_parts.append("- Use only the allowed values above.")
+
+        if rules.get("no_synonyms", True):
+            system_parts.append("- Do not use synonyms or variations.")
+
+        if rules.get("no_explanations", True):
+            system_parts.append("- Do not provide explanations.")
+
+        if rules.get("output_format") == "json_only":
+            system_parts.append("- Return valid JSON only.")
+
+        # -----------------------------
+        # OUTPUT SCHEMA
+        # -----------------------------
+
+        schema = contract.get("output_schema", {})
+        required_fields = schema.get("required_fields", [])
+
+        if required_fields:
+            system_parts.append(
+                f"- Output must contain exactly these fields: {', '.join(required_fields)}"
+            )
+
+    # =================================================
+    # RETRIEVAL / ADVISORY (bestehendes MVP-Verhalten)
+    # =================================================
+
+    else:
+
+        if policies:
+
+            system_parts.append("\nGovernance Policies:")
+
+            source_policy = policies.get("source_policy", {})
+            if source_policy.get("use_only_provided_context"):
+                system_parts.append("- Use only the provided context as factual basis.")
+            if source_policy.get("citation_required"):
+                system_parts.append("- Provide inline references to the source.")
+
+            speculation_policy = policies.get("speculation_policy", {})
+            if not speculation_policy.get("allow_speculation", True):
+                system_parts.append("- Do not speculate.")
+            if speculation_policy.get("uncertainty_must_be_explicit"):
+                system_parts.append("- Explicitly state uncertainty.")
+
+            compliance_policy = policies.get("compliance_policy", {})
+            if compliance_policy.get("no_legal_advice"):
+                system_parts.append("- Do not provide legal advice.")
+            if compliance_policy.get("no_product_recommendation"):
+                system_parts.append("- Do not recommend products or vendors.")
+
+        if reasoning_rules:
+
+            system_parts.append("\nReasoning Requirements:")
+
+            evidence_rules = reasoning_rules.get("evidence_handling", {})
+            if evidence_rules.get("derive_requirements_explicitly"):
+                system_parts.append("- Derive requirements explicitly from evidence.")
+            if evidence_rules.get("identify_legal_references_if_present"):
+                system_parts.append("- Identify legal references if present.")
+            if evidence_rules.get("do_not_repeat_evidence_text_verbatim"):
+                system_parts.append("- Do not repeat evidence verbatim.")
+
+            analytical_rules = reasoning_rules.get("analytical_depth", {})
+            if analytical_rules.get("distinguish_between_definition_and_obligation"):
+                system_parts.append("- Distinguish between definitions and obligations.")
+            if analytical_rules.get("highlight_if_requirement_applies_to_critical_functions_only"):
+                system_parts.append("- Highlight if requirements apply only to critical functions.")
+
+        if output_rules:
+
+            system_parts.append("\nOutput Requirements:")
+
+            if output_rules.get("language") == "de":
+                system_parts.append("- Respond in German.")
+
+            structure = output_rules.get("structure", {})
+            required_sections = structure.get("required_sections", [])
+            if required_sections:
+                system_parts.append(
+                    f"- Structure the answer into: {', '.join(required_sections)}"
+                )
+
+            citations = output_rules.get("citations", {})
+            if citations.get("inline_references_required"):
+                system_parts.append("- Include inline references.")
+
+            tone_rules = output_rules.get("tone", [])
+            if tone_rules:
+                system_parts.append(
+                    f"- Maintain tone: {', '.join(tone_rules)}"
+                )
+
+    system_message = "\n".join(system_parts).strip()
+
+    # -------------------------------------------------
+    # USER MESSAGE
+    # -------------------------------------------------
+
+    if task_type == "classification":
+
+        user_message = f"""
+Document:
+{context}
+
+Classify this document according to the taxonomy.
+""".strip()
+
+    else:
+
+        user_message = f"""
+Frage:
+{query}
+
+Evidenzbasis:
+{context}
+
+Erstelle eine strukturierte Analyse.
+""".strip()
+
+    return {
+        "system": system_message,
+        "user": user_message
+    }
+=== ./knowledge_construction/metadata_extractor.py ===
+import hashlib
+from pathlib import Path
+
+
+class MetadataExtractor:
+
+    def extract(self, file_path):
+
+        path = Path(file_path)
+
+        metadata = {}
+
+        metadata["source_file"] = path.name
+        metadata["doc_hash"] = self._compute_hash(path)
+
+        metadata["title"] = self._infer_title(path)
+        metadata["year"] = self._infer_year(path)
+
+        return metadata
+
+
+    def _compute_hash(self, path):
+
+        sha256 = hashlib.sha256()
+
+        with open(path, "rb") as f:
+            for block in iter(lambda: f.read(4096), b""):
+                sha256.update(block)
+
+        return sha256.hexdigest()
+
+
+    def _infer_title(self, path):
+
+        name = path.stem
+        title = name.replace("_", " ")
+        return title
+
+
+    def _infer_year(self, path):
+
+        name = path.stem
+
+        for token in name.split("_"):
+            if token.isdigit() and len(token) == 4:
+                return int(token)
+
+        return None
+=== ./knowledge_construction/metadata/__init__.py ===
+
+=== ./knowledge_construction/metadata/classifier.py ===
+import json
+import re
+from typing import Dict
+from pathlib import Path
+
+from knowledge_construction.validation.validation import validate_enums
+
+from config.construction_config import (
+    CLASSIFIER_TEMPERATURE,
+    CLASSIFIER_MAX_TOKENS
+)
+from config.governance_config import LLM_DOMAIN_NORMALIZATION
+
+from knowledge_construction.llm.contract_loader import load_contract_by_task
+from knowledge_construction.llm.prompt_builder import build_prompt
+
+
+def classify_document(
+    title: str,
+    preview_text: str,
+    llm_client,
+    file_path: Path
+) -> Dict:
+    """
+    FINAL PRODUCTION CLASSIFIER
+
+    Responsibilities:
+    - Build LLM prompt from contract
+    - Execute classification
+    - Normalize output
+    - Ensure schema consistency
+
+    IMPORTANT:
+    - NO governance logic here
+    - NO review logic here
+    """
+
+    # -------------------------------------------------
+    # 1. Load contract
+    # -------------------------------------------------
+
+    contract = load_contract_by_task("classification")
+
+    # -------------------------------------------------
+    # 2. Build context (bounded)
+    # -------------------------------------------------
+
+    context = f"""
+Title: {title}
+
+Preview:
+{preview_text[:2000]}
+""".strip()
+
+    # -------------------------------------------------
+    # 3. Build prompt
+    # -------------------------------------------------
+
+    prompt = build_prompt(
+        query="",
+        context=context,
+        contract=contract
+    )
+
+    try:
+
+        # -------------------------------------------------
+        # 4. LLM Call (config-driven)
+        # -------------------------------------------------
+
+        response = llm_client.run(
+            prompt=prompt["user"],
+            system_prompt=prompt["system"],
+            temperature=CLASSIFIER_TEMPERATURE,
+            max_tokens=CLASSIFIER_MAX_TOKENS
+        )
+
+        if not response:
+            raise ValueError("Empty LLM response")
+
+        # -------------------------------------------------
+        # 5. Normalize response
+        # -------------------------------------------------
+
+        result = _normalize_response(response)
+        result = _normalize_confidence(result)
+        result = _normalize_domain(result)      # TD: LLM domain normalization
+
+        # -------------------------------------------------
+        # 6. Final validation (LLM output only!)
+        # -------------------------------------------------
+
+        validate_enums(result)
+
+        return result
+
+    except Exception as e:
+
+        print(f"\n❌ Classification failed: {e}")
+        print("\nRaw LLM output:\n")
+        print(response if "response" in locals() else "No response")
+
+        raise
+
+
+# ------------------------------------------------
+# HELPERS
+# ------------------------------------------------
+
+def _normalize_domain(result: Dict) -> Dict:
+    """
+    Mappt ungültige LLM-Ausgaben auf gültige KNOWLEDGE_DOMAINS.
+    Claude verwendet präzise Topic-Begriffe die nicht in der
+    Taxonomie stehen — diese werden hier korrigiert.
+    """
+    current = result.get("knowledge_domain")
+
+    if current and current in LLM_DOMAIN_NORMALIZATION:
+        normalized = LLM_DOMAIN_NORMALIZATION[current]
+        print(f"  ↳ Domain normalization: {current} → {normalized}")
+        result["knowledge_domain"] = normalized
+
+    return result
+
+
+def _normalize_confidence(result: Dict) -> Dict:
+    """
+    Ensures confidence is always numeric (float)
+    """
+
+    value = result.get("confidence")
+
+    if isinstance(value, (int, float)):
+        return result
+
+    if isinstance(value, str):
+
+        mapping = {
+            "high": 0.9,
+            "medium": 0.6,
+            "low": 0.3
+        }
+
+        result["confidence"] = mapping.get(value.lower(), 0.5)
+
+    else:
+        result["confidence"] = 0.5
+
+    return result
+
+
+def _normalize_response(response) -> Dict:
+    """
+    Ensures consistent dict output from LLM
+    """
+
+    if isinstance(response, dict):
+        return response
+
+    cleaned = _clean_json_response(response)
+
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON from LLM: {e}")
+
+
+def _clean_json_response(response: str) -> str:
+    """
+    Removes markdown / formatting artifacts
+    """
+
+    cleaned = response.strip()
+
+    cleaned = re.sub(r"^```json\s*", "", cleaned)
+    cleaned = re.sub(r"^```", "", cleaned)
+    cleaned = re.sub(r"```$", "", cleaned)
+
+    return cleaned.strip()
+=== ./knowledge_construction/metadata/doc_id_generator.py ===
+import re
+from typing import Optional
+
+
+# =========================================================
+# DOC ID GENERATOR — TD-002
+#
+# Schema: doc_{origin_short}_{topic}_{year?}_{hash6}
+#
+# Garantien:
+# - deterministisch (gleicher Input → gleicher Output)
+# - eindeutig durch Hash-Suffix
+# - lesbar durch Origin + Topic + Jahr
+# =========================================================
+
+def generate_doc_id(
+    title: str,
+    document_type: str,
+    doc_hash: Optional[str] = None,
+    origin: Optional[str] = None
+) -> str:
+
+    if not title:
+        raise ValueError("Title must not be empty")
+
+    if not document_type:
+        raise ValueError("document_type must not be empty")
+
+    title_clean = _normalize_text(title)
+
+    origin_short = _normalize_origin(origin)
+    topic = _extract_topic(title_clean)
+    year = _extract_year(title_clean)
+    hash_suffix = _extract_hash_suffix(doc_hash)
+
+    parts = ["doc", origin_short, topic]
+
+    if year:
+        parts.append(year)
+
+    parts.append(hash_suffix)
+
+    return "_".join(parts)
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def _normalize_text(text: str) -> str:
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", "", text)
+    return text.strip()
+
+
+def _normalize_origin(origin: Optional[str]) -> str:
+    """
+    Kürzt Origin auf kompaktes Präfix.
+    """
+    mapping = {
+        "legislator":           "eu",
+        "supervisory_authority": "bafin",
+        "consulting_firm":      "consulting",
+        "cloud_vendor":         "aws",
+        "software_vendor":      "vendor",
+        "industry_association": "industry",
+        "research_institution": "research",
+        "internal":             "internal",
+        "unknown":              "unknown",
+    }
+    return mapping.get(origin, "unknown") if origin else "unknown"
+
+
+def _extract_topic(title: str) -> str:
+    """
+    Extracts a stable topic token from title.
+
+    Strategy:
+    1. Prefer known domain keywords (priority order)
+    2. Fallback: first meaningful word
+    """
+
+    KEYWORDS = [
+        "dora",
+        "vait",
+        "bait",
+        "solvency",
+        "cloud",
+        "sovereignty",
+        "insurance",
+        "regulation",
+        "outsourcing",
+        "ai",
+        "llm",
+    ]
+
+    for keyword in KEYWORDS:
+        if keyword in title:
+            return keyword
+
+    words = re.findall(r"[a-z0-9]+", title)
+
+    for word in words:
+        if len(word) > 3:
+            return word
+
+    return "unknown"
+
+
+def _extract_year(title: str) -> Optional[str]:
+    match = re.search(r"(20\d{2})", title)
+    return match.group(1) if match else None
+
+
+def _extract_hash_suffix(doc_hash: Optional[str]) -> str:
+    """
+    Nimmt die ersten 6 Zeichen des doc_hash.
+    Fallback: 'nohash' wenn kein Hash vorhanden.
+    """
+    if not doc_hash:
+        return "nohash"
+    return doc_hash[:6]
+=== ./knowledge_construction/metadata/preview_extractor.py ===
+from pathlib import Path
+
+from config.construction_config import PREVIEW_MAX_CHARS
+
+from knowledge_construction.document_processing.document_text_extractor import (
+    extract_document_text,
+)
+
+
+# ------------------------------------------------
+# TEXT CLEANING (ALIGN WITH DOCUMENT EXTRACTOR)
+# ------------------------------------------------
+def _clean_text(text: str) -> str:
+    """
+    Lightweight normalization for preview usage.
+    Keeps consistent with document_text_extractor.
+    """
+
+    return (
+        text.replace("\n", " ")
+        .replace("\r", " ")
+        .strip()
+    )
+
+
+# ------------------------------------------------
+# PUBLIC API
+# ------------------------------------------------
+def extract_preview(file_path: Path) -> str:
+    """
+    Extracts preview text based on full document text.
+
+    Strategy:
+    - use full text extraction (single source of truth)
+    - clean text
+    - truncate via config
+
+    This avoids inconsistencies between preview and full-text processing.
+    """
+
+    file_path = Path(file_path)
+
+    try:
+        full_text = extract_document_text(file_path)
+
+    except Exception:
+        print(f"⚠ Failed to extract document text: {file_path.name}")
+        return ""
+
+    if not full_text:
+        return ""
+
+    cleaned = _clean_text(full_text)
+
+    # config-driven truncation
+    preview = cleaned[:PREVIEW_MAX_CHARS]
+
+    return preview
+=== ./knowledge_construction/onboarding_pipeline.py ===
+from pathlib import Path
+import json
+import shutil
+from datetime import datetime
+
+from knowledge_construction.metadata.preview_extractor import extract_preview
+from knowledge_construction.metadata.classifier import classify_document
+from knowledge_construction.metadata.doc_id_generator import generate_doc_id
+from knowledge_construction.metadata_extractor import MetadataExtractor
+
+from knowledge_construction.governance.governance_pipeline import apply_governance_pipeline
+
+from knowledge_construction.document_processing.document_text_extractor import extract_document_text
+
+from knowledge_construction.validation.validation import validate_enums
+from knowledge_construction.validation.cross_field_rules import validate_cross_field
+
+from knowledge_construction.registry.registry_builder import RegistryBuilder
+from knowledge_construction.audit.audit_logger import log_classification
+from knowledge_construction.audit.review_logger import ReviewLogger
+from knowledge_construction.review.review_decision import review_decision
+
+from knowledge_construction.chunking.chunker import Chunker
+from knowledge_construction.embedding.embedding_generator import EmbeddingGenerator
+from knowledge_construction.embedding.index_consistency_check import IndexConsistencyCheck
+
+from config.construction_config import CHUNKS_PATH
+
+ARCHIVE_PATH = Path("knowledge_sources/archive")
+REVIEW_REPORT_PATH = Path("knowledge_base/audit/review_report.txt")
+
+
+class OnboardingPipeline:
+
+    def __init__(self, registry_path: str, llm_client):
+
+        self.registry_builder = RegistryBuilder(registry_path)
+        self.llm_client = llm_client
+        self.metadata_extractor = MetadataExtractor()
+
+        self.chunker = Chunker()
+        self.embedding_generator = EmbeddingGenerator()
+        self.index_checker = IndexConsistencyCheck()
+
+        self.review_logger = ReviewLogger(
+            Path("knowledge_base/audit/onboarding_review.jsonl")
+        )
+
+        self.ai_suggestion_path = Path("tests/onboarding_ai_suggestions")
+        self.ai_suggestion_path.mkdir(parents=True, exist_ok=True)
+
+        # Sammelt Review-Punkte über alle Dokumente des Laufs
+        self._review_items = []
+
+    # -------------------------------------------------
+
+    def process_document(self, file_path: str):
+
+        file_path = Path(file_path)
+
+        print(f"\nProcessing document: {file_path.name}")
+
+        # -------------------------------------------------
+        # 0. EXISTING CHECK (idempotent)
+        # -------------------------------------------------
+
+        existing = self.registry_builder.get_by_source_file(file_path.name)
+        is_new_document = existing is None
+
+        if existing:
+            doc_id = existing["doc_id"]
+            print(f"ℹ Existing document → reuse doc_id: {doc_id}")
+        else:
+            doc_id = None
+
+        # -------------------------------------------------
+        # 1. Preview
+        # -------------------------------------------------
+
+        preview_text = extract_preview(file_path)
+
+        # -------------------------------------------------
+        # 2. Classification (LLM)
+        # -------------------------------------------------
+
+        raw_classification = classify_document(
+            title=file_path.stem,
+            preview_text=preview_text,
+            llm_client=self.llm_client,
+            file_path=file_path
+        )
+
+        # -------------------------------------------------
+        # 3. File Metadata (doc_hash)
+        # -------------------------------------------------
+
+        file_metadata = self.metadata_extractor.extract(file_path)
+        doc_hash = file_metadata.get("doc_hash")
+
+        # -------------------------------------------------
+        # 4. Governance
+        # -------------------------------------------------
+
+        classification, review_info = apply_governance_pipeline(
+            result=raw_classification,
+            title=file_path.stem,
+            preview_text=preview_text,
+            file_path=file_path
+        )
+
+        # -------------------------------------------------
+        # 5. doc_id (nur wenn neu)
+        # -------------------------------------------------
+
+        if is_new_document:
+            doc_id = generate_doc_id(
+                title=file_path.stem,
+                document_type=classification["document_type"],
+                doc_hash=doc_hash,
+                origin=classification.get("origin")
+            )
+
+        # -------------------------------------------------
+        # 6. AI Suggestion speichern
+        # -------------------------------------------------
+
+        self._save_ai_suggestion(doc_id, file_path, raw_classification)
+
+        # -------------------------------------------------
+        # 7. VALIDATION — blockiert bei Fehler (TD-003)
+        # -------------------------------------------------
+
+        validation_error = None
+
+        try:
+            validate_enums(classification)
+            validate_cross_field(classification)
+        except Exception as e:
+            validation_error = str(e)
+            print(f"⚠ Validation error: {validation_error}")
+
+        if validation_error:
+            # Dokument bleibt in intake — kein Registry-Eintrag, keine Archivierung
+            self._review_items.append({
+                "file": file_path.name,
+                "doc_id": doc_id,
+                "reason": "validation_error",
+                "detail": validation_error
+            })
+
+            log_classification({
+                "file": file_path.name,
+                "doc_id": doc_id,
+                "classification": classification,
+                "review": {"review_required": True, "review_reasons": ["validation_error"]},
+                "validation_error": validation_error,
+                "is_new": is_new_document
+            })
+
+            raise ValueError(f"Validation failed: {validation_error}")
+
+        # -------------------------------------------------
+        # 8. Review Decision (Audit-Signal, kein harter Stop)
+        # -------------------------------------------------
+
+        review_decision_result = review_decision(classification)
+        review_info.update(review_decision_result)
+
+        self.review_logger.log_review(
+            doc_id=doc_id,
+            review_info=review_info
+        )
+
+        if review_info.get("review_required"):
+            self._review_items.append({
+                "file": file_path.name,
+                "doc_id": doc_id,
+                "reason": "review_required",
+                "detail": review_info.get("review_reasons", [])
+            })
+
+        # -------------------------------------------------
+        # 9. Registry (nur bei neu)
+        # -------------------------------------------------
+
+        if is_new_document:
+
+            metadata = {
+                "doc_id": doc_id,
+                "title": file_path.stem,
+                "source_file": file_path.name,
+                "doc_hash": doc_hash
+            }
+
+            entry = self.registry_builder.add_document(
+                metadata,
+                classification
+            )
+
+            self.registry_builder.save()
+
+            print(f"✔ New document added to registry: {doc_id}")
+
+        else:
+            entry = existing
+            print(f"✔ Existing registry entry reused: {doc_id}")
+
+        # -------------------------------------------------
+        # 10. Chunking + Embedding (nur bei neu)
+        # -------------------------------------------------
+
+        if is_new_document:
+
+            document_text = extract_document_text(file_path)
+
+            chunks = self.chunker.chunk_document(
+                document_text,
+                doc_id
+            )
+
+            self.chunker.save_chunks(
+                chunks,
+                CHUNKS_PATH
+            )
+
+            self.embedding_generator.run()
+            self.index_checker.run()
+
+            print(f"✔ Chunks created: {len(chunks)}")
+
+        else:
+            print("ℹ Skipping chunking/embedding (already processed)")
+
+        # -------------------------------------------------
+        # 11. Archivierung — nur bei neuen, validen Dokumenten (TD-003)
+        # -------------------------------------------------
+
+        if is_new_document:
+            self._archive_document(file_path)
+
+        # -------------------------------------------------
+        # 12. Audit Log
+        # -------------------------------------------------
+
+        log_classification({
+            "file": file_path.name,
+            "doc_id": doc_id,
+            "classification": classification,
+            "review": review_info,
+            "validation_error": validation_error,
+            "is_new": is_new_document
+        })
+
+        print(f"\n✔ Document processed: {doc_id}")
+
+        return entry
+
+    # -------------------------------------------------
+    # ARCHIVIERUNG
+    # -------------------------------------------------
+
+    def _archive_document(self, file_path: Path):
+        """
+        Verschiebt ein erfolgreich verarbeitetes Dokument
+        von intake/ nach archive/.
+        """
+        ARCHIVE_PATH.mkdir(parents=True, exist_ok=True)
+
+        target = ARCHIVE_PATH / file_path.name
+
+        if target.exists():
+            print(f"ℹ Archive already contains: {file_path.name} — skipping move")
+            return
+
+        shutil.move(str(file_path), str(target))
+        print(f"📦 Archived: {file_path.name}")
+
+    # -------------------------------------------------
+    # REVIEW REPORT
+    # -------------------------------------------------
+
+    def write_review_report(self):
+        """
+        Schreibt einen Review-Report nach jedem Onboarding-Lauf.
+        Wird von run_onboarding.py aufgerufen.
+        """
+
+        REVIEW_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(REVIEW_REPORT_PATH, "w", encoding="utf-8") as f:
+
+            f.write("ONBOARDING REVIEW REPORT\n")
+            f.write(f"Generated: {datetime.utcnow().isoformat()}\n")
+            f.write("=" * 50 + "\n\n")
+
+            if not self._review_items:
+                f.write("✔ Keine Review-Punkte — alle Dokumente sauber verarbeitet.\n")
+                return
+
+            f.write(f"{len(self._review_items)} Dokument(e) benoetigen Aufmerksamkeit:\n\n")
+
+            for item in self._review_items:
+                f.write(f"Datei:   {item['file']}\n")
+                f.write(f"Doc-ID:  {item['doc_id']}\n")
+                f.write(f"Grund:   {item['reason']}\n")
+                f.write(f"Detail:  {item['detail']}\n")
+                f.write("-" * 40 + "\n")
+
+    # -------------------------------------------------
+
+    def _save_ai_suggestion(self, doc_id, file_path, classification):
+
+        file = self.ai_suggestion_path / f"{doc_id}.json"
+
+        if file.exists():
+            return
+
+        data = {
+            "doc_id": doc_id,
+            "title": file_path.stem,
+            "ai": classification
+        }
+
+        with open(file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+=== ./knowledge_construction/registry/__init__.py ===
+
+=== ./knowledge_construction/registry/registry_builder.py ===
+import json
+from pathlib import Path
+from typing import Dict, List
+
+
+KEEP_FIELDS: List[str] = [
+    "document_type",
+    "knowledge_domain",
+    "origin",
+    "jurisdiction",
+    "confidence",
+    "bias",
+    "domain_layer"
+]
+
+
+class RegistryBuilder:
+
+    def __init__(self, registry_path: str):
+        self.registry_path = Path(registry_path)
+
+        if self.registry_path.exists():
+            with open(self.registry_path, "r", encoding="utf-8") as f:
+                self.registry = json.load(f)
+        else:
+            self.registry = []
+
+    # ------------------------------------------------
+
+    def add_document(self, metadata: Dict, classification: Dict) -> Dict:
+
+        doc_id = metadata.get("doc_id")
+        title = metadata.get("title")
+        source_file = metadata.get("source_file")
+        doc_hash = metadata.get("doc_hash")
+
+        if not doc_id:
+            raise ValueError("doc_id must be provided in metadata")
+
+        if not source_file:
+            raise ValueError(f"source_file missing for doc_id={doc_id}")
+
+        filtered_classification = {
+            key: classification.get(key)
+            for key in KEEP_FIELDS
+        }
+
+        entry = {
+            "doc_id": doc_id,
+            "title": title,
+            "source_file": source_file,
+            "doc_hash": doc_hash,
+            **filtered_classification
+        }
+
+        self._check_duplicate(entry)
+
+        self.registry.append(entry)
+
+        return entry
+
+    # ------------------------------------------------
+
+    def get_by_source_file(self, source_file: str):
+
+        for doc in self.registry:
+            if doc.get("source_file") == source_file:
+                return doc
+
+        return None
+
+    # ------------------------------------------------
+
+    def save(self):
+
+        self.registry_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(self.registry_path, "w", encoding="utf-8") as f:
+            json.dump(self.registry, f, indent=2)
+
+    # ------------------------------------------------
+
+    def _check_duplicate(self, entry: Dict):
+        """
+        Duplikat-Prüfung in zwei Stufen:
+        1. doc_hash — erkennt umbenannte Dateien
+        2. source_file — Fallback wenn kein Hash vorhanden
+        """
+
+        for doc in self.registry:
+
+            # Hash-basierte Prüfung (primär)
+            if entry.get("doc_hash") and doc.get("doc_hash"):
+                if doc["doc_hash"] == entry["doc_hash"]:
+                    raise ValueError(
+                        f"Duplicate document detected (hash match): "
+                        f"existing='{doc.get('source_file')}' "
+                        f"new='{entry.get('source_file')}'"
+                    )
+
+            # Dateiname-Fallback
+            if doc.get("source_file") == entry.get("source_file"):
+                raise ValueError(
+                    f"Document already exists in registry: {entry.get('source_file')}"
+                )
+=== ./knowledge_construction/review/__init__.py ===
+
+=== ./knowledge_construction/review/governance_review.py ===
+def governance_review(document_metadata: dict, *args, **kwargs) -> dict:
+
+    # Minimal MVP Governance Review
+
+    result = {
+        "approved": True,
+        "issues": []
+    }
+
+    # Optional: Check for doc_id (aber nicht blockierend!)
+    if "doc_id" not in document_metadata:
+        result["issues"].append("Missing doc_id")
+
+    return result
+=== ./knowledge_construction/review/review_decision.py ===
+from typing import Dict, List
+
+
+# ------------------------------------------------
+# CONFIG
+# ------------------------------------------------
+LOW_CONFIDENCE_THRESHOLD = 0.75
+
+
+# ------------------------------------------------
+# REVIEW DECISION ENGINE
+# ------------------------------------------------
+def review_decision(classification: Dict) -> Dict:
+    """
+    Determines whether a document requires manual review.
+
+    Rules:
+    - Low confidence → review
+    - Unknown document type → review
+    - Unknown origin → review
+
+    Note: regulatory_content is NOT a review trigger —
+    Claude classifies regulatory documents reliably at high confidence.
+    """
+
+    reasons: List[str] = []
+
+    confidence = classification.get("confidence")
+    document_type = classification.get("document_type")
+    origin = classification.get("origin")
+
+    # ----------------------------------
+    # 1. Low confidence
+    # ----------------------------------
+
+    if confidence is not None:
+        try:
+            if float(confidence) < LOW_CONFIDENCE_THRESHOLD:
+                reasons.append("low_confidence")
+        except (TypeError, ValueError):
+            reasons.append("invalid_confidence")
+
+    # ----------------------------------
+    # 2. Unknown classification
+    # ----------------------------------
+
+    if document_type == "unknown":
+        reasons.append("unknown_document_type")
+
+    # ----------------------------------
+    # 3. Missing or unknown origin
+    # ----------------------------------
+
+    if not origin or origin == "unknown":
+        reasons.append("unknown_origin")
+
+    # ----------------------------------
+    # FINAL DECISION
+    # ----------------------------------
+
+    review_required = len(reasons) > 0
+
+    return {
+        "review_required": review_required,
+        "review_reasons": reasons
+    }
+=== ./knowledge_construction/validation/__init__.py ===
+
+=== ./knowledge_construction/validation/cross_field_rules.py ===
+from typing import Dict
+
+
+# =========================================================
+# CROSS-FIELD VALIDATION
+# =========================================================
+
+def validate_cross_field(result: Dict):
+    """
+    Validates semantic consistency between classification fields.
+
+    Rules enforce domain logic beyond simple enum validation.
+
+    Raises:
+        ValueError if any rule is violated
+    """
+
+    doc_type = result.get("document_type")
+    origin = result.get("origin")
+    confidence = result.get("confidence")
+    domain_layer = result.get("domain_layer")
+
+    # -------------------------------------------------
+    # 1. Regulatory texts → legislator
+    # -------------------------------------------------
+
+    if doc_type == "regulatory_text":
+        if origin != "legislator":
+            raise ValueError(
+                f"Invalid combination: regulatory_text must originate from legislator (got: {origin})"
+            )
+
+    # -------------------------------------------------
+    # 2. Supervisory guidance → supervisory authority
+    # -------------------------------------------------
+
+    if doc_type == "supervisory_guidance":
+        if origin != "supervisory_authority":
+            raise ValueError(
+                f"Invalid combination: supervisory_guidance must originate from supervisory_authority (got: {origin})"
+            )
+
+    # -------------------------------------------------
+    # 3. Vendor marketing → vendor only
+    # -------------------------------------------------
+
+    if doc_type == "vendor_marketing":
+        if origin not in {"cloud_vendor", "software_vendor"}:
+            raise ValueError(
+                f"Invalid combination: vendor_marketing must originate from vendor (got: {origin})"
+            )
+
+    # -------------------------------------------------
+    # 4. Vendors cannot produce regulatory content
+    # -------------------------------------------------
+
+    if origin in {"cloud_vendor", "software_vendor"}:
+        if doc_type in {"regulatory_text", "supervisory_guidance"}:
+            raise ValueError(
+                f"Invalid combination: vendors cannot produce regulatory/supervisory documents (got: {doc_type})"
+            )
+
+    # -------------------------------------------------
+    # 5. Supervisory authorities cannot produce marketing
+    # -------------------------------------------------
+
+    if origin == "supervisory_authority":
+        if doc_type == "vendor_marketing":
+            raise ValueError(
+                "Invalid combination: supervisory_authority cannot produce marketing content"
+            )
+
+    # -------------------------------------------------
+    # 6. Regulatory documents must belong to regulation layer
+    # -------------------------------------------------
+
+    if doc_type in {"regulatory_text", "supervisory_guidance"}:
+        if domain_layer != "regulation":
+            raise ValueError(
+                f"Invalid domain_layer: {doc_type} must belong to 'regulation' (got: {domain_layer})"
+            )
+=== ./knowledge_construction/validation/validation.py ===
+from typing import Dict
+
+from config.taxonomy import (
+    KNOWLEDGE_DOMAINS,
+    DOCUMENT_TYPES,
+    DOMAIN_LAYERS,
+    ORIGINS,
+    JURISDICTIONS,
+    BIAS_LEVELS
+)
+
+
+# =========================================================
+# VALIDATION – ENUM & STRUCTURE
+# =========================================================
+
+REQUIRED_FIELDS = [
+    "document_type",
+    "domain_layer",
+    "knowledge_domain",
+    "origin",
+    "jurisdiction",
+    "confidence"
+]
+
+
+def validate_enums(result: Dict):
+    """
+    Validates classification output against taxonomy.
+
+    Strict:
+    - required fields must exist
+    - values must match taxonomy
+    - confidence must be numeric and within [0, 1]
+
+    No mutation. Raises ValueError on failure.
+    """
+
+    # -------------------------------------------------
+    # 1. Required fields
+    # -------------------------------------------------
+
+    for field in REQUIRED_FIELDS:
+        if field not in result:
+            raise ValueError(f"Missing required field: {field}")
+
+    # -------------------------------------------------
+    # 2. Enum validation
+    # -------------------------------------------------
+
+    _validate_enum(result, "document_type", DOCUMENT_TYPES)
+    _validate_enum(result, "domain_layer", DOMAIN_LAYERS)
+    _validate_enum(result, "knowledge_domain", KNOWLEDGE_DOMAINS)
+    _validate_enum(result, "origin", ORIGINS)
+    _validate_enum(result, "jurisdiction", JURISDICTIONS)
+
+    # -------------------------------------------------
+    # 3. Optional fields
+    # -------------------------------------------------
+
+    if "bias_level" in result and result["bias_level"] is not None:
+        _validate_enum(result, "bias_level", BIAS_LEVELS)
+
+    # -------------------------------------------------
+    # 4. Confidence validation
+    # -------------------------------------------------
+
+    _validate_confidence(result.get("confidence"))
+
+
+# =========================================================
+# HELPERS
+# =========================================================
+
+def _validate_enum(result: Dict, field: str, allowed_values):
+    value = result.get(field)
+
+    if value is None:
+        raise ValueError(f"{field} must not be None")
+
+    if value not in allowed_values:
+        raise ValueError(
+            f"Invalid {field}: {value} | allowed: {allowed_values}"
+        )
+
+
+def _validate_confidence(value):
+    if value is None:
+        raise ValueError("confidence must not be None")
+
+    if not isinstance(value, (int, float)):
+        raise ValueError(f"confidence must be numeric, got: {type(value)}")
+
+    if not (0.0 <= float(value) <= 1.0):
+        raise ValueError(f"confidence out of range: {value}")
+=== ./knowledge_core/__init__.py ===
+
+=== ./knowledge_core/answer/__init__.py ===
+
+=== ./knowledge_core/audit/__init__.py ===
+
+=== ./knowledge_core/audit/retrieval_decision_log.py ===
+import json
+import dataclasses
+from datetime import datetime
+
+
+def _serialize(obj):
+    """
+    JSON serializer for dataclasses and objects with __dict__.
+    """
+    if dataclasses.is_dataclass(obj) and not isinstance(obj, type):
+        return dataclasses.asdict(obj)
+    if hasattr(obj, "__dict__"):
+        return obj.__dict__
+    return str(obj)
+
+
+class RetrievalDecisionLogger:
+
+    def __init__(self, log_path):
+        self.log_path = log_path
+
+    def log(self, query, intent, role, ranked_documents, context_package):
+
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "query": query,
+            "intent": _serialize(intent),
+            "role": _serialize(role),
+            "retrieved_documents": [
+                {
+                    "doc_id": doc.doc_id,
+                    "semantic_score": doc.semantic_score,
+                    "governance_score": doc.governance_score,
+                    "final_score": doc.score
+                }
+                for doc in ranked_documents
+            ],
+            "context_chunks": [
+                {
+                    "doc_id": chunk.doc_id,
+                    "chunk_id": chunk.chunk_id
+                }
+                for chunk in context_package.chunks
+            ],
+            "sources": context_package.sources
+        }
+
+        with open(self.log_path, "a") as f:
+            f.write(json.dumps(log_entry) + "\n")
+=== ./knowledge_core/intent/__init__.py ===
+
+=== ./knowledge_core/intent/intent_engine.py ===
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
+class IntentResult:
+    """
+    Result object returned by the Intent Engine.
+    """
+    interaction_intent: str
+    content_intent: str
+    override: bool = False
+
+
+# -----------------------------
+# Interaction Intent Detection
+# -----------------------------
+
+def detect_interaction_intent(query: str) -> str:
+    q = query.lower()
+
+    if "compare" in q or "vergleich" in q:
+        return "compare"
+
+    if "recommend" in q or "empfehlen" in q:
+        return "recommend"
+
+    if "assess" in q or "bewerten" in q or "risiko" in q:
+        return "assess"
+
+    if "summarize" in q or "zusammenfassen" in q:
+        return "summarize"
+
+    return "explain"
+
+
+# -----------------------------
+# Content Intent Detection
+# -----------------------------
+
+def detect_content_intent(query: str) -> str:
+    q = query.lower()
+
+    if "anbieter" in q or "vendor" in q or "market" in q:
+        return "market"
+
+    if "vergleich" in q or "compare" in q:
+        return "competitive"
+
+    if "strategie" in q or "strategy" in q:
+        return "strategy"
+
+    if "portfolio" in q:
+        return "portfolio"
+
+    if "beratung" in q or "advisor" in q:
+        return "advisory"
+
+    return "normative"
+
+
+# -----------------------------
+# Public API
+# -----------------------------
+
+def detect_intent(query: str, content_override: Optional[str] = None) -> IntentResult:
+
+    interaction = detect_interaction_intent(query)
+
+    if content_override:
+        return IntentResult(
+            interaction_intent=interaction,
+            content_intent=content_override,
+            override=True
+        )
+
+    content = detect_content_intent(query)
+
+    return IntentResult(
+        interaction_intent=interaction,
+        content_intent=content,
+        override=False
+    )
+=== ./knowledge_core/knowledge_engine.py ===
+from knowledge_core.intent.intent_engine import IntentEngine
+from knowledge_core.roles.role_engine import RoleEngine
+from knowledge_core.retrieval.retrieval_engine import RetrievalEngine
+from knowledge_core.scoring.scoring_engine import ScoringEngine
+from knowledge_core.perspective.perspective_orchestrator import PerspectiveOrchestrator
+from knowledge_core.pipeline.context_builder import ContextBuilder
+from knowledge_core.prompt.prompt_governance import PromptBuilder
+from knowledge_core.pipeline.query_pipeline import QueryPipeline
+
+
+class KnowledgeEngine:
+    """
+    Central entry point for the Strategic Knowledge Engine.
+
+    This class wires together all engine components and exposes
+    a simple interface:
+
+        engine = KnowledgeEngine(...)
+        ctx = engine.query("...")
+
+    It encapsulates the full QueryPipeline.
+    """
+
+    def __init__(
+        self,
+        knowledge_base,
+        embedding_model,
+        llm_client,
+        log_path="knowledge_base/audit/query_audit_log.jsonl"
+    ):
+
+        # --------------------------------------------------
+        # Core Engines
+        # --------------------------------------------------
+
+        self.intent_engine = IntentEngine()
+        self.role_engine = RoleEngine()
+
+        self.retrieval_engine = RetrievalEngine(
+            knowledge_base=knowledge_base,
+            embedding_model=embedding_model
+        )
+
+        self.scoring_engine = ScoringEngine()
+
+        self.perspective_orchestrator = PerspectiveOrchestrator()
+
+        # --------------------------------------------------
+        # Context & Prompt
+        # --------------------------------------------------
+
+        self.context_builder = ContextBuilder()
+        self.prompt_builder = PromptBuilder()
+
+        # --------------------------------------------------
+        # Query Pipeline
+        # --------------------------------------------------
+
+        self.pipeline = QueryPipeline(
+            intent_engine=self.intent_engine,
+            role_engine=self.role_engine,
+            retrieval_engine=self.retrieval_engine,
+            scoring_engine=self.scoring_engine,
+            perspective_orchestrator=self.perspective_orchestrator,
+            context_builder=self.context_builder,
+            prompt_builder=self.prompt_builder,
+            llm_client=llm_client,
+            log_path=log_path
+        )
+
+    def query(self, query: str):
+        """
+        Execute a query through the full knowledge engine.
+
+        Returns:
+            QueryContext containing the full execution trace.
+        """
+
+        return self.pipeline.run(query)
+
+
+# --------------------------------------------------
+# Example Usage (for testing)
+# --------------------------------------------------
+
+if __name__ == "__main__":
+
+    # Dummy placeholders (replace with real implementations)
+    knowledge_base = None
+    embedding_model = None
+    llm_client = None
+
+    engine = KnowledgeEngine(
+        knowledge_base=knowledge_base,
+        embedding_model=embedding_model,
+        llm_client=llm_client
+    )
+
+    result = engine.query("What does DORA require for cloud outsourcing?")
+
+    print(result)
+
+=== ./knowledge_core/llm/__init__.py ===
+
+=== ./knowledge_core/llm/llm_client.py ===
+import os
+from typing import Optional
+
+import anthropic
+
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+
+# Model constant — single source of truth for query pipeline
+ENGINE_LLM_MODEL = "claude-sonnet-4-6"
+ENGINE_LLM_MAX_TOKENS = 2048
+ENGINE_LLM_TEMPERATURE = 0.3
+
+
+class LLMClient:
+    """
+    Query Pipeline LLM client — Anthropic Claude.
+
+    Unterschied zu knowledge_construction/llm/llm_client.py:
+    - gibt Text zurück (kein JSON)
+    - höhere max_tokens für Antwortgenerierung
+    - leicht erhöhte Temperatur für natürlichere Antworten
+    """
+
+    def __init__(self):
+        self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.model = ENGINE_LLM_MODEL
+
+    # -------------------------------------------------
+
+    def generate(self, prompt: str) -> str:
+        """
+        Wird von QueryPipeline.run() aufgerufen.
+        Prompt enthält SYSTEM ROLE + CONTEXT + INSTRUCTIONS + QUESTION.
+        """
+
+        response = self.client.messages.create(
+            model=self.model,
+            max_tokens=ENGINE_LLM_MAX_TOKENS,
+            temperature=ENGINE_LLM_TEMPERATURE,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        return response.content[0].text.strip()
+=== ./knowledge_core/perspectives/__init__.py ===
+
+=== ./knowledge_core/perspectives/perspective_mapping.py ===
+PERSPECTIVE_MAP = {
+    "supervisory_authority": "regulatory",
+    "industry_association": "industry",
+    "consulting_firm": "consulting",
+    "cloud_vendor": "vendor",
+    "internal": "internal"
+}
+=== ./knowledge_core/perspectives/perspective_orchestrator.py ===
+from collections import defaultdict
+from pathlib import Path
+from typing import Optional
+import yaml
+
+from .perspective_mapping import PERSPECTIVE_MAP
+
+
+class PerspectiveOrchestrator:
+
+    def __init__(self, config_path: Optional[str] = None):
+
+        if config_path is None:
+            config_path = Path(__file__).parent / "perspective_config.yaml"
+
+        with open(config_path, "r") as f:
+            self.config = yaml.safe_load(f)
+
+    # ---------------------------------------------------------
+    # Public API
+    # ---------------------------------------------------------
+
+    def orchestrate(self, scored_chunks: list, content_intent: str, k: int = 6) -> list:
+
+        scored_chunks = sorted(
+            scored_chunks,
+            key=lambda x: getattr(x, "score", getattr(x, "similarity_score", 0)),
+            reverse=True
+        )
+        
+        perspective_groups = self._group_by_perspective(scored_chunks)
+
+        self._sort_groups_by_score(perspective_groups)
+
+        result = self._apply_quotas(
+            perspective_groups,
+            content_intent,
+            k
+        )
+
+        result = self._apply_fallback(
+            result,
+            perspective_groups,
+            k
+        )
+
+        result = self._apply_normative_guard(
+            result,
+            perspective_groups,
+            content_intent
+        )
+
+        return result[:k]
+
+    # ---------------------------------------------------------
+    # Helper
+    # ---------------------------------------------------------
+
+    def _get_origin(self, chunk):
+        return chunk.document_metadata.get("origin", "unknown")
+
+    def _get_score(self, chunk):
+        return getattr(chunk, "score", getattr(chunk, "similarity_score", 0))
+
+    # ---------------------------------------------------------
+    # Step 1: Gruppierung
+    # ---------------------------------------------------------
+
+    def _group_by_perspective(self, chunks):
+
+        groups = defaultdict(list)
+
+        for chunk in chunks:
+
+            origin = self._get_origin(chunk)
+            perspective = PERSPECTIVE_MAP.get(origin, "other")
+
+            groups[perspective].append(chunk)
+
+        return groups
+
+    # ---------------------------------------------------------
+    # Step 2: Sortierung
+    # ---------------------------------------------------------
+
+    def _sort_groups_by_score(self, groups):
+
+        for perspective in groups:
+
+            groups[perspective].sort(
+                key=lambda x: self._get_score(x),
+                reverse=True
+            )
+
+    # ---------------------------------------------------------
+    # Step 3: Quoten
+    # ---------------------------------------------------------
+
+    def _apply_quotas(self, groups, content_intent, k):
+
+        quotas = self.config.get(content_intent, {})
+
+        result = []
+
+        for perspective, ratio in quotas.items():
+
+            target_n = int(k * ratio)
+            candidates = groups.get(perspective, [])
+
+            result.extend(candidates[:target_n])
+
+        return result
+
+    # ---------------------------------------------------------
+    # Step 4: Fallback
+    # ---------------------------------------------------------
+
+    def _apply_fallback(self, result, groups, k):
+
+        if len(result) >= k:
+            return result
+
+        remaining = []
+
+        for group in groups.values():
+            remaining.extend(group)
+
+        remaining.sort(
+            key=lambda x: self._get_score(x),
+            reverse=True
+        )
+
+        for chunk in remaining:
+
+            if chunk not in result:
+                result.append(chunk)
+
+            if len(result) >= k:
+                break
+
+        return result
+
+    # ---------------------------------------------------------
+    # Step 5: Normative Guard
+    # ---------------------------------------------------------
+
+    def _apply_normative_guard(self, result, groups, content_intent):
+
+        if content_intent != "normative":
+            return result
+
+        has_regulatory = any(
+            PERSPECTIVE_MAP.get(self._get_origin(chunk)) == "regulatory"
+            for chunk in result
+        )
+
+        if has_regulatory:
+            return result
+
+        regulatory_chunks = groups.get("regulatory", [])
+
+        if not regulatory_chunks:
+            return result
+
+        result[-1] = regulatory_chunks[0]
+
+        return result
+=== ./knowledge_core/pipeline/__init__.py ===
+
+=== ./knowledge_core/pipeline/context_builder.py ===
+from config.engine_config import CONTEXT_CONFIG
+from knowledge_core.retrieval.retrieval_models import ContextChunk, ContextPackage
+
+
+class ContextBuilder:
+
+    def __init__(self):
+        self.max_chunks = CONTEXT_CONFIG["max_documents"] * CONTEXT_CONFIG["max_chunks_per_document"]
+
+    def build_context(self, query, chunks):
+
+        # --------------------------------------------------
+        # Input: bereits selektierte Chunks (vom Orchestrator)
+        # --------------------------------------------------
+
+        selected_chunks = chunks[:self.max_chunks]
+
+        context_chunks = []
+
+        for chunk in selected_chunks:
+
+            context_chunks.append(
+                ContextChunk(
+                    doc_id=chunk.doc_id,
+                    chunk_id=chunk.chunk_id,
+                    text=chunk.text,
+                    chunk_index=chunk.chunk_index,
+                    document_metadata=chunk.document_metadata
+                )
+            )
+
+        sources = list({c.doc_id for c in context_chunks})
+
+        return ContextPackage(
+            query=query,
+            chunks=context_chunks,
+            sources=sources
+        )
+=== ./knowledge_core/pipeline/query_context.py ===
+from dataclasses import dataclass
+from typing import Any, List, Optional
+
+
+@dataclass
+class QueryContext:
+    """
+    Central state object for a single query execution.
+
+    The QueryContext collects all intermediate results produced by the
+    QueryPipeline so that the full reasoning path of a query remains
+    traceable and debuggable.
+
+    This structure also enables future features such as:
+    - explainability reports
+    - audit logging
+    - monitoring
+    - evaluation pipelines
+    """
+
+    # --------------------------------------------------
+    # Input
+    # --------------------------------------------------
+
+    query: str
+
+    # --------------------------------------------------
+    # Intent & Role
+    # --------------------------------------------------
+
+    intent: Optional[str] = None
+    role: Optional[str] = None
+
+    # --------------------------------------------------
+    # Retrieval
+    # --------------------------------------------------
+
+    retrieval_result: Optional[Any] = None
+    ranked_documents: Optional[List[Any]] = None
+
+    # --------------------------------------------------
+    # Perspective
+    # --------------------------------------------------
+
+    perspective: Optional[str] = None
+
+    # --------------------------------------------------
+    # Context Construction
+    # --------------------------------------------------
+
+    context_package: Optional[Any] = None
+
+    # --------------------------------------------------
+    # Prompt & LLM
+    # --------------------------------------------------
+
+    prompt: Optional[str] = None
+    response: Optional[str] = None
+
+=== ./knowledge_core/pipeline/query_pipeline.py ===
+from knowledge_core.pipeline.query_context import QueryContext
+from knowledge_core.audit.retrieval_decision_log import RetrievalDecisionLogger
+
+
+class QueryPipeline:
+
+    def __init__(
+        self,
+        intent_engine,
+        role_engine,
+        retrieval_engine,
+        scoring_engine,
+        perspective_orchestrator,
+        context_builder,
+        prompt_builder,
+        llm_client,
+        log_path
+    ):
+
+        self.intent_engine = intent_engine
+        self.role_engine = role_engine
+
+        self.retrieval_engine = retrieval_engine
+        self.scoring_engine = scoring_engine
+
+        self.perspective_orchestrator = perspective_orchestrator
+
+        self.context_builder = context_builder
+        self.prompt_builder = prompt_builder
+
+        self.llm_client = llm_client
+
+        self.logger = RetrievalDecisionLogger(log_path)
+
+    def run(self, query):
+
+        # --------------------------------------------------
+        # Initialize Query Context
+        # --------------------------------------------------
+
+        ctx = QueryContext(query=query)
+
+        # --------------------------------------------------
+        # 1 Intent Detection
+        # --------------------------------------------------
+
+        ctx.intent = self.intent_engine.detect_intent(ctx.query)
+
+        # --------------------------------------------------
+        # 2 Role Detection
+        # --------------------------------------------------
+
+        ctx.role = self.role_engine.detect_role(ctx.intent)
+
+        # --------------------------------------------------
+        # 3 Retrieval
+        # --------------------------------------------------
+
+        ctx.retrieval_result = self.retrieval_engine.retrieve(ctx.query)
+
+        # --------------------------------------------------
+        # 4 Document Scoring
+        # --------------------------------------------------
+
+        ctx.ranked_documents = self.scoring_engine.score(
+            ctx.retrieval_result.document_candidates
+        )
+
+        # --------------------------------------------------
+        # 5 Flatten documents → chunks
+        # --------------------------------------------------
+
+        scored_chunks = [
+            chunk
+            for doc in ctx.ranked_documents
+            for chunk in doc.chunks
+        ]
+
+        # --------------------------------------------------
+        # 6 Perspective Orchestration (REAL selection step)
+        # --------------------------------------------------
+
+        selected_chunks = self.perspective_orchestrator.orchestrate(
+            scored_chunks=scored_chunks,
+            content_intent=ctx.intent.content_intent
+        )
+
+        # --------------------------------------------------
+        # 7 Context Construction
+        # --------------------------------------------------
+
+        ctx.context_package = self.context_builder.build_context(
+            query=ctx.query,
+            chunks=selected_chunks
+        )
+
+        # --------------------------------------------------
+        # 8 Retrieval Decision Log
+        # --------------------------------------------------
+
+        try:
+            self.logger.log(
+                query=ctx.query,
+                intent=ctx.intent,
+                role=ctx.role,
+                ranked_documents=ctx.ranked_documents,
+                context_package=ctx.context_package
+            )
+        except Exception as e:
+            print("Retrieval audit logging failed:", e)
+
+        # --------------------------------------------------
+        # 9 Prompt Generation
+        # --------------------------------------------------
+
+        ctx.prompt = self.prompt_builder.build_prompt(
+            query=ctx.query,
+            role=ctx.role,
+            perspective=ctx.intent.content_intent,  # optional, falls benötigt
+            context_package=ctx.context_package
+        )
+
+        # --------------------------------------------------
+        # 10 LLM Execution
+        # --------------------------------------------------
+
+        ctx.response = self.llm_client.generate(ctx.prompt)
+
+        return ctx
+=== ./knowledge_core/prompt/__init__.py ===
+
+=== ./knowledge_core/prompt/prompt_governance.py ===
+class PromptBuilder:
+
+    def build_prompt(
+        self,
+        query,
+        role,
+        perspective,
+        context_package
+    ):
+
+        system_prompt = self._system_prompt(role)
+
+        context_block = self._context_block(context_package)
+
+        instructions = self._instructions()
+
+        prompt = f"""
+SYSTEM ROLE
+{system_prompt}
+
+CONTEXT
+{context_block}
+
+INSTRUCTIONS
+{instructions}
+
+QUESTION
+{query}
+"""
+
+        return prompt
+
+
+    def _system_prompt(self, role):
+
+        if role == "trusted_advisor":
+            return (
+                "You are a trusted advisor for insurance regulation "
+                "and technology governance."
+            )
+
+        return "You are a professional consulting assistant."
+
+
+    def _context_block(self, context_package):
+
+        blocks = []
+
+        for chunk in context_package.chunks:
+
+            blocks.append(
+                f"""
+SOURCE: {chunk.doc_id}
+CHUNK: {chunk.chunk_id}
+
+{chunk.text}
+"""
+            )
+
+        return "\n---\n".join(blocks)
+
+
+    def _instructions(self):
+
+        return """
+Use only the information provided in the context.
+
+Do not invent facts.
+
+If the context does not contain enough information,
+state that the answer cannot be determined.
+
+Distinguish clearly between regulatory sources
+and advisory interpretation.
+"""
+=== ./knowledge_core/retrieval/__init__.py ===
+
+=== ./knowledge_core/retrieval/candidate_retriever.py ===
+from knowledge_core.retrieval.retrieval_models import ChunkCandidate
+
+
+class CandidateRetriever:
+
+    def __init__(self, knowledge_base, vector_top_k):
+
+        self.kb = knowledge_base
+        self.vector_top_k = vector_top_k
+
+    def retrieve(self, query_vector):
+
+        distances, indices = self.kb.vector_index.search(
+            query_vector,
+            self.vector_top_k
+        )
+
+        candidates = []
+
+        for distance, idx in zip(distances[0], indices[0]):
+
+            chunk = self.kb.chunks[idx]
+
+            doc_meta = self.kb.get_document_metadata(chunk["doc_id"])
+
+            similarity = 1 / (1 + distance)
+
+            candidate = ChunkCandidate(
+                chunk_id=chunk["chunk_id"],
+                doc_id=chunk["doc_id"],
+                text=chunk["text"],
+                chunk_index=chunk["chunk_index"],
+                similarity_score=similarity,
+                document_metadata=doc_meta
+            )
+
+            candidates.append(candidate)
+
+        return candidates
+=== ./knowledge_core/retrieval/document_aggregator.py ===
+from collections import defaultdict
+from statistics import mean
+from knowledge_core.retrieval.retrieval_models import DocumentCandidate
+
+class DocumentAggregator:
+
+    def __init__(self, top_k_chunks=3):
+
+        self.top_k_chunks = top_k_chunks
+
+    def aggregate(self, chunk_candidates):
+
+        grouped = defaultdict(list)
+
+        for chunk in chunk_candidates:
+            grouped[chunk.doc_id].append(chunk)
+
+        document_candidates = []
+
+        for doc_id, chunks in grouped.items():
+
+            # sort chunks by similarity
+            sorted_chunks = sorted(
+                chunks,
+                key=lambda c: c.similarity_score,
+                reverse=True
+            )
+
+            top_chunks = sorted_chunks[:self.top_k_chunks]
+
+            aggregated_score = mean(
+                c.similarity_score for c in top_chunks
+            )
+
+            document_candidate = DocumentCandidate(
+                doc_id=doc_id,
+                chunks=top_chunks,
+                document_metadata=top_chunks[0].document_metadata,
+                aggregated_similarity=aggregated_score
+            )
+
+            document_candidates.append(document_candidate)
+
+        return document_candidates
+=== ./knowledge_core/retrieval/query_embedder.py ===
+class QueryEmbedder:
+
+    def __init__(self, embedding_model):
+        self.model = embedding_model
+
+    def embed(self, query: str):
+
+        vector = self.model.encode([query])
+
+        return vector
+=== ./knowledge_core/retrieval/retrieval_engine.py ===
+from knowledge_core.retrieval.query_embedder import QueryEmbedder
+from knowledge_core.retrieval.candidate_retriever import CandidateRetriever
+from knowledge_core.retrieval.document_aggregator import DocumentAggregator
+from knowledge_core.retrieval.retrieval_models import RetrievalResult
+
+from config.engine_config import RETRIEVAL_CONFIG
+
+class RetrievalEngine:
+
+    def __init__(
+
+        self,
+        knowledge_base,
+        embedding_model
+    ):
+
+        retrieval_cfg = RETRIEVAL_CONFIG
+
+        self.embedder = QueryEmbedder(embedding_model)
+
+        self.retriever = CandidateRetriever(
+            knowledge_base,
+            retrieval_cfg["vector_top_k"]
+        )
+
+        self.aggregator = DocumentAggregator(
+            retrieval_cfg["document_aggregation"]["top_k_chunks"]
+        )
+
+    def retrieve(self, query):
+
+        query_vector = self.embedder.embed(query)
+
+        chunk_candidates = self.retriever.retrieve(query_vector)
+
+        document_candidates = self.aggregator.aggregate(chunk_candidates)
+
+        return RetrievalResult(
+            query=query,
+            chunk_candidates=chunk_candidates,
+            document_candidates=document_candidates
+        )
+=== ./knowledge_core/retrieval/retrieval_models.py ===
+from dataclasses import dataclass
+from typing import List
+
+
+@dataclass
+class ChunkCandidate:
+    chunk_id: str
+    doc_id: str
+    text: str
+    chunk_index: int
+    similarity_score: float
+    document_metadata: dict
+
+
+@dataclass
+class DocumentCandidate:
+    doc_id: str
+    chunks: List[ChunkCandidate]
+    document_metadata: dict
+    aggregated_similarity: float
+
+
+@dataclass
+class RetrievalResult:
+    query: str
+    chunk_candidates: List[ChunkCandidate]
+    document_candidates: List[DocumentCandidate]
+
+
+@dataclass
+class RankedDocument:
+    doc_id: str
+    score: float                 # 🔥 EINHEITLICHES FELD
+    chunks: List[ChunkCandidate]
+    document_metadata: dict
+
+    # optional für Explainability
+    semantic_score: float
+    governance_score: float
+
+
+@dataclass
+class ContextChunk:
+    doc_id: str
+    chunk_id: str
+    text: str
+    chunk_index: int
+    document_metadata: dict
+
+
+@dataclass
+class ContextPackage:
+    query: str
+    chunks: List[ContextChunk]
+    sources: List[str]
+=== ./knowledge_core/roles/__init__.py ===
+
+=== ./knowledge_core/roles/role_engine.py ===
+from dataclasses import dataclass
+from knowledge_core.intent.intent_engine import IntentResult
+
+
+@dataclass
+class Role:
+    """
+    Represents the advisory role used when generating an answer.
+    """
+    name: str
+    description: str
+
+
+ROLE_MAP = {
+    "explain": Role(
+        name="trusted_advisor",
+        description="Explain regulatory or technical topics clearly and objectively."
+    ),
+
+    "compare": Role(
+        name="analyst",
+        description="Compare options or approaches objectively and highlight differences."
+    ),
+
+    "assess": Role(
+        name="regulatory_advisor",
+        description="Assess risks, compliance aspects, and regulatory implications."
+    ),
+
+    "recommend": Role(
+        name="strategy_advisor",
+        description="Provide strategic recommendations based on available knowledge."
+    ),
+
+    "summarize": Role(
+        name="knowledge_summarizer",
+        description="Summarize knowledge sources clearly and concisely."
+    ),
+}
+
+
+class RoleEngine:
+    """
+    Role Engine maps Intent → Role.
+    """
+
+    def detect_role(self, intent: IntentResult) -> Role:
+        if intent.interaction_intent in ROLE_MAP:
+            return ROLE_MAP[intent.interaction_intent]
+
+        return ROLE_MAP["explain"]
+=== ./knowledge_core/scoring/__init__.py ===
+
+=== ./knowledge_core/scoring/scoring_engine.py ===
+from config.scoring_config import SCORING_CONFIG
+from knowledge_core.retrieval.retrieval_models import RankedDocument
+
+
+class ScoringEngine:
+
+    def __init__(self):
+
+        self.origin_weights = SCORING_CONFIG["origin_weights"]
+        self.confidence_weights = SCORING_CONFIG["confidence_weights"]
+        self.document_type_weights = SCORING_CONFIG["document_type_weights"]
+
+    def score(self, document_candidates):
+
+        ranked_documents = []
+
+        for doc in document_candidates:
+
+            meta = doc.document_metadata
+
+            # ------------------------------
+            # Semantic score
+            # ------------------------------
+            semantic_score = doc.aggregated_similarity
+
+            # ------------------------------
+            # Governance score
+            # ------------------------------
+            origin_score = self.origin_weights.get(meta.get("origin"), 0)
+
+            confidence_score = self.confidence_weights.get(
+                meta.get("confidence_level"),
+                0
+            )
+
+            doc_type_score = self.document_type_weights.get(
+                meta.get("document_type"),
+                0
+            )
+
+            governance_score = (
+                origin_score +
+                confidence_score +
+                doc_type_score
+            )
+
+            # ------------------------------
+            # Final score
+            # ------------------------------
+            final_score = semantic_score + governance_score
+
+            ranked_documents.append(
+                RankedDocument(
+                    doc_id=doc.doc_id,
+                    score=final_score,                 # 🔥 zentral
+                    chunks=doc.chunks,
+                    document_metadata=meta,
+                    semantic_score=semantic_score,
+                    governance_score=governance_score
+                )
+            )
+
+        # ------------------------------
+        # Sort
+        # ------------------------------
+        ranked_documents.sort(
+            key=lambda d: d.score,
+            reverse=True
+        )
+
+        return ranked_documents
+=== ./knowledge_core/utils/file_filter.py ===
+import os
+from config.file_config import ALLOWED_EXTENSIONS, IGNORE_HIDDEN_FILES
+
+
+def is_valid_file(filename: str) -> bool:
+    """
+    Prüft, ob eine Datei für das Onboarding zugelassen ist.
+    """
+
+    # Hidden files (z. B. .DS_Store)
+    if IGNORE_HIDDEN_FILES and filename.startswith("."):
+        return False
+
+    # Extension check
+    _, ext = os.path.splitext(filename.lower())
+
+    if ext not in ALLOWED_EXTENSIONS:
+        return False
+
+    return True
+=== ./scripts/__init__.py ===
+
+=== ./scripts/ai_registry_suggester.py ===
+import json
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from openai import OpenAI
+import re
+
+load_dotenv()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+AI_SUGGESTION_PATH = BASE_PATH / "tests/onboarding_ai_suggestions"
+INTAKE_PATH = BASE_PATH / "knowledge_sources/intake"
+
+
+def sanitize_filename(name):
+    name = name.lower()
+    name = re.sub(r"[^\w\s-]", "", name)
+    name = re.sub(r"\s+", "_", name)
+    return name
+
+
+TAXONOMY = {
+    "document_type": ["regulatory_text", "consulting_framework"],
+    "origin": ["legislator", "consulting_firm"],
+    "knowledge_domain": ["insurance_domain", "trusted_advisor"],
+    "content_domain": ["risk_management", "compliance"]
+}
+
+
+def main():
+
+    print("\n=== AI REGISTRY SUGGESTER ===\n")
+
+    files = list(INTAKE_PATH.glob("*"))
+    print(f"→ Found {len(files)} documents")
+
+    AI_SUGGESTION_PATH.mkdir(parents=True, exist_ok=True)
+
+    for file in files:
+
+        prompt = f"""
+Use ONLY values from this taxonomy:
+
+{json.dumps(TAXONOMY, indent=2)}
+
+Return STRICT JSON with:
+document_type, origin, knowledge_domain, content_domain
+
+Document:
+{file.name}
+"""
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            response_format={"type": "json_object"}
+        )
+
+        result = json.loads(response.choices[0].message.content)
+
+        filename = sanitize_filename(file.name)
+        path = AI_SUGGESTION_PATH / f"{filename}.json"
+
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2)
+
+        print(f"✔ AI suggestion created: {file.name}")
+
+
+if __name__ == "__main__":
+    main()
+=== ./scripts/generate_repo_map.py ===
+from pathlib import Path
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+EXCLUDE_DIRS = {
+    ".git",
+    "__pycache__",
+    ".venv",
+    "node_modules",
+    "vector_index",
+    "chunks",
+    ".gitignore",
+    ".DS_Store"
+}
+
+MAX_DEPTH = 4
+
+
+def build_tree(path, prefix="", depth=0):
+    if depth > MAX_DEPTH:
+        return ""
+
+    lines = []
+    entries = sorted(path.iterdir(), key=lambda x: (x.is_file(), x.name.lower()))
+
+    for i, entry in enumerate(entries):
+        if entry.name in EXCLUDE_DIRS:
+            continue
+
+        connector = "└── " if i == len(entries) - 1 else "├── "
+        lines.append(f"{prefix}{connector}{entry.name}")
+
+        if entry.is_dir():
+            extension = "    " if i == len(entries) - 1 else "│   "
+            lines.append(build_tree(entry, prefix + extension, depth + 1))
+
+    return "\n".join([l for l in lines if l])
+
+
+def main():
+    print("knowledge-engine/")
+    print(build_tree(BASE_PATH))
+
+
+if __name__ == "__main__":
+    main()
+=== ./scripts/reset_knowledge_base.py ===
+import shutil
+from pathlib import Path
+from datetime import datetime
+
+# --------------------------------------------------
+# CONFIG
+# --------------------------------------------------
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+ARCHIVE_PATH = BASE_PATH / "knowledge_sources" / "archive"
+INTAKE_PATH = BASE_PATH / "knowledge_sources" / "intake"
+KB_PATH = BASE_PATH / "knowledge_base"
+
+BACKUP_ENABLED = True
+
+
+# --------------------------------------------------
+# UTILS
+# --------------------------------------------------
+
+def ensure_directory(path: Path):
+    path.mkdir(parents=True, exist_ok=True)
+
+
+def clear_directory(path: Path):
+    if not path.exists():
+        return
+    for item in path.iterdir():
+        if item.is_file():
+            item.unlink()
+        else:
+            shutil.rmtree(item)
+
+
+def backup_directory(path: Path):
+    if not path.exists():
+        return None
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = path.parent / "99_Backup" / f"{path.name}_backup_{timestamp}"
+
+    print(f"📦 Creating backup: {backup_path}")
+    shutil.copytree(path, backup_path)
+
+    return backup_path
+
+
+# --------------------------------------------------
+# STEP 0 – CLEAN INTAKE
+# --------------------------------------------------
+
+#def reset_intake():
+#    print("\n🧹 Clearing intake directory")
+#    ensure_directory(INTAKE_PATH)
+#    clear_directory(INTAKE_PATH)
+#    print("✅ Intake cleared")
+
+
+# --------------------------------------------------
+# STEP 1 – COPY ARCHIVE → INTAKE
+# --------------------------------------------------
+
+def copy_archive_to_intake():
+    print("\n🔁 Copying documents from archive → intake")
+
+    count = 0
+
+    for file in ARCHIVE_PATH.rglob("*"):
+        if file.is_file():
+            relative_path = file.relative_to(ARCHIVE_PATH)
+            target_path = INTAKE_PATH / relative_path
+
+            ensure_directory(target_path.parent)
+            shutil.copy2(file, target_path)
+
+            count += 1
+
+    print(f"✅ {count} documents copied to intake")
+
+
+# --------------------------------------------------
+# STEP 2 – RESET KNOWLEDGE BASE
+# --------------------------------------------------
+
+def reset_knowledge_base():
+    print("\n🧹 Resetting Knowledge Base")
+
+    if BACKUP_ENABLED:
+        backup_directory(KB_PATH)
+
+    subpaths = [
+        KB_PATH / "registry",
+        KB_PATH / "chunks",
+        KB_PATH / "vector_index",
+        KB_PATH / "audit"
+    ]
+
+    for path in subpaths:
+        print(f" - clearing {path}")
+        clear_directory(path)
+        ensure_directory(path)
+
+    print("✅ Knowledge Base reset complete")
+
+
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
+
+def main():
+    print("🚀 Knowledge Base Reset & Re-Onboarding Preparation")
+
+    if not ARCHIVE_PATH.exists():
+        raise ValueError(f"Archive path not found: {ARCHIVE_PATH}")
+
+    # Step 0
+    #reset_intake()
+
+    # Step 1
+    copy_archive_to_intake()
+
+    # Step 2
+    reset_knowledge_base()
+
+    print("\n🎯 System ready for full re-onboarding")
+
+
+if __name__ == "__main__":
+    main()
+=== ./scripts/review_cli.py ===
+import json
+from pathlib import Path
+import sys
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+EXPECTATION_DIR = BASE_PATH / "tests/onboarding_expectations"
+
+
+# -------------------------
+# LOAD
+# -------------------------
+def load_expectations():
+    files = list(EXPECTATION_DIR.glob("*.json"))
+
+    data = []
+    for f in files:
+        with open(f, "r", encoding="utf-8") as file:
+            content = json.load(file)
+            content["_file"] = f  # internal only
+            data.append(content)
+
+    return data
+
+
+def get_review_items(expectations):
+    return [e for e in expectations if e.get("review_required")]
+
+
+# -------------------------
+# HELPERS
+# -------------------------
+def save_item(item):
+    path = item["_file"]
+
+    # ❗ remove runtime field
+    item_to_save = {k: v for k, v in item.items() if k != "_file"}
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(item_to_save, f, indent=2)
+
+
+# -------------------------
+# COMMANDS
+# -------------------------
+def list_reviews():
+    expectations = load_expectations()
+    reviews = get_review_items(expectations)
+
+    print("\n=== REVIEW ITEMS ===\n")
+
+    for i, e in enumerate(reviews):
+        print(f"[{i}] {e.get('name')}")
+        print(f"    mismatches: {e.get('mismatches')}")
+        print()
+
+    if not reviews:
+        print("No open reviews.\n")
+
+
+def show_review(index):
+    reviews = get_review_items(load_expectations())
+
+    try:
+        item = reviews[index]
+    except:
+        print("Invalid index")
+        return
+
+    print("\n=== REVIEW DETAIL ===\n")
+    print(json.dumps({k: v for k, v in item.items() if k != "_file"}, indent=2))
+
+
+def diff_review(index):
+    reviews = get_review_items(load_expectations())
+
+    try:
+        item = reviews[index]
+    except:
+        print("Invalid index")
+        return
+
+    reg = item.get("registry_expectation", {})
+    ai = item.get("ai_suggestion", {})
+
+    print("\n=== DIFF ===\n")
+
+    for section in ["strict", "soft"]:
+        for key in reg.get(section, {}):
+            reg_val = reg[section].get(key)
+            ai_val = ai.get(section, {}).get(key)
+
+            status = "✔" if reg_val == ai_val else "❌"
+
+            print(f"{status} {key}")
+            print(f"   Registry: {reg_val}")
+            print(f"   AI:       {ai_val}")
+
+    print()
+
+
+def accept_review(index):
+    reviews = get_review_items(load_expectations())
+
+    try:
+        item = reviews[index]
+    except:
+        print("Invalid index")
+        return
+
+    # apply AI
+    item["registry_expectation"] = item["ai_suggestion"]
+    item["review_required"] = False
+    item["source"] = "ai_accepted"
+
+    item.pop("ai_suggestion", None)
+    item.pop("mismatches", None)
+
+    save_item(item)
+
+    print("✅ AI suggestion accepted")
+
+
+def reject_review(index):
+    reviews = get_review_items(load_expectations())
+
+    try:
+        item = reviews[index]
+    except:
+        print("Invalid index")
+        return
+
+    item["review_required"] = False
+    item["source"] = "registry_confirmed"
+
+    item.pop("ai_suggestion", None)
+    item.pop("mismatches", None)
+
+    save_item(item)
+
+    print("❌ AI suggestion rejected")
+
+
+# -------------------------
+# CLI ENTRY
+# -------------------------
+def main():
+
+    if len(sys.argv) < 2:
+        print("Usage:")
+        print("  list")
+        print("  show <id>")
+        print("  diff <id>")
+        print("  accept <id>")
+        print("  reject <id>")
+        return
+
+    cmd = sys.argv[1]
+
+    if cmd == "list":
+        list_reviews()
+
+    elif cmd == "show":
+        show_review(int(sys.argv[2]))
+
+    elif cmd == "diff":
+        diff_review(int(sys.argv[2]))
+
+    elif cmd == "accept":
+        accept_review(int(sys.argv[2]))
+
+    elif cmd == "reject":
+        reject_review(int(sys.argv[2]))
+
+    else:
+        print("Unknown command")
+
+
+if __name__ == "__main__":
+    main()
+=== ./scripts/run_onboarding.py ===
+from pathlib import Path
+
+from knowledge_construction.onboarding_pipeline import OnboardingPipeline, REVIEW_REPORT_PATH
+from knowledge_construction.llm.llm_client import LLMClient
+
+
+def run_onboarding():
+
+    intake_dir = Path("knowledge_sources/intake")
+
+    pipeline = OnboardingPipeline(
+        registry_path="knowledge_base/registry/document_registry.json",
+        llm_client=LLMClient()
+    )
+
+    files = [f for f in intake_dir.glob("*") if f.is_file()]
+
+    if not files:
+        print("No files in intake.")
+        return
+
+    print(f"Found {len(files)} files in intake.\n")
+
+    processed = 0
+    errors = 0
+
+    for file_path in files:
+
+        print(f"Processing: {file_path.name}")
+
+        try:
+            pipeline.process_document(str(file_path))
+            processed += 1
+
+        except Exception as e:
+            print(f"ERROR processing {file_path.name}: {e}\n")
+            print(f"⚠ Document remains in intake: {file_path.name}\n")
+            errors += 1
+
+    # -------------------------------------------------
+    # Review Report schreiben + anzeigen
+    # -------------------------------------------------
+
+    pipeline.write_review_report()
+
+    print("\n===================================")
+    print(f"Processed: {processed}")
+    print(f"Errors:    {errors}")
+    print("===================================\n")
+
+    if REVIEW_REPORT_PATH.exists():
+        print("--- REVIEW REPORT ---")
+        print(REVIEW_REPORT_PATH.read_text(encoding="utf-8"))
+        print(f"(Saved: {REVIEW_REPORT_PATH})")
+
+
+if __name__ == "__main__":
+    run_onboarding()
+=== ./scripts/system_context_loader.py ===
+from pathlib import Path
+import importlib
+import argparse
+
+# --------------------------------------------------
+# Start with: python -m scripts.system_context_loader --mode xxxxx
+# --------------------------------------------------
+
+# --------------------------------------------------
+# BASE PATH
+# --------------------------------------------------
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+# --------------------------------------------------
+# CONFIG IMPORTS (Single Source of Truth)
+# --------------------------------------------------
+
+taxonomy = importlib.import_module("config.taxonomy")
+scoring = importlib.import_module("config.scoring_config")
+engine = importlib.import_module("config.engine_config")
+
+# --------------------------------------------------
+# CONTEXT MODES
+# --------------------------------------------------
+
+CONTEXT_MODES = {
+    "default": {
+        "docs": [
+            "docs/operations/working_style.md",
+            "docs/operations/system_context.md",
+            "docs/architecture/system/architecture_overview_v3.md",
+            "docs/architecture/engine/retrieval_architecture_guideline.md",
+            "docs/governance/explainability_principles.md",
+        ],
+        "taxonomy": "summary",
+        "scoring": "summary"
+    },
+    "onboarding": {
+        "docs": [
+            "docs/operations/onboarding_working_style.md",
+            "docs/operations/system_context.md",            
+            "docs/architecture/system/architecture_overview_v3.md",
+            "docs/architecture/knowledge/knowledge_construction_pipeline.md",
+            "docs/architecture/knowledge/knowledge_base_schema.md",
+            "docs/governance/explainability_principles.md",
+            "REPOSITORY_MAP",        ],
+        "taxonomy": "full",
+        "scoring": "full"
+    },
+    "debug": {
+        "docs": [
+            "docs/operations/working_style.md",
+            "docs/operations/system_context.md",    
+            "docs/architecture/engine/retrieval_architecture_guideline.md",
+            "docs/query_execution_pipeline.md",
+        ],
+        "taxonomy": "summary",
+        "scoring": "full"
+    },
+    "retrieval_test": {
+        "docs": [
+            "docs/operations/working_style.md",
+            "docs/operations/system_context.md",    
+            "docs/operations/query_execution.md",    
+            "docs/architecture/engine/retrieval_architecture_guideline.md",
+            "docs/architecture/query_execution_pipeline.md",
+            "docs/governance/explainability_principles.md",
+        ],
+        "taxonomy": "full",
+        "scoring": "full"
+    },
+    "coding": {
+        "docs": [
+            "docs/operations/working_style.md",
+            "docs/operations/system_context.md",
+            "docs/operations/query_execution.md",        
+            "docs/architecture/system/architecture_overview_v3.md",
+            "docs/architecture/engine/retrieval_architecture_guideline.md",
+            "REPOSITORY_MAP",
+        ],
+        "taxonomy": "full", 
+        "scoring": "full"
+    },
+    "expert": {
+        "docs": [
+            "docs/operations/working_style.md",
+            "docs/operations/system_context.md",    
+            "docs/architecture/system/architecture_overview_v3.md",
+            "docs/architecture/engine/retrieval_architecture_guideline.md",
+            "docs/query_execution_pipeline.md",
+            "docs/governance/explainability_principles.md",
+            "REPOSITORY_MAP",
+        ],
+        "taxonomy": "full",
+        "scoring": "full"
+    }
+}
+
+# --------------------------------------------------
+# HELPERS
+# --------------------------------------------------
+
+def read_doc(path):
+    if not path.exists():
+        return f"[MISSING: {path}]"
+    return path.read_text(encoding="utf-8")[:1500]
+
+def load_repo_map():
+    from scripts.generate_repo_map import build_tree
+    return build_tree(BASE_PATH)
+
+def save_context(prompt, mode):
+    output_path = BASE_PATH / f"chat_context_{mode}.txt"
+    output_path.write_text(prompt, encoding="utf-8")
+    print(f"\nSaved to: {output_path}")
+
+# --------------------------------------------------
+# FORMATTERS
+# --------------------------------------------------
+
+def format_taxonomy(mode):
+    if mode == "summary":
+        return "\nTaxonomy: fixed categories defined in system config."
+
+    lines = ["\n=== TAXONOMY (STRICT) ==="]
+
+    for name in [
+        "DOCUMENT_TYPES",
+        "DOMAIN_LAYERS",
+        "KNOWLEDGE_DOMAINS",
+        "TOPICS",
+        "ORIGINS",
+        "JURISDICTIONS"
+    ]:
+        values = getattr(taxonomy, name, None)
+        if values:
+            lines.append(f"\n{name}:")
+            for v in values:
+                lines.append(f"- {v}")
+
+    return "\n".join(lines)
+
+
+def format_scoring(mode):
+    if mode == "summary":
+        return "\nScoring: governance-aware ranking (origin, confidence, document type)."
+
+    cfg = scoring.SCORING_CONFIG
+
+    lines = ["\n=== SCORING MODEL ==="]
+
+    lines.append("\nOrigin Weights:")
+    for k, v in cfg["origin_weights"].items():
+        lines.append(f"- {k}: {v}")
+
+    lines.append("\nConfidence Weights:")
+    for k, v in cfg["confidence_weights"].items():
+        lines.append(f"- {k}: {v}")
+
+    lines.append("\nDocument Type Weights:")
+    for k, v in cfg["document_type_weights"].items():
+        lines.append(f"- {k}: {v}")
+
+    return "\n".join(lines)
+
+
+def format_engine():
+    cfg = engine.RETRIEVAL_CONFIG
+    context = cfg["context_construction"]
+
+    return f"""
+=== RETRIEVAL CONTEXT ===
+max_documents: {context['max_documents']}
+max_chunks_per_document: {context['max_chunks_per_document']}
+"""
+
+
+# --------------------------------------------------
+# CONTEXT BUILDER
+# --------------------------------------------------
+
+def build_context(mode):
+
+    if mode not in CONTEXT_MODES:
+        raise ValueError(f"Unknown mode: {mode}")
+
+    cfg = CONTEXT_MODES[mode]
+
+    parts = []
+
+    # Docs
+    for doc_path in cfg["docs"]:
+        full_path = BASE_PATH / doc_path
+        parts.append(f"\n=== {doc_path} ===\n{read_doc(full_path)}")
+
+    for doc_path in cfg["docs"]:
+
+        # 🔴 Sonderfall: dynamische Repo-Map
+        if "REPOSITORY_MAP" in doc_path:
+            parts.append("\n=== REPOSITORY STRUCTURE (LIVE) ===\n")
+            parts.append(load_repo_map())
+            continue
+
+        # 🟢 Standardfall: Datei laden
+        full_path = BASE_PATH / doc_path
+        parts.append(f"\n=== {doc_path} ===\n{read_doc(full_path)}")
+
+    # Taxonomy
+    parts.append(format_taxonomy(cfg["taxonomy"]))
+
+    # Scoring
+    parts.append(format_scoring(cfg["scoring"]))
+
+    # Engine config (always relevant)
+    parts.append(format_engine())
+
+    return "\n".join(parts)
+
+
+def build_prompt(mode):
+    context = build_context(mode)
+
+    return f"""
+Ich arbeite an einer Strategic Knowledge Engine.
+
+System Context:
+{context}
+
+Arbeitsprinzipien:
+- strikt entlang bestehender Architektur arbeiten
+- keine ad-hoc Lösungen
+- Governance und Explainability priorisieren
+- keine workarounds, die nicht der architektur entsprechen
+- erstelle immer vollständige Dateien, die ich 1:1 übernehmen kann
+- Architektur-Brüche sind nicht erlaubt.
+
+Mode: {mode}
+
+Ziel dieses Chats:
+[HIER EINTRAGEN]
+"""
+
+
+# --------------------------------------------------
+# CLI
+# --------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", default="expert",
+                        choices=list(CONTEXT_MODES.keys()))
+
+    args = parser.parse_args()
+
+    prompt = build_prompt(args.mode)
+
+    print(prompt)
+
+    save_context(prompt, args.mode)
+
+if __name__ == "__main__":
+    main()
+=== ./tests/__init__.py ===
+
+=== ./tests/dummy_llm.py ===
+class DummyLLM:
+
+    def generate(self, prompt: str) -> str:
+        return self.run(prompt)
+
+    def run(self, prompt, temperature=0.0, max_tokens=400):
+        return """
+        {
+          "document_type": "industry_position",
+          "domain_layer": "transformation_strategy",
+          "knowledge_domain": "cloud_technology",
+          "origin": "consulting_firm",
+          "jurisdiction": "Global",
+          "confidence": 0.8
+        }
+        """
+=== ./tests/generate_onboarding_expectations.py ===
+from pathlib import Path
+import json
+import re
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+REGISTRY_PATH = BASE_PATH / "knowledge_base/registry/document_registry.json"
+OUTPUT_DIR = BASE_PATH / "tests/onboarding_expectations"
+
+
+# -------------------------
+# HELPERS
+# -------------------------
+def load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def sanitize_filename(name):
+    name = name.lower()
+    name = re.sub(r"[^\w\s-]", "", name)
+    name = re.sub(r"\s+", "_", name)
+    return name
+
+
+def generate_doc_id_pattern(doc_id):
+    """
+    Generalisiert doc_id für Pattern-Matching
+    """
+    parts = doc_id.split("_")
+
+    # Beispiel: doc_legislator_EU_dora_verordnung_eu_2022_2554
+    # → wir behalten nur Jahr + evtl. letzten Teil
+    if len(parts) > 2:
+        return f"doc_*_{parts[-2]}"
+
+    return doc_id
+
+
+def extract_strict_fields(doc):
+    return {
+        "document_type": doc.get("document_type"),
+        "origin": doc.get("origin"),
+        "jurisdiction": doc.get("jurisdiction")
+    }
+
+
+def extract_soft_fields(doc):
+    return {
+        "knowledge_domain": doc.get("knowledge_domain"),
+        "domain_layer": doc.get("domain_layer")
+    }
+
+
+def extract_forbidden_fields(doc):
+    forbidden = {}
+
+    # Beispielregel: misc ist nie erlaubt
+    if doc.get("knowledge_domain") == "misc":
+        forbidden["knowledge_domain"] = ["misc"]
+
+    return forbidden
+
+
+# -------------------------
+# MAIN
+# -------------------------
+def main():
+    print("\n=== GENERATE EXPECTATIONS ===\n")
+
+    registry = load_json(REGISTRY_PATH)
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    for doc in registry:
+        title = doc.get("title", "document")
+        filename = sanitize_filename(title)
+
+        expectation = {
+            "name": title,
+            "match": {
+                "doc_id_pattern": generate_doc_id_pattern(doc["doc_id"])
+            },
+            "registry_expectation": {
+                "strict": extract_strict_fields(doc),
+                "soft": extract_soft_fields(doc),
+                "forbidden": extract_forbidden_fields(doc)
+            }
+        }
+
+        output_path = OUTPUT_DIR / f"{filename}.json"
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(expectation, f, indent=2)
+
+        print(f"✔ Generated: {output_path}")
+
+
+if __name__ == "__main__":
+    main()
+=== ./tests/query_pipeline.py ===
+def main():
+    query = "What does DORA require for cloud outsourcing?"
+    print(run_query_pipeline(query))
+
+
+if __name__ == "__main__":
+    main()
+=== ./tests/retrieval_aggregation_test.py ===
+from sentence_transformers import SentenceTransformer
+import faiss
+import json
+from pathlib import Path
+from collections import defaultdict
+import numpy as np
+
+# ----------------------------------
+# Paths
+# ----------------------------------
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+index_path = BASE_DIR / "knowledge_base/vector_index/index.faiss"
+chunks_path = BASE_DIR / "knowledge_base/chunks/chunks.json"
+
+# ----------------------------------
+# Load
+# ----------------------------------
+index = faiss.read_index(str(index_path))
+
+with open(chunks_path) as f:
+    chunks = json.load(f)
+
+# ----------------------------------
+# Model
+# ----------------------------------
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# ----------------------------------
+# Query
+# ----------------------------------
+query = "What are cloud requirements in DORA?"
+q_emb = model.encode([query])
+
+k = min(20, index.ntotal)
+D, I = index.search(q_emb, k=k)
+
+# ----------------------------------
+# Aggregation
+# ----------------------------------
+doc_scores = defaultdict(list)
+
+for score, idx in zip(D[0], I[0]):
+    chunk = chunks[idx]
+    doc_scores[chunk["doc_id"]].append(score)
+
+# Top-3 mean
+doc_ranking = []
+
+for doc_id, scores in doc_scores.items():
+    top_scores = sorted(scores, reverse=True)[:3]
+    agg_score = np.mean(top_scores)
+    doc_ranking.append((doc_id, agg_score))
+
+doc_ranking = sorted(doc_ranking, key=lambda x: x[1])
+
+# ----------------------------------
+# Output
+# ----------------------------------
+print("\n--- DOCUMENT RANKING ---\n")
+
+for doc_id, score in doc_ranking:
+    print(f"{doc_id} → {score:.4f}")
+=== ./tests/retrieval_smoketest.py ===
+from sentence_transformers import SentenceTransformer
+import faiss
+import json
+from pathlib import Path
+
+# ----------------------------------
+# Robust Path Handling
+# ----------------------------------
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+index_path = BASE_DIR / "knowledge_base/vector_index/index.faiss"
+chunks_path = BASE_DIR / "knowledge_base/chunks/chunks.json"
+
+print("BASE_DIR:", BASE_DIR)
+print("Index Path:", index_path)
+print("Chunks Path:", chunks_path)
+
+# ----------------------------------
+# Load Data
+# ----------------------------------
+if not index_path.exists():
+    raise FileNotFoundError(f"Index not found: {index_path}")
+
+if not chunks_path.exists():
+    raise FileNotFoundError(f"Chunks not found: {chunks_path}")
+
+index = faiss.read_index(str(index_path))
+
+with open(chunks_path) as f:
+    chunks = json.load(f)
+
+# ----------------------------------
+# Model
+# ----------------------------------
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# ----------------------------------
+# Query
+# ----------------------------------
+query = "What is DORA regulation about?"
+q_emb = model.encode([query])
+
+# ----------------------------------
+# Search
+# ----------------------------------
+k = min(5, index.ntotal)
+D, I = index.search(q_emb, k=k)
+
+# ----------------------------------
+# Results
+# ----------------------------------
+print("\n--- RESULTS ---\n")
+
+print("chunks:", len(chunks))
+
+print("\n--- INDEX INFO ---")
+print("ntotal:", index.ntotal)
+print("dim:", index.d)
+
+for score, idx in zip(D[0], I[0]):
+    chunk = chunks[idx]
+    print(f"Score: {score:.4f}")
+    print(f"Doc: {chunk['doc_id']}")
+    print(f"Text: {chunk['text'][:200]}")
+    print("-" * 50)
+=== ./tests/run_onboarding_test.py ===
+import sys
+import os
+
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+)
+
+from knowledge_construction.onboarding_pipeline import OnboardingPipeline
+
+
+class DummyLLM:
+
+    def run(self, prompt, **kwargs):
+        return """
+{
+  "document_type": "regulatory_text",
+  "domain_layer": "regulation",
+  "knowledge_domain": "trusted_advisor",
+  "origin": "legislator",
+  "jurisdiction": "EU",
+  "confidence": 0.8
+}
+"""
+
+pipeline = OnboardingPipeline(
+    registry_path="knowledge_base/registry/document_registry.json",
+    llm_client=DummyLLM()
+)
+
+pipeline.process_document(
+    "knowledge_sources/intake/test_dora.txt"
+)
+
+print("✅ Dokument verarbeitet")
+=== ./tests/run_onboarding_validation.py ===
+import json
+from pathlib import Path
+import subprocess
+import sys
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+REGISTRY_PATH = BASE_PATH / "knowledge_base/registry/document_registry.json"
+EXPECTATION_DIR = BASE_PATH / "tests/onboarding_expectations"
+AI_SUGGESTION_DIR = BASE_PATH / "tests/onboarding_ai_suggestions"
+
+INTAKE_DIR = BASE_PATH / "knowledge_sources/intake"
+ARCHIVE_DIR = BASE_PATH / "knowledge_sources/archive"
+
+# ------------------------------------------------
+# FLAGS
+# ------------------------------------------------
+
+APPLY_MODE = "--apply" in sys.argv
+REGRESSION_MODE = "--regression" in sys.argv
+
+IGNORE_FIELDS = {"confidence"}
+
+# ------------------------------------------------
+# COMMANDS
+# ------------------------------------------------
+
+def run_command(cmd):
+    subprocess.run(cmd, check=True)
+
+
+def reset_knowledge_base():
+    print("🔄 Reset Knowledge Base (archive → intake)")
+    run_command(["python", "-m", "scripts.reset_knowledge_base"])
+
+
+def run_onboarding():
+    print("🚀 Run Onboarding")
+    run_command(["python", "-m", "scripts.run_onboarding"])
+
+
+# ------------------------------------------------
+# ARCHIVING
+# ------------------------------------------------
+
+def archive_document(source_file):
+    source = INTAKE_DIR / source_file
+    target = ARCHIVE_DIR / source_file
+
+    if source.exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(target)
+        print(f"📦 Archived: {source_file}")
+
+
+# ------------------------------------------------
+# LOADERS
+# ------------------------------------------------
+
+def load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_registry():
+    return load_json(REGISTRY_PATH)
+
+
+def load_expectations():
+    expectations = {}
+
+    if not EXPECTATION_DIR.exists():
+        return expectations
+
+    for file in EXPECTATION_DIR.glob("*.json"):
+        try:
+            data = load_json(file)
+
+            if "doc_id" not in data:
+                print(f"⚠️ Invalid expectation: {file.name}")
+                continue
+
+            expectations[data["doc_id"]] = data
+
+        except Exception as e:
+            print(f"⚠️ Error loading {file.name}: {e}")
+
+    return expectations
+
+
+def load_ai():
+    ai = {}
+
+    if not AI_SUGGESTION_DIR.exists():
+        return ai
+
+    for file in AI_SUGGESTION_DIR.glob("*.json"):
+        try:
+            data = load_json(file)
+
+            if "doc_id" not in data:
+                continue
+
+            ai[data["doc_id"]] = data.get("ai", {})
+
+        except Exception:
+            continue
+
+    return ai
+
+
+# ------------------------------------------------
+# EXPECTATION
+# ------------------------------------------------
+
+def create_expectation(doc):
+    return {
+        "doc_id": doc["doc_id"],
+        "title": doc["title"],
+        "expected": {
+            k: v for k, v in doc.items()
+            if k not in ["doc_id", "title", "source_file"]
+        },
+        "status": "TO_REVIEW"
+    }
+
+
+def save_expectation(doc_id, data):
+    EXPECTATION_DIR.mkdir(parents=True, exist_ok=True)
+    path = EXPECTATION_DIR / f"{doc_id}.json"
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
+# ------------------------------------------------
+# COMPARISON
+# ------------------------------------------------
+
+def compare(doc, expected, ai):
+
+    keys = set(doc.keys()) & set(expected.keys())
+
+    if ai:
+        keys = keys & set(ai.keys())
+
+    keys = {k for k in keys if k not in IGNORE_FIELDS}
+
+    result = {}
+
+    for k in sorted(keys):
+        result[k] = {
+            "registry": doc.get(k),
+            "expected": expected.get(k),
+            "ai": ai.get(k) if ai else None
+        }
+
+    return result
+
+
+# ------------------------------------------------
+# DECISION
+# ------------------------------------------------
+
+def classify(values):
+    r, e, a = values["registry"], values["expected"], values["ai"]
+
+    if r == e:
+        return "OK"
+
+    if a is not None and a == e:
+        return "SYSTEM_ERROR"
+
+    if a is not None and a == r:
+        return "EXPECTATION_OUTDATED"
+
+    return "REVIEW"
+
+
+def decision_symbol(decision):
+    return {
+        "OK": "✔",
+        "SYSTEM_ERROR": "❌",
+        "EXPECTATION_OUTDATED": "⚠",
+        "REVIEW": "?"
+    }[decision]
+
+
+def has_relevant_difference(comp):
+    return any(classify(v) != "OK" for v in comp.values())
+
+
+# ------------------------------------------------
+# OUTPUT
+# ------------------------------------------------
+
+def print_comparison(doc_id, comp):
+
+    print("\n===================================")
+    print(f"📄 {doc_id}")
+    print("=== REGISTRY vs EXPECTATION vs AI ===")
+
+    for field, values in comp.items():
+
+        decision = classify(values)
+        symbol = decision_symbol(decision)
+
+        print(f"{symbol} {field}")
+        print(f"   Registry:    {values['registry']}")
+        print(f"   Expectation: {values['expected']}")
+        print(f"   AI:          {values['ai']}")
+
+    print("===================================\n")
+
+
+# ------------------------------------------------
+# MAIN
+# ------------------------------------------------
+
+def main():
+
+    print("\n=== ONBOARDING VALIDATION V6.4 ===\n")
+    print(f"Mode: {'APPLY' if APPLY_MODE else 'VALIDATE'}")
+    print(f"Regression Mode: {'ON' if REGRESSION_MODE else 'OFF'}\n")
+
+    if REGRESSION_MODE:
+        reset_knowledge_base()
+
+    run_onboarding()
+
+    registry = load_registry()
+    expectations = load_expectations()
+    ai = load_ai()
+
+    failures = 0
+    reviews = 0
+    created = 0
+    archived = 0
+    fixed = 0
+
+    for doc in registry:
+
+        doc_id = doc["doc_id"]
+        source_file = doc["source_file"]
+
+        exp = expectations.get(doc_id)
+        ai_s = ai.get(doc_id, {})
+
+        # ---------------------------
+        # CREATE EXPECTATION
+        # ---------------------------
+
+        if not exp:
+            new_exp = create_expectation(doc)
+            save_expectation(doc_id, new_exp)
+
+            print(f"🆕 Created expectation → {doc_id}")
+            print(f"⚠ Keeping in intake\n")
+
+            created += 1
+            exp = new_exp
+
+        # ---------------------------
+        # COMPARISON (FIX!)
+        # ---------------------------
+
+        comp = compare(doc, exp["expected"], ai_s)
+
+        if has_relevant_difference(comp) or exp.get("status") != "APPROVED":
+            print_comparison(doc_id, comp)
+
+        # ---------------------------
+        # NOT APPROVED
+        # ---------------------------
+
+        if exp.get("status") != "APPROVED":
+            print(f"⚠ {doc_id} → expectation not approved")
+            print(f"⚠ Keeping in intake\n")
+
+            reviews += 1
+            continue
+
+        # ---------------------------
+        # DECISION LOOP
+        # ---------------------------
+
+        doc_has_error = False
+
+        for field, values in comp.items():
+
+            decision = classify(values)
+
+            if decision == "SYSTEM_ERROR":
+                failures += 1
+                doc_has_error = True
+
+            elif decision == "EXPECTATION_OUTDATED":
+                if APPLY_MODE:
+                    exp["expected"][field] = values["registry"]
+                    fixed += 1
+
+            elif decision == "REVIEW":
+                reviews += 1
+
+        # ---------------------------
+        # ARCHIVE
+        # ---------------------------
+
+        if not doc_has_error:
+            archive_document(source_file)
+            archived += 1
+
+        if APPLY_MODE and not doc_has_error:
+            save_expectation(doc_id, exp)
+
+    # ---------------------------
+    # SUMMARY
+    # ---------------------------
+
+    print("\n===================================")
+    print(f"Created:  {created}")
+    print(f"Fixed:    {fixed}")
+    print(f"Reviews:  {reviews}")
+    print(f"Archived: {archived}")
+    print(f"Failures: {failures}")
+    print("===================================\n")
+
+    if failures > 0:
+        raise ValueError("❌ REGRESSION DETECTED")
+
+    print("✔ VALIDATION PASSED\n")
+
+
+if __name__ == "__main__":
+    main()
+=== ./tests/test_classifier.py ===
+from knowledge_construction.metadata.classifier import classify_document
+
+
+# ------------------------------------------------
+# Dummy LLM
+# ------------------------------------------------
+
+class DummyLLM:
+
+    def run(self, prompt, temperature=0.0, max_tokens=400):
+
+        return """
+        {
+          "document_type": "industry_position",
+          "domain_layer": "transformation_strategy",
+          "knowledge_domain": "cloud_technology",
+          "origin": "consulting_firm",
+          "jurisdiction": "Global",
+          "confidence": 0.8
+        }
+        """
+
+
+# ------------------------------------------------
+# Test
+# ------------------------------------------------
+
+dummy_llm = DummyLLM()
+
+result = classify_document(
+    title="Cloud transformation strategy for insurers",
+    preview_text="This report discusses cloud adoption and modernization strategies.",
+    llm_client=dummy_llm
+)
+
+print(result)
+=== ./tests/test_llm_client.py ===
+from knowledge_construction.llm.llm_client import LLMClient
+
+
+def test_llm():
+
+    llm = LLMClient()
+
+    prompt = """
+Classify the following document:
+
+Title: DORA regulation
+Text: The Digital Operational Resilience Act defines requirements for ICT risk management in financial institutions.
+
+Return JSON with:
+- document_type
+- domain_layer
+- knowledge_domain
+- origin
+- jurisdiction
+"""
+
+    result = llm.run(prompt)
+
+    print("\n--- LLM RESULT ---\n")
+    print(result)
+
+
+if __name__ == "__main__":
+    test_llm()
+=== ./tests/test_preview_extractor.py ===
+from pathlib import Path
+from knowledge_construction.metadata.preview_extractor import extract_preview
+
+preview = extract_preview(
+    Path("knowledge_sources/archive/bafin_cloud_outsourcing_2024.pdf")
+)
+
+print(preview[:500])
+=== ./tests/test_query_pipeline.py ===
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+# --------------------------------------------------
+# Ensure logs directory exists (TEST-SCOPE FIX)
+# --------------------------------------------------
+os.makedirs("logs", exist_ok=True)
+
+# --- Core Pipeline ---
+from knowledge_core.pipeline.query_pipeline import QueryPipeline
+
+# --- Engines ---
+from knowledge_core.retrieval.retrieval_engine import RetrievalEngine
+from knowledge_core.scoring.scoring_engine import ScoringEngine
+from knowledge_core.perspectives.perspective_orchestrator import PerspectiveOrchestrator
+from knowledge_core.pipeline.context_builder import ContextBuilder
+from knowledge_core.prompt.prompt_governance import PromptBuilder
+
+from knowledge_core.intent.intent_engine import detect_intent
+from knowledge_core.roles.role_engine import RoleEngine
+
+# --- Infrastructure ---
+from knowledge_base.knowledge_base import KnowledgeBase
+from sentence_transformers import SentenceTransformer
+
+# --- Dummy LLM ---
+# from tests.dummy_llm import DummyLLM
+
+from knowledge_core.llm.llm_client import LLMClient
+
+
+# =========================================================
+# ADAPTER (Intent bleibt funktional)
+# =========================================================
+
+class IntentEngineAdapter:
+    def detect_intent(self, query):
+        return detect_intent(query)
+
+
+# =========================================================
+# TEST RUNNER
+# =========================================================
+
+def run_test(query: str):
+
+    print("\n==============================")
+    print("QUERY")
+    print("==============================")
+    print(query)
+
+    # --------------------------------------------------
+    # Init Dependencies
+    # --------------------------------------------------
+
+    kb = KnowledgeBase.load_from_disk("knowledge_base")
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    retrieval_engine = RetrievalEngine(
+        knowledge_base=kb,
+        embedding_model=model
+    )
+
+    pipeline = QueryPipeline(
+        intent_engine=IntentEngineAdapter(),
+        role_engine=RoleEngine(),
+        retrieval_engine=retrieval_engine,
+        scoring_engine=ScoringEngine(),
+        perspective_orchestrator=PerspectiveOrchestrator(),
+        context_builder=ContextBuilder(),
+        prompt_builder=PromptBuilder(),
+        llm_client=LLMClient(),
+        log_path="logs/retrieval_log.jsonl"
+    )
+
+    # --------------------------------------------------
+    # Run Pipeline
+    # --------------------------------------------------
+
+    ctx = pipeline.run(query)
+
+    # --------------------------------------------------
+    # OUTPUT
+    # --------------------------------------------------
+
+    print("\n=== INTENT ===")
+    print(ctx.intent)
+
+    print("\n=== ROLE ===")
+    print(ctx.role)
+
+    print("\n=== RAW CHUNKS (Top 5) ===")
+    for c in ctx.retrieval_result.chunk_candidates[:5]:
+        print({
+            "chunk_id": c.chunk_id,
+            "doc_id": c.doc_id,
+            "similarity": round(c.similarity_score, 4)
+        })
+
+    print("\n=== RANKED DOCUMENTS ===")
+    for d in ctx.ranked_documents:
+        print({
+            "doc_id": d.doc_id,
+            "score": round(d.score, 4)
+        })
+
+    print("\n=== CONTEXT ===")
+    for c in ctx.context_package.chunks:   # 🔥 FIX
+        print({
+            "doc_id": c.doc_id,
+            "text": c.text[:150]
+        })
+
+    print("\n=== RESPONSE ===")
+    print(ctx.response)
+
+    print("\n=== DIAGNOSTICS ===")
+    print({
+        "chunks": len(ctx.retrieval_result.chunk_candidates),
+        "documents": len(ctx.ranked_documents),
+        "context_chunks": len(ctx.context_package.chunks)
+    })
+
+
+if __name__ == "__main__":
+    run_test("Was fordert DORA hinsichtlich Cloud-Auslagerung bei Versicherungen?")
+=== ./tests/test_retrieval.py ===
+# test_retrieval.py
+from pathlib import Path
+
+from knowledge_core.retrieval.retrieval_engine import RetrievalEngine
+
+def run_test(query: str):
+    engine = RetrievalEngine()
+
+    result = engine.retrieve(query)
+
+    print("\n=== QUERY ===")
+    print(query)
+
+    print("\n=== DOCUMENTS ===")
+    for doc in result.documents:
+        print({
+            "doc_id": doc.doc_id,
+            "score": doc.score,
+            "origin": doc.metadata.get("origin"),
+            "type": doc.metadata.get("document_type")
+        })
+
+    print("\n=== CHUNKS ===")
+    for chunk in result.chunks:
+        print({
+            "chunk_id": chunk.chunk_id,
+            "doc_id": chunk.doc_id,
+            "score": chunk.score,
+            "text": chunk.text[:200]
+        })
+
+if __name__ == "__main__":
+    run_test("Was fordert DORA hinsichtlich Cloud-Auslagerung bei Versicherungen?")

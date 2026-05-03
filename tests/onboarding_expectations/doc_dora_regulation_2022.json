@@ -1,0 +1,14 @@
+{
+  "doc_id": "doc_dora_regulation_2022",
+  "title": "Dora Verordnung EU 2022 2554",
+  "expected": {
+    "document_type": "regulatory_text",
+    "knowledge_domain": "insurance_domain",
+    "origin": "legislator",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "bias": "elevated",
+    "domain_layer": "regulation"
+  },
+  "status": "APPROVED"
+}

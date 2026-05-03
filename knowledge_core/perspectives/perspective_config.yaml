@@ -1,0 +1,11 @@
+normative:
+  regulatory: 0.6
+  consulting: 0.2
+  industry: 0.2
+  vendor: 0.0
+
+competitive:
+  regulatory: 0.25
+  consulting: 0.25
+  industry: 0.25
+  vendor: 0.25

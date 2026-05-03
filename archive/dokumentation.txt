@@ -1,0 +1,4086 @@
+=== ./docs/🟢 Projektkontext-Insurance Advisory Portfolio Lab.txt ===
+🟢 Projektkontext: Insurance Advisory Portfolio Lab (CONET)
+
+Ich entwickle ein strukturiertes, marktfähiges Beratungsportfolio für CONET im Zielmarkt Versicherungen.
+
+CONET ist ein umsetzungsstarker IT-Dienstleister mit Kompetenzen in Consulting, Architektur, Data & AI, Cloud, Softwareentwicklung und Managed Services. Ziel ist es, ein klar positioniertes Insurance-Portfolio zu entwickeln, das CONET im Versicherungsmarkt differenziert und vertrieblich nutzbar macht.
+
+🎯 Zielsetzung
+
+Entwicklung eines modularen, strategisch anschlussfähigen und operativ belastbaren Beratungsportfolios für Versicherungen mit Schwerpunkt auf:
+
+Business Consulting im Versicherungsumfeld
+
+Facharchitektur
+
+Datenanalyse & Data-Driven Transformation
+
+Solution Architektur
+
+Testmanagement
+
+Das Portfolio soll Transformation nicht nur konzipieren, sondern umsetzbar machen.
+
+🧭 Markt- und Zielkundenperspektive
+
+Versicherungen unterscheiden sich erheblich hinsichtlich:
+
+Sparte (Komposit, Leben, Kranken, Rückversicherung)
+
+Transformationsreife
+
+IT-Architektur (Legacy, Hybrid, Cloud-native)
+
+Innovationsdruck
+
+Regulatorischer Betroffenheit
+
+Strategischer Ambition
+
+Das Portfolio muss daher flexibel adaptierbar sein – abhängig vom jeweiligen Zielkunden.
+
+🏗 Strukturprinzip des Portfolios
+
+Das Portfolio soll zwei komplementäre Strukturprinzipien integrieren:
+
+1️⃣ Vertikale Struktur (Versicherungsdomänen)
+
+Strukturierung entlang fachlicher Domänen, z. B.:
+
+Produktentwicklung & Produktarchitektur
+
+Underwriting
+
+Schaden-/Leistungsmanagement
+
+Bestandsführung
+
+Vertrieb & Customer Experience
+
+Finance & Regulatory Reporting
+
+Datenmanagement
+
+Diese Perspektive ist besonders relevant für kundenspezifische Angebotsgespräche.
+
+2️⃣ Horizontale Struktur (Transformationsfähigkeiten)
+
+Strukturierung entlang übergreifender Fähigkeiten:
+
+Business Transformation & Operating Model
+
+Fach- und Lösungsarchitektur
+
+Cloud-Transformation
+
+Data & AI
+
+Regulatorik & Compliance
+
+Digitale Souveränität
+
+Test- & Qualitätsmanagement
+
+Diese Perspektive ist relevant für strategische Positionierung und Differenzierung.
+
+🔁 Zwei Entwicklungslogiken
+
+Das Portfolio soll zwei Perspektiven systematisch abbilden:
+
+A. Fachlich getrieben (Business → Technology)
+
+Fachliche Anforderungen stehen im Mittelpunkt.
+Technologie, Cloud, KI, Regulatorik und Souveränität werden als Enabler und Designparameter integriert.
+
+Cloud und Regulatorik sind integrale Bestandteile der Lösung – keine isolierten Angebote.
+
+B. Innovationsgetrieben (Technology → Business)
+
+Neue Technologien, neue KI-Funktionalitäten, neue regulatorische Anforderungen oder Markttrends erzeugen neue fachliche Möglichkeiten und Umsatzchancen.
+
+Diese Perspektive soll:
+
+neue Beratungsfelder identifizieren
+
+Innovation als Business Opportunity darstellen
+
+Differenzierung gegenüber Wettbewerbern ermöglichen
+
+⚙️ Querschnittsdimensionen
+
+Folgende Themen sind integrative Leitplanken:
+
+Cloud & Hyperscaler-Integration
+
+Digitale Souveränität
+
+DORA, VAIT, FINMA etc.
+
+Data Governance
+
+Architektur-Governance
+
+Security & Compliance
+
+🏆 Positionierung von CONET
+
+CONET soll im Versicherungsmarkt positioniert werden als:
+
+Umsetzungsstarker Transformationspartner mit fachlicher Tiefe, Architekturkompetenz und technologischer Delivery-Fähigkeit.
+
+Nicht als reine Strategieberatung.
+Nicht als reiner Implementierungspartner.
+Sondern als integrierter Beratungs- und Umsetzungspartner.
+
+🚦 Arbeitsmodus dieses Chats
+
+Dieser Chat dient ausschließlich der Entwicklung des Insurance-Portfolios.
+
+Nicht Gegenstand:
+
+Knowledge-Engine-Architektur
+
+Retrieval-Logik
+
+Bot-Optimierung
+
+Bitte arbeite strukturiert, strategisch und portfolio-orientiert.
+=== ./docs/architecture/engine/ENGINE_PIPELINE_DIAGRAM.md ===
+# Knowledge Engine -- Query Pipeline Diagram
+
+This diagram shows how a user query flows through the Knowledge Engine.
+
+``` mermaid
+flowchart LR
+
+    A[User Query]
+
+    B[Intent Engine]
+    C[Role Engine]
+    D[Retrieval Engine]
+    E[Scoring Engine]
+    F[Context Builder]
+    G[Perspective Orchestrator]
+    H[Prompt Governance]
+    I[LLM]
+    J[Final Answer]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+
+    Query
+    → Intent Engine
+    → Role Engine
+    → Retrieval Engine
+    → Scoring Engine
+    → Context Builder
+    → Perspective Orchestrator
+    → Prompt Governance
+    → LLM
+```
+
+=== ./docs/architecture/engine/retrieval_architecture_guideline.md ===
+# Retrieval Architecture Guideline – Strategic Knowledge Engine
+Version: 3.3
+Layer: Architecture
+
+## Status
+This document replaces the previous version of `retrieval_architecture_guideline.md`.
+
+## Purpose
+The Retrieval Engine transforms a user query into a structured, explainable knowledge context for the reasoning model. 
+It operates exclusively on the curated Knowledge Base and ensures governance‑aware knowledge selection.
+
+---
+
+# Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunk Retrieval
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+This pipeline ensures high recall during retrieval and high precision through governance‑aware ranking.
+
+---
+
+# Step 1 – Query Embedding
+
+The user query is embedded using the same embedding model that was used to generate chunk embeddings.
+
+Example model:
+sentence-transformers/all-MiniLM-L6-v2
+
+Consistency between document and query embeddings ensures meaningful semantic similarity.
+
+---
+
+# Step 2 – Vector Search
+
+The query embedding is compared with the FAISS vector index.
+
+Input:
+query embedding
+
+Output:
+Top‑K similar chunks
+
+The goal of this step is **high recall**, not final ranking.
+
+---
+
+# Step 3 – Candidate Chunk Retrieval
+
+The indices returned by FAISS are mapped to chunks in:
+
+knowledge_base/chunks/chunks.json
+
+Each candidate chunk includes:
+
+- chunk_id
+- doc_id
+- chunk_index
+- text
+- similarity_score
+- document metadata
+
+---
+
+# Step 4 – Document Aggregation
+
+Chunks are grouped by their source document.
+
+ChunkCandidates
+↓
+DocumentCandidates
+
+The aggregated similarity score of a document is computed from the top chunks retrieved from that document.
+
+Recommended aggregation:
+
+Top‑3 mean similarity
+
+This avoids unstable rankings caused by single high‑scoring chunks.
+
+---
+
+# Step 5 – Governance Scoring
+
+Document ranking combines semantic relevance with governance signals from the registry.
+
+Final Score =
+
+semantic_similarity  
++ origin_weight  
++ confidence_weight  
++ document_type_weight
+
+Registry metadata used:
+
+origin  
+confidence_level  
+document_type
+
+This mechanism ensures regulatory and high‑trust sources are prioritized.
+
+Additional signals:
+
+- review_required may be used to:
+  - downrank uncertain documents
+  - flag results for explanation
+  - influence answer transparency
+
+This enables integration of quality signals from the construction pipeline into retrieval.
+
+## Governance Signal Origin (Update)
+
+Governance signals used in retrieval scoring are generated during the
+Knowledge Construction pipeline via a centralized governance process.
+
+Source:
+
+Classification (LLM, contract-driven)
+→ apply_governance()
+
+This includes:
+- origin normalization
+- jurisdiction rules
+- bias derivation
+- confidence calculation
+
+Retrieval does NOT generate governance signals.
+It only consumes them from the document registry.
+
+
+## Scoring Model (Refined)
+
+The scoring engine combines:
+
+1. Semantic Similarity (vector-based)
+2. Governance Signals (from registry)
+
+Example scoring logic:
+
+score =
+    semantic_similarity
+    + origin_weight
+    + confidence_weight
+    + document_type_weight
+    - bias_penalty
+
+This ensures:
+
+regulatory sources > advisory > vendor > marketing
+
+Bias is used as a negative signal to prevent over-weighting of promotional content.
+
+## Bias Handling
+
+Each document includes a bias_level derived during governance.
+
+Usage in retrieval:
+- high bias → downranking
+- neutral → no impact
+
+Purpose:
+- prevent over-representation of vendor or marketing content
+- ensure balanced, trustworthy context construction
+---
+
+# Step 6 – Context Construction
+
+The Context Builder selects chunks from the highest ranked documents.
+
+Strategy:
+
+Balanced Multi‑Document Context
+
+Example:
+
+Top Documents
+↓
+Top Chunks per Document
+↓
+LLM Context
+
+Typical configuration:
+
+max_documents = 5  
+max_chunks_per_document = 2
+
+---
+
+# Explainability
+
+Every retrieved chunk is traceable to:
+
+chunk_id → doc_id → document metadata
+
+This enables transparent explanations of why information was retrieved.
+
+---
+
+# Design Principles
+
+Explainable  
+Governance‑aware  
+Document‑centric  
+Deterministic where possible  
+Separation of retrieval and ranking
+=== ./docs/architecture/engine/retrieval_engine_design.md ===
+# Retrieval Engine Design – Strategic Knowledge Engine
+Version: 1.0
+
+## Status
+This document is new and complements existing architecture documentation.
+
+---
+
+# Purpose
+
+This document explains the detailed design of the Retrieval Engine.
+
+The goal is to provide a developer‑oriented reference describing how queries are processed and transformed into reasoning contexts.
+
+---
+
+# Design Principles
+
+Document‑centric retrieval  
+Explainability  
+Governance‑aware ranking  
+Separation of concerns  
+Modular components
+
+---
+
+# Component Overview
+
+Query Embedder
+
+Encodes queries into semantic vectors compatible with document embeddings.
+
+Candidate Retriever
+
+Uses FAISS to retrieve candidate chunks with high recall.
+
+Document Aggregator
+
+Groups chunk candidates by document and calculates aggregated similarity.
+
+Scoring Engine
+
+Applies governance‑aware ranking based on registry metadata.
+
+Context Builder
+
+Constructs the final context window for the LLM.
+
+---
+
+# Data Flow
+
+Query
+↓
+Query Embedding
+↓
+Vector Retrieval
+↓
+Chunk Candidates
+↓
+Document Candidates
+↓
+Ranked Documents
+↓
+Context Package
+↓
+Prompt Generation
+↓
+LLM Answer
+
+---
+
+# Explainability Model
+
+Each context element retains:
+
+doc_id  
+chunk_id  
+document metadata
+
+This enables full traceability from answer to source document.
+
+---
+
+# Future Extensions
+
+Hybrid Search (vector + keyword)
+
+Reranking models
+
+Query expansion
+
+Knowledge graph integration
+
+## Governance Integration (Update)
+
+The Retrieval Engine does not generate governance signals.
+
+All governance attributes (origin, confidence, bias) are created during
+the Knowledge Construction pipeline and stored in the document registry.
+
+The Retrieval Engine only consumes these signals for ranking.
+
+## Governance Integration (Update)
+
+The Retrieval Engine does not generate governance signals.
+
+All governance attributes (origin, confidence, bias) are created during
+the Knowledge Construction pipeline and stored in the document registry.
+
+The Retrieval Engine only consumes these signals for ranking.
+=== ./docs/architecture/knowledge/knowledge_base_data_flow.md ===
+# Knowledge Base Data Flow
+
+Strategic Knowledge Engine -- Architecture Layer
+
+This document describes the data flow within the Knowledge Construction
+Pipeline and the resulting Knowledge Base artifacts used by the
+Retrieval Engine.
+
+The goal is to make the transformation from documents to retrieval‑ready
+knowledge fully transparent and explainable.
+
+------------------------------------------------------------------------
+
+# 1. Data Flow Overview
+
+Document Sources ↓ Knowledge Construction Pipeline ↓ Knowledge Base ↓
+Knowledge Engine Retrieval
+
+------------------------------------------------------------------------
+
+# 2. Detailed Data Flow
+
+``` mermaid
+flowchart LR
+
+subgraph Sources["Document Sources"]
+A[intake]
+B[archive]
+end
+
+subgraph Construction["Knowledge Construction"]
+C[Preview Extractor]
+D[Document Classifier]
+E[Governance Pipeline]
+F[Validation]
+G[Registry Builder]
+H[Document Text Extractor]
+I[Chunker]
+J[Embedding Generator]
+K[Index Consistency Check]
+end
+
+subgraph KnowledgeBase["Knowledge Base"]
+L[Document Registry]
+M[Chunks]
+N[Embeddings]
+O[FAISS Index]
+P[Audit Log]
+end
+
+A --> B
+
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
+
+G --> L
+
+B --> H
+H --> I
+I --> M
+
+M --> J
+J --> N
+N --> O
+
+J --> K
+
+F --> P
+```
+
+------------------------------------------------------------------------
+
+# 3. Knowledge Base Artifacts
+
+The Knowledge Construction pipeline generates the following artifacts:
+
+knowledge_base/
+
+registry/ document_registry.json
+
+chunks/ chunks.json
+
+vector_index/ embeddings.pt index.faiss
+
+audit/ onboarding_audit_log.jsonl
+
+These artifacts together form the **Knowledge Base** used by the engine.
+
+------------------------------------------------------------------------
+
+# 4. Artifact Relationships
+
+The artifacts have a strict structural relationship:
+
+Document Registry ↓ doc_id Chunks ↓ index alignment Embeddings ↓ vector
+mapping Vector Index
+
+Each chunk references a document via `doc_id`. Embeddings correspond to
+the chunk order. The FAISS index is built from the embedding matrix.
+
+------------------------------------------------------------------------
+
+# 5. Retrieval Consumption
+
+The Retrieval Engine reads the following artifacts:
+
+vector_index/index.faiss chunks/chunks.json
+registry/document_registry.json
+
+Retrieval Flow:
+
+Query → Candidate Chunk Retrieval → Document Grouping → Governance
+Scoring → Context Construction → LLM Response
+
+------------------------------------------------------------------------
+
+# 6. Design Principles
+
+Deterministic Structure\
+Artifacts are generated exclusively by the Knowledge Construction
+pipeline.
+
+Immutable Runtime Data\
+The Knowledge Base is treated as read‑only during runtime.
+
+Explainability\
+Every retrieved chunk can be traced back to its source document.
+
+Governance\
+Registry metadata controls retrieval weighting and trust levels.
+
+------------------------------------------------------------------------
+
+# 7. Responsibility Separation
+
+Knowledge Construction → write access\
+Knowledge Engine → read access\
+Bots → read access
+
+This separation ensures consistency, traceability, and governance.
+
+=== ./docs/architecture/knowledge/knowledge_base_schema.md ===
+# Knowledge Base Schema
+
+Version: 1.0
+Layer: Architecture / Data Schema
+
+This document defines the canonical structure of the Knowledge Base used by the Strategic Knowledge Engine.
+
+The goal of this schema is to ensure:
+
+- structural consistency of the knowledge base
+- clear separation of document and chunk metadata
+- compatibility with the retrieval architecture
+- explainability and traceability of knowledge sources
+
+The schema applies to all artifacts generated by the Knowledge Construction pipeline.
+
+---
+
+# 1 Knowledge Base Structure
+
+The Knowledge Base consists of three artifacts generated by the Knowledge Construction pipeline:
+
+knowledge_base/
+
+registry/
+    document_registry.json
+
+chunks/
+    chunks.json
+
+vector_index/
+    embeddings.pt
+    index.faiss
+
+Relationship between artifacts:
+
+Document Registry
+        ↓ doc_id
+Chunks
+        ↓ index alignment
+Embeddings
+        ↓ vector mapping
+Vector Index
+
+The Retrieval Engine uses all three artifacts.
+
+---
+
+# 2 Document Registry
+
+The document registry contains metadata describing all documents included in the knowledge base.
+
+Each entry represents one document.
+
+Example:
+
+{
+  "doc_id": "doc_bafin_cloud_outsourcing_2024",
+  "title": "BaFin Guidance on Cloud Outsourcing",
+  "source_file": "bafin_aufsichtsmitteilung_cloud_auslagerung_2024.pdf",
+  "year": 2024,
+
+  "origin": "supervisory_authority",
+  "document_type": "regulatory_guidance",
+
+  "knowledge_domain": "insurance_regulation",
+  "content_domain": null,
+
+  "vendor": null,
+
+  "confidence_level": "high",
+  "confidentiality": "public",
+
+  "doc_hash": "sha256_hash_value"
+}
+
+---
+
+# 3 Registry Fields
+
+Mandatory fields:
+
+| Field | Description |
+|------|-------------|
+| doc_id | stable unique document identifier |
+| title | document title |
+| source_file | original file name |
+| year | publication year |
+| origin | source category (regulator, vendor, advisor, etc.) |
+| document_type | classification of document |
+| knowledge_domain | factual knowledge domain |
+| content_domain | market/analysis domain |
+| confidence | numerical confidence score (0–1) |
+| bias_level | estimated bias based on document origin |
+| confidentiality | access classification |
+
+Optional fields:
+
+| Field | Description |
+|------|-------------|
+| vendor | vendor or company referenced in the document |
+| doc_hash | SHA256 hash of the original document |
+
+Additional fields (introduced in V3.3):
+
+| Field | Description |
+|------|-------------|
+| bias_level | Estimated bias based on document origin |
+| review_required | Indicates whether the document should be manually reviewed |
+| review_reasons | Reasons for review requirement |
+---
+
+# 4 Knowledge Domain vs Content Domain
+
+The system distinguishes between two domain types.
+
+Knowledge Domain
+
+Represents factual or normative domains.
+
+Examples:
+
+insurance_regulation
+insurance_architecture
+insurance_operations
+cloud_governance
+
+These sources typically include:
+
+- regulation
+- advisory studies
+- architecture guidance
+
+Content Domain
+
+Represents market signals, positioning, or narrative content.
+
+Examples:
+
+portfolio_gtm
+vendor_positioning
+market_narratives
+technology_trends
+
+These sources may include:
+
+- marketing material
+- blogs
+- social media
+- opinion pieces
+
+The separation allows the retrieval system to control which types of content influence answers.
+
+---
+
+# 5 Chunk Structure
+
+Chunks represent segmented text passages derived from documents.
+
+Each chunk references the source document using doc_id.
+
+Example:
+
+{
+  "chunk_id": "chunk_0123",
+  "doc_id": "doc_bafin_cloud_outsourcing_2024",
+
+  "chunk_index": 12,
+
+  "text": "Cloud outsourcing arrangements must ensure...",
+
+  "tokens": 142,
+
+  "char_start": 4120,
+  "char_end": 4630,
+
+  "metadata": {
+    "section": "Operational Risk",
+    "page": 8
+  }
+}
+
+---
+
+# 6 Chunk Fields
+
+| Field | Description |
+|------|-------------|
+| chunk_id | unique identifier for the chunk |
+| doc_id | reference to the source document |
+| chunk_index | sequential position within document |
+| text | text content of the chunk |
+| tokens | token count of the chunk |
+| char_start | character start position in document |
+| char_end | character end position in document |
+| metadata | optional structural information |
+
+Optional metadata examples:
+
+section
+subsection
+heading
+page
+
+---
+
+# 7 Embeddings and Vector Index
+
+Embeddings represent semantic vector representations of chunks.
+
+embeddings.pt
+
+Contains the embedding vectors in the same order as chunks.json.
+
+Requirement:
+
+embedding[i] corresponds to chunks[i]
+
+index.faiss
+
+FAISS vector index enabling fast similarity search.
+
+The vector index is built from the embedding matrix.
+
+---
+
+# 8 Doc ID Generation
+
+Document IDs must be deterministic and human readable.
+
+Recommended format:
+
+doc_<source>_<topic>_<year>
+
+Examples:
+
+- doc_bafin_cloud_outsourcing_2024
+- doc_dora_regulation_2022
+- doc_aws_insurance_cloud_blog_2024
+
+Rules:
+
+- lowercase
+- underscore separated
+- deterministic
+
+Doc IDs must remain stable across rebuilds of the knowledge base.
+
+---
+
+# 9 Design Principles
+
+The schema follows several architectural principles:
+
+Separation of document metadata and chunk metadata
+
+Registry contains document-level metadata.
+Chunks contain only text-level information.
+
+Immutable Knowledge Base
+
+The knowledge base is generated by the Knowledge Construction pipeline and treated as read-only during runtime.
+
+Explainability
+
+Every retrieved chunk can be traced back to its document and metadata.
+
+Governance
+
+Metadata fields allow retrieval to prioritize reliable sources and downgrade low-confidence material.
+
+---
+
+# 10 Relation to Retrieval Architecture
+
+The retrieval system operates on the knowledge base as follows:
+
+Query
+→ candidate chunk retrieval
+→ document grouping via doc_id
+→ governance scoring using registry metadata
+→ document ranking
+→ context selection
+
+The registry therefore plays a central role in retrieval governance.
+
+---
+
+# 11 Future Extensions
+
+Possible schema extensions include:
+
+- document versioning
+- language metadata
+- topic classification
+- knowledge graph references
+
+The schema is intentionally minimal to maintain maintainability while supporting future evolution.
+
+
+=== ./docs/architecture/knowledge/knowledge_construction_pipeline.md ===
+# Knowledge Construction Pipeline
+
+*(Strategic Knowledge Engine V3)*
+
+## 1. Ziel der Knowledge Construction Pipeline
+
+Die Knowledge Construction Pipeline ist verantwortlich für den Aufbau
+und die Aktualisierung der Knowledge Base. Sie transformiert
+unstrukturierte Dokumente in eine strukturierte, durchsuchbare
+Wissensbasis.
+
+Prozessübersicht:
+
+document → metadata extraction → classification → governance validation
+→ registry entry → text extraction → chunking → embeddings → vector
+index
+
+Ergebnis: eine persistente Knowledge Base, die durch die Retrieval
+Engine abgefragt werden kann.
+
+------------------------------------------------------------------------
+
+# 2. Architekturüberblick
+
+## 2.1 Dokument-Onboarding
+
+document\
+→ preview_extractor\
+→ classifier (LLM)\
+→ governance rules\
+→ governance review\
+→ validation\
+→ registry update\
+→ text extraction\
+→ chunking\
+→ audit logging
+
+## 2.2 Knowledge Base Update
+
+chunks.json\
+→ embedding generation (incremental)\
+→ FAISS index update\
+→ consistency check
+
+------------------------------------------------------------------------
+
+# 3. Pipeline-Komponenten
+
+## 3.1 Preview Extractor
+
+Modul: knowledge_construction/metadata/preview_extractor.py
+
+Aufgabe: Extrahiert einen kurzen Dokumentausschnitt (\~6000 Zeichen) zur
+Klassifikation.
+
+------------------------------------------------------------------------
+
+## 3.2 Document Classifier
+
+Modul: knowledge_construction/metadata/classifier.py
+
+Bestimmte Felder:
+
+-   document_type
+-   domain_layer
+-   knowledge_domain
+-   origin
+-   jurisdiction
+-   confidence
+
+------------------------------------------------------------------------
+
+## 3.3 Governance Layer
+
+Deterministische Regeln korrigieren typische LLM-Fehler.
+
+Beispiele: BaFin → supervisory_authority\
+AWS → cloud_vendor
+
+Module:
+
+-   governance_rules.py
+-   governance.py
+
+------------------------------------------------------------------------
+
+## 3.4 Validation Layer
+
+Module:
+
+-   validation/validation.py
+-   validation/cross_field_rules.py
+
+Validierung:
+
+Enum Validation -- prüft erlaubte Werte\
+Cross Field Validation -- prüft Feldkonsistenz
+
+Taxonomien definiert in:
+
+config/taxonomy.py
+
+------------------------------------------------------------------------
+
+## 3.5 Registry Builder
+
+Modul: knowledge_construction/registry/registry_builder.py
+
+Artefakt:
+
+knowledge_base/registry/document_registry.json
+
+------------------------------------------------------------------------
+
+## 3.6 Document Text Extraction
+
+Modul:
+
+knowledge_construction/document_processing/document_text_extractor.py
+
+Unterstützte Formate:
+
+-   PDF
+-   DOCX
+-   TXT
+
+------------------------------------------------------------------------
+
+## 3.7 Chunking
+
+Modul:
+
+knowledge_construction/chunking/chunker.py
+
+Chunk Eigenschaften:
+
+-   chunk_id
+-   doc_id
+-   chunk_index
+-   text
+-   tokens
+-   token_start
+-   token_end
+
+Parameter (config/construction_config.py):
+
+-   CHUNK_SIZE
+-   CHUNK_OVERLAP
+
+------------------------------------------------------------------------
+
+## 3.8 Audit Logging
+
+Modul:
+
+knowledge_construction/audit/audit_logger.py
+
+Artefakt:
+
+knowledge_base/audit/onboarding_audit_log.jsonl
+
+------------------------------------------------------------------------
+
+# 4. Embedding Pipeline
+
+Modul:
+
+knowledge_construction/embedding/embedding_generator.py
+
+Embedding Modell:
+
+sentence-transformers/all-MiniLM-L6-v2
+
+Speicherort:
+
+knowledge_base/vector_index/embeddings.pt
+
+------------------------------------------------------------------------
+
+# 5. Incremental Embedding
+
+Neue Chunks werden erkannt über:
+
+vector_index/chunk_ids.json
+
+Workflow:
+
+chunks.json\
+→ finde neue chunks\
+→ embedde nur neue chunks\
+→ erweitere embeddings\
+→ erweitere FAISS index
+
+------------------------------------------------------------------------
+
+# 6. FAISS Vector Index
+
+Artefakt:
+
+knowledge_base/vector_index/index.faiss
+
+Index-Typ:
+
+IndexFlatL2
+
+------------------------------------------------------------------------
+
+# 7. Index Consistency Check
+
+Modul:
+
+knowledge_construction/embedding/index_consistency_check.py
+
+Synchronisierte Artefakte:
+
+-   chunks.json
+-   embeddings.pt
+-   chunk_ids.json
+-   index.faiss
+
+------------------------------------------------------------------------
+
+# 8. Knowledge Base Artefakte
+
+knowledge_base/
+
+registry/ document_registry.json
+
+chunks/ chunks.json
+
+vector_index/ embeddings.pt chunk_ids.json index.faiss
+
+audit/ onboarding_audit_log.jsonl
+
+------------------------------------------------------------------------
+
+# 9. Onboarding Workflow
+
+OnboardingPipeline.process_document()
+
+Ablauf:
+
+document\
+→ preview extraction\
+→ classification\
+→ governance\
+→ validation\
+→ registry entry\
+→ text extraction\
+→ chunking\
+→ embedding update\
+→ index update\
+→ consistency check\
+→ audit log
+
+------------------------------------------------------------------------
+
+# 10. Ergebnis
+
+Die Construction Pipeline erzeugt eine strukturierte Knowledge Base, die
+durch die Retrieval Engine abgefragt werden kann.
+
+
+## Erweiterung: Governance & Review Layer
+
+Nach der initialen Klassifikation und Validierung wurde ein zusätzlicher Review-Mechanismus eingeführt.
+
+### Review Decision
+
+Die Pipeline enthält nun eine nicht-blockierende Qualitätsbewertung:
+
+- review_required (bool)
+- review_reasons (list)
+
+Ziel:
+
+- automatische Verarbeitung beibehalten
+- kritische Dokumente markieren
+- spätere manuelle Prüfung ermöglichen
+
+Die Review-Logik basiert auf:
+
+- Confidence-Wert
+- Dokumenttyp (z. B. regulatorisch)
+- Klassifikationsqualität
+
+Wichtig:
+
+Die Review-Entscheidung blockiert die Pipeline nicht, sondern ergänzt die Metadaten.
+
+
+Update am 20.03.2026:
+
+## Knowledge Construction Pipeline (Updated)
+
+The knowledge construction pipeline follows a structured, governance-driven process:
+
+1. Classification (LLM, contract-driven)
+   - Uses YAML-based prompt contracts
+   - Prompt Builder generates system + user prompt
+   - LLM returns structured JSON
+
+2. Governance Pipeline (centralized)
+   - apply_governance()
+   - origin normalization
+   - jurisdiction rules
+   - bias derivation
+   - confidence calculation
+
+3. Validation
+   - enum validation
+   - cross-field validation
+
+4. Registry persistence
+   - document metadata stored
+
+5. Chunking
+   - token-based segmentation
+
+6. Embeddings
+   - vector generation
+
+7. Indexing
+   - FAISS index update
+
+RULE:
+All governance logic must pass through the governance pipeline.
+No distributed logic allowed.
+=== ./docs/architecture/system/ARCHITECTURE_DIAGRAM.md ===
+# Strategic Knowledge Engine -- Architecture Diagram
+
+Dieses Dokument zeigt die Architektur der Strategic Knowledge Engine als
+Übersichtsgrafik.
+
+Die Architektur folgt der Struktur:
+
+Document Sources → Knowledge Construction → Knowledge Base → Knowledge
+Engine → Bots
+
+------------------------------------------------------------------------
+
+## System Architecture
+
+``` mermaid
+flowchart LR
+
+    subgraph Sources["Document Sources"]
+        A1[intake]
+        A2[archive]
+        A3[raw_sensitive]
+    end
+
+    subgraph Construction["Knowledge Construction"]
+        B1[Metadata Extraction]
+        B2[Registry Builder]
+        B3[Chunker]
+        B4[Embedding Generator]
+    end
+
+    subgraph KnowledgeBase["Knowledge Base"]
+        C1[Document Registry]
+        C2[Chunks]
+        C3[Vector Index]
+    end
+
+    subgraph Engine["Knowledge Engine (knowledge_core)"]
+        D1[Intent Engine]
+        D2[Role Engine]
+        D3[Retrieval Engine]
+        D4[Scoring Engine]
+        D5[Perspective Orchestrator]
+        D6[Prompt Governance]
+        D7[LLM]
+    end
+
+    subgraph Bots["Bots"]
+        E1[Trusted Advisor Bot]
+        E2[Marketing Bot]
+        E3[Insurance Portfolio Bot]
+    end
+
+    A1 --> A2
+    A2 --> B1
+
+    B1 --> B2
+    B2 --> B3
+    B3 --> B4
+
+    B2 --> C1
+    B3 --> C2
+    B4 --> C3
+
+    C1 --> D3
+    C2 --> D3
+    C3 --> D3
+
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+    D4 --> D5
+    D5 --> D6
+    D6 --> D7
+
+    D7 --> E1
+    D7 --> E2
+    D7 --> E3
+```
+
+------------------------------------------------------------------------
+
+## Architektur-Ebenen
+
+### 1. Document Sources
+
+Ordner: - knowledge_sources/intake - knowledge_sources/archive -
+knowledge_sources/raw_sensitive
+
+Diese enthalten die ursprünglichen Dokumente.
+
+------------------------------------------------------------------------
+
+### 2. Knowledge Construction
+
+Pipeline für den Wissensaufbau: - Metadatenextraktion -
+Registry-Erstellung - Dokument-Chunking - Embedding-Erzeugung - Aufbau
+des Vektorindexes
+
+------------------------------------------------------------------------
+
+### 3. Knowledge Base
+
+Bestandteile: - Document Registry - Chunks - Vector Index
+
+Diese Artefakte werden automatisch durch die Construction Pipeline
+erzeugt.
+
+------------------------------------------------------------------------
+
+### 4. Knowledge Engine
+
+Pipeline:
+
+Query → Intent Engine → Role Engine → Retrieval Engine → Scoring Engine
+→ Perspective Orchestrator → Prompt Governance → LLM → Answer
+
+------------------------------------------------------------------------
+
+### 5. Bots
+
+Beispiele: - trusted_advisor_bot - marketing_bot -
+insurance_portfolio_bot
+
+Bots unterscheiden sich durch Prompting, Tonalität und Use Case, greifen
+aber auf dieselbe Engine und Knowledge Base zu.
+
+=== ./docs/architecture/system/architecture_overview_v3.md ===
+# Key Design Principles
+
+Document-centric retrieval  
+Governance-aware ranking  
+Explainable retrieval decisions  
+Immutable knowledge base  
+Modular architecture  
+
+---
+
+# 🔥 NEW: Explainable Governance Decisions
+
+Explainability is extended beyond retrieval to the **knowledge construction layer**.
+
+This means:
+
+- metadata classification decisions are traceable
+- governance rules are explainable at field level
+- every registry entry can be audited
+
+Scope of explainability:
+
+- origin classification
+- document_type derivation
+- knowledge_domain assignment
+
+Key principle:
+
+Explainability is generated **within the governance pipeline only**  
+and is treated as a first-class architectural concern.
+=== ./docs/architecture/system/ARCHITECTURE_V3_REFERENCE_LAYER_INTEGRATED.md ===
+# Strategic Knowledge Engine – Architecture
+Version: 3.0
+
+## Dokumentstatus
+
+Titel: Strategic Knowledge Engine Architecture  
+Layer: Architecture Layer  
+Version: 3.0
+
+Dieses Dokument ersetzt die Architekturdefinition v2.
+
+---
+
+# 1 Zielbild
+
+Die Strategic Knowledge Engine ist ein mehrschichtiges Wissenssystem.
+
+Sie trennt klar:
+
+Document Sources  
+Knowledge Construction  
+Knowledge Base  
+Knowledge Engine  
+Bots
+
+---
+
+# 2 Systemarchitektur
+
+Systemstruktur:
+
+knowledge-engine/
+
+knowledge_core  
+knowledge_construction  
+knowledge_base  
+bots  
+knowledge_sources
+
+---
+
+# 3 Knowledge Sources
+
+Knowledge Sources enthalten Originaldokumente.
+
+knowledge_sources/
+
+intake  
+archive  
+raw_sensitive
+
+---
+
+# 4 Knowledge Construction
+
+Knowledge Construction erzeugt die Wissensbasis.
+
+Aufgaben:
+
+- Dokumentanalyse
+- Metadatenextraktion
+- Registry-Erstellung
+- Chunking
+- Embedding-Erzeugung
+- Indexaufbau
+
+Diese Pipeline ist engine-spezifisch.
+
+---
+
+# 5 Knowledge Base
+
+Die Knowledge Base enthält strukturierte Wissensartefakte:
+
+registry  
+chunks  
+vector_index
+
+Diese Artefakte werden durch Knowledge Construction erzeugt.
+
+---
+
+# 6 Knowledge Engine
+
+Die Engine implementiert die Wissenslogik.
+
+Pipeline:
+
+Query  
+→ Intent Engine  
+→ Role Engine  
+→ Retrieval Engine  
+→ Scoring Engine  
+→ Perspective Orchestrator  
+→ Prompt Governance  
+→ LLM
+
+---
+
+# 7 Bots
+
+Bots sind Anwendungen auf der Engine.
+
+Beispiele:
+
+Trusted Advisor Bot  
+Marketing Bot  
+Insurance Portfolio Bot
+
+Bots unterscheiden sich durch:
+
+- Prompting
+- Tonalität
+- Use Case
+=== ./docs/architecture/system/query_execution_pipeline.md ===
+Query Execution Pipeline
+
+The Query Execution Pipeline orchestrates the runtime behaviour of the
+Strategic Knowledge Engine.
+
+Pipeline
+
+Query
+→ Intent Engine
+→ Role Engine
+→ Retrieval Engine
+→ Scoring Engine
+→ Perspective Orchestrator
+→ Context Builder
+→ Prompt Governance
+→ LLM
+→ Answer
+
+The QueryContext object captures the full execution state of a query.
+
+It stores all intermediate results produced during query processing,
+including retrieval results, document ranking, and the generated prompt.
+
+This structure enables:
+
+- debugging
+- explainability
+- audit logging
+- evaluation
+
+## LLM Interaction Model (Updated)
+
+LLM interaction is fully contract-driven:
+
+- Contracts (YAML) define behavior and rules
+- Prompt Builder translates contracts into prompts
+- LLMClient executes requests (no embedded logic)
+
+Separation of concerns:
+
+Contract → Prompt Builder → LLMClient
+
+RULE:
+- No prompt logic inside LLMClient
+- No hardcoded prompts
+- All prompts must be contract-driven
+
+
+## Prompt Construction (Update)
+
+Prompt generation is contract-driven:
+
+- Retrieval provides structured context
+- Prompt Builder applies task-specific contracts
+- LLMClient executes without embedded logic
+
+Retrieval does not generate prompts directly.
+It only provides structured, ranked context.
+=== ./docs/architecture/system/system_overview.md ===
+# Architectural Principles
+
+Separation of Concerns
+
+Knowledge construction and knowledge retrieval are strictly separated.
+
+Explainability
+
+Every answer can be traced to the underlying documents.
+
+Governance
+
+Registry metadata influences ranking and trust levels.
+
+Document-centric Retrieval
+
+Documents, not isolated chunks, form the basis of reasoning contexts.
+
+---
+
+# 🔥 NEW: End-to-End Explainability
+
+Explainability spans both system layers:
+
+## Construction Phase
+
+- metadata classification decisions are explainable
+- governance rules provide traceable outputs
+- registry entries can be audited
+
+## Retrieval Phase
+
+- document selection is explainable
+- scoring decisions are transparent
+- context construction is traceable
+
+End-to-end traceability:
+
+document → registry → chunk → retrieval → answer
+
+This ensures full transparency across the system lifecycle.
+=== ./docs/dev_chat_bootstrap_prompt.md ===
+# Projektkontext – Strategic Knowledge Engine
+
+Ich entwickle eine **Strategic Knowledge Engine** für einen erklärbaren Knowledge Bot im Versicherungs- und Consulting-Kontext.
+
+Der Chat soll mir helfen, die **Retrieval Engine zu implementieren**, basierend auf der bereits implementierten Knowledge Construction Pipeline.
+
+Bitte arbeite strukturiert, architekturorientiert und entwicklungsnah.
+
+---
+
+# Aktueller Projektstatus
+
+Die **Knowledge Construction Pipeline ist vollständig implementiert**.
+
+Sie erzeugt eine strukturierte Knowledge Base aus Dokumenten.
+
+Pipeline:
+
+document
+→ preview extraction
+→ document classification (LLM)
+→ governance rules
+→ validation
+→ registry entry
+→ text extraction
+→ token-based chunking
+→ incremental embedding generation
+→ FAISS vector index
+→ consistency check
+→ audit log
+
+Die Pipeline läuft automatisiert über eine **OnboardingPipeline**.
+
+---
+
+# Knowledge Base Struktur
+
+knowledge_base/
+
+registry/
+document_registry.json
+
+chunks/
+chunks.json
+
+vector_index/
+embeddings.pt
+chunk_ids.json
+index.faiss
+
+audit/
+onboarding_audit_log.jsonl
+
+Die Knowledge Base wird ausschließlich durch die Construction Pipeline erzeugt und ist zur Laufzeit **read-only**.
+
+---
+
+# Architektur der Strategic Knowledge Engine
+
+Document Sources
+→ Knowledge Construction
+→ Knowledge Base
+→ Knowledge Engine
+→ Bots
+
+Engine-Pipeline:
+
+Query
+→ Intent Engine
+→ Role Engine
+→ Retrieval Engine
+→ Scoring Engine
+→ Perspective Orchestrator
+→ Prompt Governance
+→ LLM
+→ Answer
+
+Die Module **Intent Engine** und **Role Engine** sind bereits implementiert.
+
+---
+
+# Implementierte Code-Struktur
+
+knowledge-engine/
+
+knowledge_core/
+
+intent/
+role/
+retrieval/
+scoring/
+perspective/
+prompt/
+pipeline/
+
+knowledge_construction/
+
+metadata/
+validation/
+governance/
+registry/
+chunking/
+embedding/
+document_processing/
+onboarding_pipeline.py
+
+knowledge_base/
+
+registry/
+chunks/
+vector_index/
+
+bots/
+
+trusted_advisor_bot
+marketing_bot
+insurance_portfolio_bot
+
+---
+
+# Architekturprinzipien
+
+Die Engine folgt mehreren zentralen Prinzipien:
+
+1. Separation of Concerns
+   Knowledge Construction und Retrieval sind strikt getrennt.
+
+2. Explainability
+   Jede Antwort muss auf Dokumente und Chunks zurückführbar sein.
+
+3. Governance
+   Regulatorische Quellen haben Vorrang vor Advisory- oder Marketing-Quellen.
+
+4. LLM Role
+   Das LLM erzeugt keine neuen Fakten, sondern formuliert nur auf Basis der Retrieval-Ergebnisse.
+
+---
+
+# Dokumentationsstruktur
+
+docs/
+
+meta/
+governance/
+architecture/
+evolution/
+scope/
+strategy/
+
+Wichtige Architektur-Dokumente:
+
+* system_overview.md
+* architecture_overview_v3.md
+* knowledge_construction_pipeline.md
+* knowledge_base_schema.md
+* knowledge_base_data_flow.md
+* retrieval_architecture_guideline.md
+* explainability_principles.md
+
+---
+
+# Aktuelles Entwicklungsziel
+
+Ich möchte jetzt die **Retrieval Engine implementieren**.
+
+Die Retrieval-Pipeline soll enthalten:
+
+query
+→ query embedding
+→ vector search
+→ candidate chunks
+→ metadata scoring
+→ document grouping
+→ context construction
+
+Die nächsten Architekturentscheidungen betreffen:
+
+* Candidate Retrieval Strategy
+* Top-K Auswahl
+* Metadata-Scoring
+* Document-centric Ranking
+* Context Window Construction
+
+---
+
+# Aufgabe für diesen Chat
+
+Hilf mir bei der **sauberen Implementierung der Retrieval Engine**.
+
+Arbeite dabei:
+
+* architekturorientiert
+* modular
+* kompatibel mit der bestehenden Engine-Struktur
+* kompatibel mit der bestehenden Knowledge Base
+
+Wir beginnen mit der **Candidate Retrieval Strategie**.
+
+=== ./docs/evolution/Evolution Log – Strategic Knowledge Engine V3.md ===
+# Evolution Log – Strategic Knowledge Engine
+
+---
+
+## VERSION 3 – Strategic Knowledge Engine
+
+Die Architektur wurde neu strukturiert.
+
+Wesentliche Änderungen:
+
+1. Einführung einer klaren Systemstruktur
+
+Document Sources  
+Knowledge Construction  
+Knowledge Base  
+Knowledge Engine  
+Bots
+
+2. Knowledge Construction Pipeline
+
+Die Pipeline erzeugt:
+
+registry  
+chunks  
+vector_index
+
+3. Bots als Anwendungen
+
+Bots sind nicht mehr Teil der Engine.
+
+Sie verwenden die Engine als Wissenssystem.
+
+4. Vereinfachung der Engine-Versionierung
+
+Mehrere Engine-Versionen wurden zugunsten einer klaren Struktur entfernt.
+
+Die Knowledge Engine bildet nun das zentrale System.
+
+---
+
+## Ergebnis
+
+Die Knowledge Engine ist nun:
+
+- modular
+- erklärbar
+- erweiterbar
+- governance-konform
+
+---
+
+## VERSION 3.1 – Retrieval & Knowledge Base Stabilization
+
+### Kontext
+
+Nach der Einführung der **Strategic Knowledge Engine Architektur (V3)** wurde die Retrieval-Architektur konkretisiert und die Struktur der Knowledge Base vollständig definiert.
+
+Ziel war es, eine stabile, erklärbare und governance-konforme Grundlage für das Retrieval-System und zukünftige Erweiterungen (z. B. Marketing- und Wettbewerbsanalysen) zu schaffen.
+
+---
+
+# 1 Retrieval Architecture Finalized
+
+Die Retrieval-Pipeline wurde als mehrstufiges Verfahren definiert.
+
+Pipeline:
+
+Query  
+→ Intent Engine  
+→ Role Engine  
+→ Candidate Retrieval  
+→ Governance Scoring  
+→ Document Grouping  
+→ Document Ranking  
+→ Context Selection  
+→ Prompt Governance  
+→ LLM  
+
+Wesentliche Prinzipien:
+
+- semantisches Retrieval über Vektorindex
+- Governance-basierte Gewichtung von Quellen
+- dokumentzentrierte Bewertung statt reinem Chunk-Ranking
+- erklärbare Retrieval-Entscheidungen
+
+Referenzdokument:
+
+retrieval_architecture_guideline.md
+
+---
+
+# 2 Knowledge Base Model Stabilized
+
+Die Struktur der Knowledge Base wurde endgültig festgelegt.
+
+Artefakte:
+
+knowledge_base/
+
+registry/  
+    document_registry.json  
+
+chunks/  
+    chunks.json  
+
+vector_index/  
+    embeddings.pt  
+    index.faiss  
+
+Beziehung:
+
+document_registry  
+↓ doc_id  
+chunks  
+↓ index alignment  
+embeddings  
+↓  
+vector_index  
+
+Die Knowledge Base wird ausschließlich durch die **Knowledge Construction Pipeline** erzeugt und während der Laufzeit **read-only verwendet**.
+
+---
+
+# 3 KnowledgeBase Object Introduced
+
+Ein zentraler Container für alle Wissensartefakte wurde eingeführt.
+
+Eigenschaften:
+
+- immutable
+- read-only Zugriff
+- klar getrennt von Retrieval-Logik
+
+Struktur:
+
+KnowledgeBase
+
+- chunks
+- embeddings
+- registry
+- vector_index
+
+Die Retrieval Engine arbeitet stateless auf diesen Artefakten.
+
+---
+
+# 4 Knowledge Base Schema Defined
+
+Die Datenstruktur der Knowledge Base wurde formal spezifiziert.
+
+Referenz:
+
+knowledge_base_schema.md
+
+Ziele:
+
+- konsistente Datenstruktur
+- klare Trennung zwischen Dokument- und Chunk-Metadaten
+- stabile Referenzen zwischen Registry und Chunks
+- Unterstützung von Explainability
+
+---
+
+# 5 Chunk Model Finalized
+
+Chunks enthalten ausschließlich textbezogene Informationen.
+
+Schema:
+
+chunk_id  
+doc_id  
+chunk_index  
+text  
+tokens  
+char_start  
+char_end  
+metadata  
+
+Dokumentenbezogene Metadaten werden ausschließlich in der **document registry** gespeichert.
+
+Dies verhindert Redundanz und unterstützt dokumentzentriertes Retrieval.
+
+---
+
+# 6 Document ID Strategy Introduced
+
+Dokumente erhalten deterministische, lesbare IDs.
+
+Format:
+
+doc_<source>_<topic>_<year>
+
+Beispiele:
+
+doc_bafin_cloud_outsourcing_2024  
+doc_dora_regulation_2022  
+doc_aws_insurance_cloud_blog_2024  
+
+Ziel:
+
+- stabile Referenzen
+- reproduzierbare Knowledge Base Builds
+- bessere Explainability
+
+---
+
+# 7 Knowledge Base Validation Introduced
+
+Zur Sicherstellung der Konsistenz wurde ein **Knowledge Base Validator** definiert.
+
+Checks:
+
+- doc_id uniqueness  
+- chunk → document reference validity  
+- embedding count == chunk count  
+- vector index dimension consistency  
+
+Der Validator wird am Ende der Construction Pipeline ausgeführt.
+
+---
+
+# 8 Marketing & Market-Signal Extension Prepared
+
+Die Architektur wurde so erweitert, dass Marketing-, Wettbewerbs- und Meinungsinhalte integriert werden können, ohne die Trusted-Advisor-Qualität zu gefährden.
+
+Grundprinzip:
+
+- Marketing-Inhalte werden als **Signale**, nicht als Fakten behandelt
+- Nutzung erfolgt rollenabhängig im Retrieval
+
+Neue Registry-Metadaten unterstützen diese Erweiterung.
+
+---
+
+# Ergebnis
+
+Die Strategic Knowledge Engine verfügt nun über:
+
+- stabile Retrieval-Architektur  
+- klar definiertes Knowledge-Base-Schema  
+- konsistente Dokument- und Chunk-Struktur  
+- reproduzierbare Knowledge-Base-Builds  
+- governance-fähiges Retrieval  
+
+Diese Stabilisierung bildet die Grundlage für die weitere Implementierung der **Knowledge Construction Pipeline** und zukünftige Erweiterungen.
+=== ./docs/evolution/evolution_log_v3_2_knowledge_construction.md ===
+# Evolution Log -- Strategic Knowledge Engine V3
+
+## Version 3.2 -- Knowledge Construction Pipeline Completed
+
+### Overview
+
+The **Knowledge Construction layer** of the Strategic Knowledge Engine
+V3 has been fully implemented. This layer is responsible for
+transforming unstructured documents into a structured, vectorized
+knowledge base that can be queried by the Retrieval Engine.
+
+The pipeline enables automated onboarding of documents including
+classification, governance validation, chunking, embedding generation,
+and vector indexing.
+
+------------------------------------------------------------------------
+
+## Implemented Components
+
+### Metadata Processing
+
+-   Preview Extraction
+-   LLM-based Document Classification
+-   Deterministic Governance Rules
+-   Governance Review
+
+### Validation
+
+-   Enum Validation
+-   Cross-field Validation
+-   Taxonomy-based classification validation
+
+### Knowledge Base Management
+
+-   Document Registry
+-   Audit Logging
+
+### Document Processing
+
+-   Document Text Extraction (PDF, DOCX, TXT)
+
+### Chunking
+
+Token-based chunking aligned with the embedding model tokenizer.
+
+Chunk metadata:
+
+-   chunk_id
+-   doc_id
+-   chunk_index
+-   token_start
+-   token_end
+-   text
+
+### Embedding Pipeline
+
+-   Incremental embedding generation
+-   Embedding storage
+-   FAISS vector index generation
+
+### Consistency Validation
+
+Automated validation ensuring synchronization between:
+
+-   chunks.json
+-   embeddings.pt
+-   chunk_ids.json
+-   FAISS index
+
+------------------------------------------------------------------------
+
+## Knowledge Base Artifacts
+
+The Construction Pipeline produces the following persistent artifacts:
+
+knowledge_base/
+
+registry/ document_registry.json
+
+chunks/ chunks.json
+
+vector_index/ embeddings.pt chunk_ids.json index.faiss
+
+audit/ onboarding_audit_log.jsonl
+
+------------------------------------------------------------------------
+
+## Architectural Improvements
+
+The following architectural improvements were implemented compared to
+the MVP:
+
+-   Incremental embedding generation
+-   Automatic FAISS index updates
+-   Tokenizer-based chunking
+-   Config-driven architecture
+-   Consistency guard for vector index integrity
+-   Modular document processing pipeline
+
+These improvements significantly improve scalability and maintainability
+of the knowledge base.
+
+------------------------------------------------------------------------
+
+## Result
+
+The Knowledge Construction pipeline now supports **fully automated
+document onboarding** into the vectorized knowledge base.
+
+This milestone marks the completion of the **Knowledge Construction
+layer** of the Strategic Knowledge Engine V3.
+
+------------------------------------------------------------------------
+
+## Next Phase
+
+The next architectural milestone is the implementation of the
+**Retrieval Engine**, which will include:
+
+-   Intent detection
+-   Role detection
+-   Semantic vector search
+-   Scoring and ranking
+-   Document grouping
+-   Context generation for answer synthesis
+
+This will enable intelligent querying of the constructed knowledge base.
+
+=== ./docs/evolution/evolution_log_v3_3_retrieval.md ===
+# Evolution Log – Strategic Knowledge Engine
+Version 3.3 – Retrieval Engine Implementation
+
+## Status
+This document extends the existing evolution log.
+
+---
+
+# Context
+
+After the completion of the Knowledge Construction Pipeline (V3.2), the Retrieval Engine layer was implemented.
+
+The goal was to transform user queries into explainable, governance‑aware knowledge contexts.
+
+---
+
+# Major Architectural Decisions
+
+Document‑Centric Retrieval
+
+Instead of ranking individual chunks, chunks are grouped by document before ranking.
+
+This approach improves:
+
+- explainability
+- stability of answers
+- suitability for regulatory documents
+
+---
+
+# Implemented Retrieval Components
+
+Query Embedder
+
+Transforms user queries into semantic embeddings.
+
+Candidate Retriever
+
+Performs semantic search using FAISS vector index.
+
+Document Aggregator
+
+Groups retrieved chunks into document candidates and computes aggregated similarity.
+
+Scoring Engine
+
+Combines semantic similarity with governance signals from the document registry.
+
+Context Builder
+
+Constructs balanced multi‑document contexts for the LLM.
+
+---
+
+# Governance‑Aware Ranking
+
+Document ranking incorporates registry metadata:
+
+origin  
+confidence_level  
+document_type
+
+This ensures:
+
+regulatory documents > advisory sources > vendor content > marketing
+
+---
+
+# Resulting Retrieval Pipeline
+
+Query
+→ Query Embedding
+→ Vector Search
+→ Candidate Chunks
+→ Document Aggregation
+→ Governance Scoring
+→ Context Construction
+
+---
+
+# Outcome
+
+The Strategic Knowledge Engine now includes:
+
+Fully implemented Knowledge Construction layer  
+Stable, explainable Retrieval Engine  
+Governance‑aware document ranking  
+Balanced context construction
+
+This establishes the foundation for Prompt Governance and LLM integration.
+=== ./docs/governance/explainability_principles.md ===
+# Explainability & Trust Principles
+
+## 1. Quellenpriorisierung
+- Regulatorische Dokumente haben Vorrang vor Advisory-Quellen.
+- Advisory-Quellen dienen ausschließlich der Einordnung.
+
+## 2. Rollenmodell
+- Dokumente sind fachlichen Rollen zugeordnet (z. B. regulatorisch, advisor).
+- Das Rollenmodell steuert Retrieval und Gewichtung.
+
+## 3. LLM-Nutzung
+- Das LLM generiert keine neuen Fakten.
+- Es formuliert ausschließlich auf Basis vorselektierter Inhalte.
+
+## 4. Transparenz
+- Jede Antwort kann in ihrer Entstehung erklärt werden (C1).
+- Die Systemarchitektur ist nachvollziehbar dokumentiert (C2).
+
+## 5. Grenzen
+- Kein Ersatz für Rechtsberatung.
+- Kein Anspruch auf Vollständigkeit.
+- Fokus auf kuratierte Inhalte.
+
+---
+
+## Governance Execution Model (Update)
+
+All governance rules are executed via a centralized pipeline:
+
+apply_governance()
+
+This ensures:
+- deterministic behavior
+- traceability
+- no duplicated logic
+
+Derived attributes:
+- bias
+- confidence
+
+RULE:
+Governance must not be implemented outside the central pipeline.
+
+---
+
+## Retrieval Explainability (Update)
+
+Explainability includes:
+
+- which documents were retrieved
+- how they were ranked (scoring signals)
+- which chunks were selected
+
+This is enabled by:
+
+- document-centric retrieval
+- governance-aware scoring
+- QueryContext tracking
+
+Every answer can be traced back to:
+doc_id → chunk_id → registry metadata → scoring decision
+
+---
+
+# 🔥 NEW: Governance Explainability Layer (V1)
+
+Explainability is extended to the **knowledge construction phase**.
+
+For every derived metadata field (e.g. origin, document_type, knowledge_domain),
+the system must provide a traceable explanation.
+
+## Explainability Requirements
+
+For each field, the system captures:
+
+- **applied_rule**  
+  → which governance rule determined the value
+
+- **signal**  
+  → which keyword / mapping / condition triggered the rule
+
+- **source**  
+  → decision source (e.g. preview_rule, filename_rule, rule_based, llm)
+
+## Example
+
+```json
+{
+  "origin": "consulting_firm",
+  "origin_explain": {
+    "applied_rule": "AUTHOR_ORIGIN_MAP",
+    "signal": "exxeta",
+    "source": "preview_rule"
+  }
+}
+=== ./docs/governance/Spielregeln Knowledge Bot – Governance & Nutzung (Version 2).md ===
+# Spielregeln – Knowledge Engine Governance
+Version: 2.0
+
+## Zweck dieses Dokuments
+
+Dieses Dokument definiert die verbindlichen Governance-Regeln für Aufbau, Pflege und Nutzung der Strategic Knowledge Engine.
+
+Ziel ist es, sicherzustellen:
+
+- fachliche Qualität
+- klare Verantwortlichkeiten
+- nachvollziehbare Wissensherkunft
+- reproduzierbare Wissensbasis
+
+Die Governance gilt für alle Komponenten der Knowledge Engine.
+
+---
+
+# 1 Grundprinzipien
+
+## 1.1 Trennung von Dokumenten und Wissen
+
+Nicht jedes Dokument ist automatisch Wissen.
+
+Wissen entsteht erst durch:
+
+- bewusste Auswahl
+- Metadatenzuordnung
+- technische Verarbeitung
+
+Der Lebenszyklus eines Dokuments ist:
+
+Document Sources  
+→ Knowledge Construction  
+→ Knowledge Base  
+→ Knowledge Engine  
+→ Bot
+
+---
+
+## 1.2 Mensch entscheidet – Technik verarbeitet
+
+Menschen entscheiden:
+
+- welche Dokumente relevant sind
+- welche Metadaten gelten
+- welche Inhalte freigegeben werden
+
+Technik übernimmt:
+
+- Textextraktion
+- Chunking
+- Embeddings
+- Retrieval
+
+---
+
+# 2 Verzeichnisstruktur
+
+Die Knowledge Engine folgt folgender Systemstruktur:
+
+project-root/
+
+knowledge-bot-mvp/  
+knowledge-engine/
+
+---
+
+## 2.1 Knowledge Sources
+
+Originaldokumente liegen hier:
+
+knowledge_engine/knowledge_sources
+
+Struktur:
+
+knowledge_sources/
+
+intake/  
+archive/  
+raw_sensitive/
+
+Bedeutung:
+
+intake  
+→ neue Dokumente werden hier abgelegt
+
+archive  
+→ kuratierte Originaldokumente
+
+raw_sensitive  
+→ interne oder vertrauliche Dokumente
+
+---
+
+## 2.2 Knowledge Construction
+
+Der Wissensaufbau erfolgt hier:
+
+knowledge_engine/knowledge_construction
+
+Aufgaben:
+
+- Metadatenextraktion
+- Registry-Erstellung
+- Chunking
+- Embedding-Erzeugung
+- Indexerstellung
+
+---
+
+## 2.3 Knowledge Base
+
+Die generierte Wissensbasis liegt hier:
+
+knowledge_engine/knowledge_base
+
+Struktur:
+
+knowledge_base/
+
+registry/  
+chunks/  
+vector_index/
+
+Diese Artefakte werden automatisch erzeugt.
+
+---
+
+## 2.4 Knowledge Engine
+
+Die Engine liegt in:
+
+knowledge_engine/knowledge_core
+
+Komponenten:
+
+Intent Engine  
+Role Engine  
+Retrieval Engine  
+Scoring Engine  
+Perspective Orchestrator  
+Prompt Governance
+
+---
+
+## 2.5 Bots
+
+Bots sind Anwendungen auf der Engine.
+
+Sie liegen in:
+
+knowledge_engine/bots
+
+Beispiele:
+
+trusted_advisor_bot  
+marketing_bot  
+insurance_portfolio_bot
+
+Ein Bot nutzt immer dieselbe Engine und Knowledge Base.
+
+---
+
+# 3 Dokument-Lifecycle
+
+Der vollständige Lifecycle eines Dokuments:
+
+knowledge_sources/intake  
+↓  
+knowledge_sources/archive  
+↓  
+knowledge_construction  
+↓  
+knowledge_base  
+↓  
+knowledge_engine  
+↓  
+bot
+
+---
+
+# 4 Metadaten
+
+Metadaten werden in der Registry gespeichert.
+
+Pflichtfelder:
+
+doc_id  
+file_path  
+origin  
+role  
+themes  
+year  
+trust_level  
+text_quality
+
+Metadaten ermöglichen:
+
+- Retrievalfilter
+- Scoring
+- Perspektivensteuerung
+- Explainability
+=== ./docs/governance/taxonomy_definition.md ===
+# Taxonomy Definition – Strategic Knowledge Engine
+
+## Purpose
+
+Defines the canonical classification schema used in the Knowledge Construction Pipeline.
+
+---
+
+## Dimensions
+
+### Document Type
+
+Defines the nature of the document:
+
+- regulatory_text
+- supervisory_guidance
+- consulting_framework
+- vendor_marketing
+- ...
+
+---
+
+### Origin
+
+Defines the source category:
+
+- legislator
+- supervisory_authority
+- consulting_firm
+- cloud_vendor
+- ...
+
+Important distinction:
+
+legislator → creates laws  
+supervisory_authority → issues guidance and supervision
+
+---
+
+### Domain Layer
+
+Defines abstraction level:
+
+- regulation
+- business
+- technology
+- strategy
+- market
+
+---
+
+### Knowledge Domain
+
+Defines knowledge context:
+
+- insurance_domain
+- cloud_technology
+- trusted_advisor
+- ...
+
+---
+
+## Design Principles
+
+- no overlapping categories
+- stable and explainable values
+- aligned with retrieval scoring
+
+## Taxonomy Enforcement
+
+The taxonomy is enforced via:
+
+- Prompt Builder (LLM constraint)
+- Validation layer (hard validation)
+
+The LLM must only produce values defined in the taxonomy.
+
+RULE:
+Taxonomy is the single source of truth.
+No implicit categories allowed.
+=== ./docs/meta/META_OVERVIEW_V3.1.md ===
+# Meta Overview – Strategic Knowledge Engine
+Version: 3.1
+
+## Zweck
+
+Dieses Dokument strukturiert die Dokumentenlandschaft der Strategic Knowledge Engine
+und beschreibt die verschiedenen Dokumentationsebenen.
+
+Die Dokumentation folgt einer klaren Layer-Struktur:
+
+Governance Layer  
+Architecture Layer  
+Implementation Layer  
+Scope & Story Layer  
+
+Diese Struktur soll sicherstellen:
+
+- klare Verantwortlichkeiten
+- nachvollziehbare Architekturentscheidungen
+- saubere Trennung zwischen Konzept, Architektur und Code
+
+---
+
+# 1 Governance Layer
+
+Dokumente in diesem Layer definieren Regeln für Aufbau, Pflege und Nutzung der Knowledge Engine.
+
+Beispiel:
+
+Spielregeln – Knowledge Engine Governance
+
+Definiert:
+
+- Dokument-Lifecycle
+- Wissensquellen
+- Metadaten
+- Struktur der Wissensbasis
+- Verantwortlichkeiten
+
+---
+
+# 2 Architecture Layer
+
+Der Architecture Layer beschreibt die Architektur des Systems.
+
+Zentrale Dokumente:
+
+Strategic Knowledge Engine Architecture  
+Architecture Overview – Strategic Knowledge Engine  
+Knowledge Construction Pipeline  
+Retrieval Architecture Guideline  
+Knowledge Base Schema  
+Knowledge Base Data Flow  
+
+Diese Dokumente definieren:
+
+Systemstruktur  
+Pipeline-Logik  
+Datenmodell  
+Datenfluss  
+Retrieval-Architektur
+
+Die Architektur folgt der Struktur:
+
+Document Sources  
+→ Knowledge Construction  
+→ Knowledge Base  
+→ Knowledge Engine  
+→ Bots
+
+---
+
+# 3 Implementation Layer
+
+Der Implementation Layer umfasst die tatsächliche Systemimplementierung.
+
+Repository-Struktur:
+
+knowledge_core  
+knowledge_construction  
+knowledge_base  
+bots  
+
+Dieser Layer enthält:
+
+- Engine-Implementierung
+- Retrieval-Logik
+- Knowledge Construction Pipeline
+- generierte Wissensartefakte
+
+---
+
+# 4 Scope & Story Layer
+
+Dieser Layer beschreibt Zielsetzung, Grenzen und Anwendungsfälle des Systems.
+
+Beispieldokumente:
+
+MVP Scope – Knowledge Bot  
+MVP Storyline – Knowledge Bot für Versicherungs-Consulting  
+
+Diese Dokumente definieren:
+
+- fachliche Zielsetzung
+- bewusst gesetzte Grenzen
+- strategische Einordnung des Systems
+
+---
+
+# 5 Evolution Layer
+
+Dieser Layer dokumentiert die Entwicklung der Architektur.
+
+Dokumente:
+
+Evolution Log – Strategic Knowledge Engine  
+Evolution Log – Knowledge Construction Completion  
+
+Der Evolution Layer ermöglicht:
+
+- Nachvollziehbarkeit von Architekturentscheidungen
+- Dokumentation von Systemänderungen
+- historische Einordnung von Releases
+
+---
+
+# Ergebnis
+
+Die Dokumentation der Strategic Knowledge Engine folgt damit einer klaren Struktur:
+
+Governance  
+Architecture  
+Implementation  
+Scope  
+Evolution
+
+Diese Struktur unterstützt:
+
+- Explainability
+- Governance
+- langfristige Wartbarkeit
+=== ./docs/meta/META_OVERVIEW_V3.md ===
+# Meta Overview – Strategic Knowledge Engine
+Version: 3.0
+
+## Zweck
+
+Dieses Dokument strukturiert die Dokumentenlandschaft der Strategic Knowledge Engine.
+
+---
+
+# Layer-Struktur
+
+Governance Layer  
+Architecture Layer  
+Implementation Layer  
+Scope & Story Layer
+
+---
+
+# Governance Layer
+
+Dokument:
+
+Spielregeln – Knowledge Engine Governance
+
+Definiert:
+
+- Dokument-Lifecycle
+- Wissensquellen
+- Metadaten
+- Struktur der Wissensbasis
+
+---
+
+# Architecture Layer
+
+Dokument:
+
+Strategic Knowledge Engine Architecture
+
+Definiert:
+
+- Systemstruktur
+- Knowledge Construction
+- Knowledge Engine
+- Bots
+
+---
+
+# Implementation Layer
+
+Beinhaltet:
+
+knowledge_core  
+knowledge_construction  
+knowledge_base  
+bots
+
+---
+
+# Scope Layer
+
+Dokument:
+
+MVP Scope – Knowledge Bot
+
+Definiert:
+
+- fachliche Grenzen
+- Use Cases
+- bewusst ausgeschlossene Funktionen
+=== ./docs/operations/onboarding_working_style.md ===
+## Kontext: Knowledge Engine – Onboarding & Validation Setup
+
+Ich arbeite an einer Strategic Knowledge Engine mit einem strukturierten Onboarding- und Validierungsprozess für Dokumente.
+
+### Ziel
+Sicherstellen, dass:
+- Dokumente korrekt klassifiziert werden (LLM + Governance)
+- Metadaten konsistent und valide sind
+- Änderungen am Onboarding keine Regressionen verursachen
+
+---
+
+## 🧩 Onboarding Pipeline (vereinfacht)
+
+1. Dokument liegt im `intake/`
+2. Onboarding Pipeline läuft:
+   - Text Extraction
+   - Chunking
+   - Embeddings
+   - Classification (LLM)
+   - Governance (regelbasiert)
+   - doc_id Generierung
+3. Ergebnis wird in Registry gespeichert
+
+---
+
+## 🧠 Architekturprinzipien
+
+- LLM liefert Vorschlag (unsicher)
+- Governance korrigiert deterministisch
+- Config enthält alle Regeln (keine Hardcodes)
+- Classifier enthält KEINE Business-Logik
+
+---
+
+## 🆔 doc_id Design (wichtig!)
+
+doc_id ist:
+- generiert
+- stabil
+- ohne Metadaten
+
+Beispiel:
+doc_dora_regulation_2022
+
+doc_id enthält NICHT:
+- origin
+- jurisdiction
+- Klassifikationsattribute
+
+---
+
+## 🧪 Test-Setup: run_onboarding_validation (V4++)
+
+### Ablauf
+
+1. Reset Knowledge Base
+   - archive → intake kopieren
+   - knowledge_base leeren
+
+2. Onboarding ausführen
+
+3. Registry laden
+
+4. Expectations laden
+
+5. Matching:
+   - doc_id_pattern
+   - title_contains
+   - optional source_file
+
+6. Validierung:
+   - doc_id_rules (z. B. forbidden substrings)
+   - strict (muss exakt matchen)
+   - soft (Warnings)
+   - forbidden (harte Fehler)
+
+7. Ergebnis:
+   - PASS / WARNING / FAIL
+
+---
+
+## 📄 Expectations (Testdefinition)
+
+Für jedes Dokument existiert ein JSON-File in:
+
+tests/onboarding_expectations/
+
+### Struktur
+
+- document_reference → nur Kontext (kein doc_id!)
+- match → identifiziert Dokument
+- doc_id_rules → validiert doc_id
+- registry_expectation:
+  - strict → muss exakt passen
+  - soft → sollte passen
+  - forbidden → darf nicht auftreten
+
+---
+
+## ⚠️ Wichtige Design-Regeln
+
+### 1. doc_id ≠ Erwartung
+
+doc_id wird NICHT im Template fest verdrahtet.
+
+Matching erfolgt über:
+- Pattern
+- Titel
+- Datei
+
+---
+
+### 2. Template Generator (V5)
+
+- übernimmt KEIN doc_id mehr
+- generiert Pattern aus doc_id (Thema + Jahr)
+- erzeugt keine widersprüchlichen Regeln
+
+---
+
+### 3. Trennung der Verantwortlichkeiten
+
+| Komponente | Aufgabe |
+|----------|--------|
+| Classifier | LLM Output |
+| Governance | Regeln |
+| Config | Steuerung |
+| Validator | Testlogik |
+
+---
+
+### 4. Normalisierung vor Governance
+
+LLM Outputs werden normalisiert (z. B. confidence):
+
+"high" → 0.9
+
+---
+
+## 🎯 Ziel des Setups
+
+- Regression Testing für Onboarding
+- Sicherstellen, dass neue Dokumente keine bestehenden brechen
+- Transparente Qualitätsbewertung
+
+---
+
+## 📈 Nächster Schritt
+
+- Mehrere Dokumente onboarden
+- Regression über mehrere Expectations testen
+- Retrieval-Qualität evaluieren
+=== ./docs/operations/query_execution.md ===
+# Query Execution – Operational Guide
+Version: 1.0
+Layer: Operations
+
+## Ziel
+
+Dieses Dokument definiert die operative Nutzung der Strategic Knowledge Engine.
+
+Es beschreibt:
+- den Einstiegspunkt
+- den tatsächlichen Laufzeitfluss
+- die Teststrategie
+
+---
+
+# 1. Entry Point
+
+Zentraler Einstiegspunkt für jede Query:
+
+QueryPipeline.run(query)
+
+Die QueryPipeline ist die einzige erlaubte Orchestrierungsschicht für produktive Nutzung.
+
+---
+
+# 2. Pipeline Flow (Runtime)
+
+Die Engine verarbeitet jede Query deterministisch entlang folgender Schritte:
+
+1. Intent Detection
+2. Role Detection
+3. Retrieval Engine
+4. Scoring Engine (Governance)
+5. Perspective Orchestrator
+6. Context Builder
+7. Prompt Governance
+8. LLM Execution
+
+Datenobjekt:
+→ QueryContext (trägt gesamten Zustand)
+
+---
+
+# 3. Komponenten-Verantwortung
+
+## Retrieval Engine
+- liefert Chunk Candidates
+- aggregiert zu Document Candidates
+- KEIN finales Ranking
+
+## Scoring Engine
+- wendet Governance-Regeln an
+- erzeugt finales Ranking
+
+## Context Builder
+- selektiert:
+  - max_documents
+  - max_chunks_per_document
+- baut LLM Context
+
+## Prompt Governance
+- erzwingt:
+  - Rollenverhalten
+  - Quellenrestriktion
+  - keine Halluzination
+
+---
+
+# 4. Teststrategie
+
+## Level 1 – Retrieval Test (Debug)
+
+Ziel:
+- Embedding korrekt?
+- FAISS Retrieval korrekt?
+- Aggregation sinnvoll?
+
+Entry:
+→ RetrievalEngine.retrieve()
+
+Output:
+- chunk_candidates
+- document_candidates
+
+Nicht getestet:
+- Governance
+- finaler Context
+
+---
+
+## Level 2 – Pipeline Test (Standard)
+
+Ziel:
+- Ranking korrekt?
+- Governance greift?
+- Context sinnvoll?
+
+Entry:
+→ QueryPipeline.run()
+
+Output:
+- ranked_documents
+- context_package
+- prompt
+- response (Dummy LLM möglich)
+
+---
+
+## Level 3 – End-to-End Test
+
+Ziel:
+- reale Antwortqualität
+- Prompt + Context Wirkung
+
+Entry:
+→ QueryPipeline.run() + echtes LLM
+
+---
+
+# 5. Debugging-Regeln
+
+Bei Fehlern:
+
+1. Retrieval falsch?
+→ Level 1 prüfen
+
+2. Ranking falsch?
+→ Scoring Engine prüfen
+
+3. Context schlecht?
+→ Context Builder prüfen
+
+4. Halluzination?
+→ Prompt Governance prüfen
+
+---
+
+# 6. Pflichtanforderungen (Non-Negotiable)
+
+Jeder Test muss sichtbar machen:
+
+- doc_id
+- chunk_id
+- Scores
+- Ranking-Reihenfolge
+
+Sonst:
+→ kein Explainability-konformes System
+
+---
+
+# 7. Anti-Patterns (vermeiden)
+
+❌ direkte Nutzung der Retrieval Engine für Antworten  
+❌ LLM ohne Context Builder  
+❌ Scoring außerhalb der zentralen Pipeline  
+❌ fehlende Traceability  
+
+---
+
+# Fazit
+
+Die QueryPipeline ist:
+
+→ der einzige valide Einstiegspunkt  
+→ die zentrale Steuerung der Engine  
+→ die Basis für alle Tests > Level 1
+=== ./docs/operations/system_context.md ===
+# System Context – Strategic Knowledge Engine
+
+## Zweck
+
+Dieses Dokument definiert den operativen Nutzungskontext der Strategic Knowledge Engine.
+
+Es ergänzt die Architektur-Dokumentation um die Perspektive:
+→ Wie wird das System korrekt verwendet (insbesondere im Chat-Kontext)?
+
+---
+
+# 1. Grundprinzip
+
+Die Knowledge Engine ist ein strukturiertes, mehrschichtiges System:
+
+Document Sources  
+→ Knowledge Construction  
+→ Knowledge Base  
+→ Knowledge Engine  
+→ Bots
+
+Wissen entsteht ausschließlich durch diese Pipeline.
+
+---
+
+# 2. Trennung von Wissen und Nutzung
+
+Wichtig:
+
+Wissen liegt in:
+- Dokumentation
+- Knowledge Base
+- Config (Python)
+
+Ein Chat hat keinen automatischen Zugriff auf dieses Wissen.
+
+---
+
+# 3. Chat-Kontext
+
+Ein neuer Chat startet ohne:
+
+- Architekturverständnis
+- Retrieval-Logik
+- Governance-Kontext
+- Taxonomie
+
+Daher muss ein System-Kontext bereitgestellt werden.
+
+---
+
+# 4. System Context Loader
+
+Der Loader erfüllt folgende Funktion:
+
+- selektiert relevante Informationen aus dem Projekt
+- reduziert sie auf entscheidungsrelevanten Kontext
+- stellt sie für den Chat bereit
+
+Der Loader erzeugt kein Wissen, sondern nutzt bestehende Quellen.
+
+---
+
+# 5. Script Execution
+
+Alle Skripte werden als Module gestartet:
+
+python -m scripts.<script_name>
+
+Beispiel:
+
+python -m scripts.reset_knowledge_base
+
+Voraussetzung:
+
+- Ausführung im Verzeichnis: knowledge-engine/
+
+---
+
+# 6. Pfadlogik
+
+BASE_PATH entspricht dem Projekt-Root:
+
+knowledge-engine/
+
+Empfohlen:
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+Skripte dürfen nicht vom aktuellen Working Directory abhängen.
+
+---
+
+# 7. Taxonomie
+
+Die Taxonomie ist:
+
+- strikt definiert
+- in Python Config implementiert
+- Single Source of Truth
+
+Wichtig:
+
+- nur definierte Werte sind erlaubt
+- keine freien Klassifikationen
+
+---
+
+# 8. Retrieval-Prinzipien
+
+Das System verwendet:
+
+- semantisches Retrieval (Vektorindex)
+- dokumentzentrierte Aggregation
+- governance-basierte Bewertung
+
+Ranking basiert auf:
+
+- semantischer Ähnlichkeit
+- Herkunft (origin)
+- Confidence
+- Dokumenttyp
+
+---
+
+# 9. Kontextkonstruktion
+
+Der Kontext für das LLM wird:
+
+- aus mehreren Dokumenten aufgebaut
+- bewusst begrenzt
+
+Typisch:
+
+- max_documents = 5
+- max_chunks_per_document = 2
+
+Ziel:
+
+→ ausgewogener, nicht verzerrter Kontext
+
+---
+
+# 10. Governance
+
+Grundsatz:
+
+Das LLM erzeugt keine neuen Fakten.
+
+Es verarbeitet ausschließlich:
+
+- bereitgestellten Kontext
+- selektierte Dokumente
+
+---
+
+# 11. Wichtiger Unterschied
+
+Verfügbarkeit von Wissen ≠ Nutzung im Chat
+
+Ein Dokument im Projekt bedeutet nicht,
+dass es im Chat berücksichtigt wird.
+
+---
+
+# 12. Operational Modes
+
+Der Loader unterstützt verschiedene Modi:
+
+expert:
+→ Fokus auf Architektur und Strategie und Diskussion
+
+onboarding:
+→ Fokus auf Knowledge Construction
+
+debug:
+→ Fokus auf Retrieval und Pipeline
+
+coding:
+→ vollständige Taxonomie und Config für Code-Erzeugung
+
+---
+
+# 13. Ziel dieses Dokuments
+
+Dieses Dokument stellt sicher, dass:
+
+- jeder Chat mit korrektem Systemverständnis startet
+- keine impliziten Annahmen entstehen
+- das System konsistent genutzt wird
+=== ./docs/operations/working_style.md ===
+# Working Style – Strategic Knowledge Engine
+
+## Ziel
+
+Dieses Dokument definiert, wie im Kontext der Strategic Knowledge Engine gearbeitet und kommuniziert wird.
+
+Es stellt sicher, dass Antworten effizient, präzise und umsetzungsorientiert sind.
+
+---
+
+## Antwortstil
+
+Bitte antworte:
+
+- kurz und präzise
+- mit Fokus auf konkrete Umsetzung (Code, Schritte, Entscheidungen)
+- ohne unnötige Erklärungen
+
+---
+
+## Erklärungen
+
+- nur auf explizite Nachfrage
+- keine langen Herleitungen
+
+---
+
+## Nicht gewünschtes Verhalten
+
+- unnötige Bestätigung („gute Frage“, „sehr gut gesehen“)
+- Wiederholung bereits bekannter Inhalte
+- lange theoretische Ausführungen
+
+---
+
+## Erwartetes Verhalten
+
+Sei:
+
+- kritisch bei fachlichen und architektonischen Entscheidungen
+- klar, wenn etwas nicht sinnvoll ist
+- direkt in Empfehlungen
+
+---
+
+## Priorität
+
+1. Korrektheit
+2. Umsetzbarkeit
+3. Klarheit
+4. Kürze
+
+---
+
+## Kontext
+
+Dieses Dokument gilt insbesondere für:
+
+- Chat-basierte Zusammenarbeit
+- Code-Generierung
+- Architekturentscheidungen
+=== ./docs/REPOSITORY_MAP_old.md ===
+# Repository Map -- Strategic Knowledge Engine
+
+## Purpose
+
+This document provides a quick orientation guide for the repository. It
+explains the purpose of each top‑level directory and the main components
+of the Strategic Knowledge Engine.
+
+The goal is that new developers can understand the structure of the
+project within a few minutes.
+
+------------------------------------------------------------------------
+
+# Repository Structure
+
+project-root/
+
+knowledge-bot-mvp/\
+knowledge-engine/
+
+------------------------------------------------------------------------
+
+# 1 knowledge-bot-mvp
+
+This directory contains the **original MVP implementation** of the
+Knowledge Bot.
+
+Purpose:
+
+-   historical reference
+-   early prototype implementation
+-   comparison with the new architecture
+
+The MVP is not the main development focus anymore but remains useful for
+reference and experimentation.
+
+------------------------------------------------------------------------
+
+# 2 knowledge-engine
+
+This directory contains the **Strategic Knowledge Engine**, which
+represents the new architecture of the system.
+
+It includes:
+
+-   the knowledge engine
+-   the knowledge construction pipeline
+-   the generated knowledge base
+-   the bots using the engine
+-   the document sources
+
+Structure:
+
+knowledge-engine/
+
+    knowledge_core/
+    knowledge_construction/
+    knowledge_base/
+    bots/
+    knowledge_sources/
+    config/
+    notebooks/
+    docs/
+
+------------------------------------------------------------------------
+
+# 2.1 knowledge_core
+
+The **core engine implementation**.
+
+This module implements the reasoning pipeline that processes user
+queries.
+
+Typical components:
+
+-   Intent Engine
+-   Role Engine
+-   Retrieval Engine
+-   Scoring Engine
+-   Perspective Orchestrator
+-   Prompt Governance
+-   Query Pipeline
+
+Location:
+
+knowledge-engine/knowledge_core
+
+------------------------------------------------------------------------
+
+# 2.2 knowledge_construction
+
+The **document processing and knowledge creation pipeline**.
+
+This module transforms raw documents into structured knowledge
+artifacts.
+
+Responsibilities:
+
+-   metadata extraction
+-   registry creation
+-   document chunking
+-   embedding generation
+-   vector index creation
+
+Location:
+
+knowledge-engine/knowledge_construction
+
+------------------------------------------------------------------------
+
+# 2.3 knowledge_base
+
+The generated **structured knowledge base** used by the engine.
+
+Artifacts:
+
+registry/ chunks/ vector_index/
+
+These artifacts are produced by the knowledge construction pipeline.
+
+Location:
+
+knowledge-engine/knowledge_base
+
+------------------------------------------------------------------------
+
+# 2.4 bots
+
+Applications built on top of the knowledge engine.
+
+Each bot defines:
+
+-   prompts
+-   tone and style
+-   application logic
+
+Example bots:
+
+-   trusted_advisor_bot
+-   marketing_bot
+-   insurance_portfolio_bot
+
+Location:
+
+knowledge-engine/bots
+
+------------------------------------------------------------------------
+
+# 2.5 knowledge_sources
+
+Original documents used to build the knowledge base.
+
+Structure:
+
+knowledge_sources/
+
+    intake/
+    archive/
+    raw_sensitive/
+
+Description:
+
+intake\
+Dropzone for new documents.
+
+archive\
+Curated original documents included in the knowledge base.
+
+raw_sensitive\
+Internal or sensitive documents.
+
+Location:
+
+knowledge-engine/knowledge_sources
+
+------------------------------------------------------------------------
+
+# 2.6 config
+
+Configuration files for the knowledge engine.
+
+Examples:
+
+-   engine configuration
+-   retrieval parameters
+-   model settings
+
+Location:
+
+knowledge-engine/config
+
+------------------------------------------------------------------------
+
+# 2.7 notebooks
+
+Jupyter notebooks used for experimentation and analysis.
+
+Typical uses:
+
+-   retrieval experiments
+-   embedding evaluation
+-   debugging
+
+Location:
+
+knowledge-engine/notebooks
+
+------------------------------------------------------------------------
+
+# 2.8 docs
+
+Project documentation.
+
+Typical contents:
+
+-   architecture documentation
+-   governance rules
+-   system overview
+-   architecture diagrams
+
+Location:
+
+knowledge-engine/docs
+
+------------------------------------------------------------------------
+
+# Development Philosophy
+
+The repository follows several architectural principles:
+
+1.  Clear separation of documents and knowledge
+2.  Separation of knowledge construction and knowledge usage
+3.  A central knowledge engine used by multiple bots
+4.  Full traceability of the knowledge base
+5.  Modular architecture enabling future extensions
+
+------------------------------------------------------------------------
+
+# Summary
+
+The repository separates:
+
+Document Sources\
+→ Knowledge Construction\
+→ Knowledge Base\
+→ Knowledge Engine\
+→ Bots
+
+This structure enables explainable, maintainable, and extensible
+knowledge systems.
+
+=== ./docs/repository_v3.txt ===
+project-root/
+│
+└── knowledge-engine/             # strategisches System
+│
+│   ├── kb_core/                  # Engine (Runtime)
+│   │
+│   │   ├── intent/
+│   │   │    intent_engine.py
+│   │   │
+│   │   ├── roles/
+│   │   │    role_engine.py
+│   │   │
+│   │   ├── retrieval/
+│   │   │    retrieval_engine.py
+│   │   │
+│   │   ├── scoring/
+│   │   │    scoring_engine.py
+│   │   │
+│   │   ├── perspective/
+│   │   │    perspective_orchestrator.py
+│   │   │    perspective_mapping.py
+│   │   │    perspective_config.yaml
+│   │   │
+│   │   ├── prompt/
+│   │   │    prompt_governance.py
+│   │   │
+│   │   └── pipeline/
+│   │        query_pipeline.py
+│   │
+│   ├── knowledge_construction/   # Onboarding / Build Pipeline
+│   │
+│   │   ├── metadata_extractor.py
+│   │   ├── registry_builder.py
+│   │   ├── chunker.py
+│   │   ├── embedding_generator.py
+│   │   └── onboarding_pipeline.py
+│   │
+│   ├── knowledge_base/           # generierte Wissensbasis
+│   │
+│   │   ├── registry/
+│   │   │     document_registry.json
+│   │   │
+│   │   ├── chunks/
+│   │   │     chunks.json
+│   │   │
+│   │   └── vector_index/
+│   │         index.faiss
+│   │
+│   ├── bots/                     # Anwendungen auf der Engine
+│   │
+│   │   ├── trusted_advisor_bot/
+│   │   ├── marketing_bot/
+│   │   └── insurance_portfolio_bot/
+│   │
+│   ├── knowledge_sources/        # Dokumentquellen
+│   │
+│   │   ├── intake/               # neue Dokumente (Dropzone)
+│   │   ├── archive/              # kuratierte Originale
+│   │   └── raw_sensitive/        # interne Dokumente
+│   │
+│   ├── config/
+│   │     engine_config.yaml
+│   │
+│   ├── notebooks/
+│   │
+│   └── docs/
+│        governance/
+│        architecture/
+=== ./docs/status/status_20260317.md ===
+# Status – Strategic Knowledge Engine (V3.3)
+
+## Aktueller Stand
+
+Die Knowledge Construction Pipeline ist vollständig implementiert und erfolgreich end-to-end getestet.
+
+Ein Dokument (DORA-Testdokument) wurde vollständig verarbeitet:
+
+* Klassifikation (LLM-basiert)
+* Governance Rules angewendet
+* Validation (Enums + Cross-Field)
+* Registry-Eintrag erzeugt
+* Chunking durchgeführt
+* Embeddings generiert
+* FAISS Index erstellt
+* Konsistenzprüfung erfolgreich
+
+## Erweiterungen
+
+### 1. Taxonomie geschärft
+
+* klare Trennung von:
+
+  * document_type
+  * origin
+  * domain_layer
+  * knowledge_domain
+* Einführung von "legislator" vs. "supervisory_authority"
+* Vorbereitung für zukünftige Erweiterung (topic)
+
+### 2. Governance stabilisiert
+
+* Cross-Field-Regeln fachlich korrigiert
+* Validierung konsistent mit Taxonomie
+
+### 3. Review-Mechanismus eingeführt
+
+* automatischer Review-Flag:
+
+  * review_required
+  * review_reasons
+* keine Blockierung der Pipeline
+* Grundlage für spätere Qualitätssicherung
+
+### 4. Metadata-Handling verbessert
+
+* Registry übernimmt vollständige Classification (dict merge)
+* System ist metadata-driven und erweiterbar
+
+## Ergebnis
+
+Die Knowledge Base ist:
+
+* strukturiert
+* konsistent
+* erklärbar
+* retrieval-ready
+
+---
+
+## Offene Punkte
+
+* topic als zusätzliche Dimension einführen
+* Taxonomie-Dokumentation vervollständigen
+* Bias-Logik (z. B. legislator → low) korrigieren
+* Duplicate Handling Strategie definieren
+
+---
+
+## Nächste Schritte
+
+### Kurzfristig (nächste Session)
+
+* erster Retrieval-Test
+* Validierung der Retrieval-Pipeline
+* Debugging von Candidate Retrieval
+
+### Mittelfristig
+
+* Integration von topic in Classification & Registry
+* Erweiterung des Scoring-Modells
+* Prompt Governance ausbauen
+
+### Langfristig
+
+* Review-Workflow (UI / Feedback Loop)
+* Hybrid Retrieval (optional)
+* Evaluation & Benchmarking
+
+---
+
+## Einordnung
+
+Übergang von:
+
+"System bauen" → "System nutzen"
+
+Die Grundlage für eine erklärbare, governance-konforme Knowledge Engine ist gelegt.
+
+=== ./docs/strategy/strategic_knowledge_engine_full_architecture.md ===
+# Strategic Knowledge Engine -- Full Architecture Diagram
+
+This diagram illustrates the complete architecture of the Strategic
+Knowledge Engine, including both the Knowledge Construction layer and
+the Retrieval Engine layer.
+
+------------------------------------------------------------------------
+
+## High-Level System Architecture
+
+``` mermaid
+flowchart LR
+
+subgraph Sources["Knowledge Sources"]
+A[PDF / DOCX / TXT Documents]
+end
+
+subgraph Construction["Knowledge Construction Pipeline"]
+B[Preview Extractor]
+C[LLM Document Classifier]
+D[Governance Rules]
+E[Validation Layer]
+F[Registry Builder]
+G[Document Text Extractor]
+H[Token-based Chunker]
+I[Embedding Generator]
+J[FAISS Index Builder]
+K[Consistency Check]
+end
+
+subgraph KnowledgeBase["Knowledge Base"]
+L[Document Registry]
+M[Chunks]
+N[Embeddings]
+O[FAISS Vector Index]
+P[Audit Log]
+end
+
+subgraph Retrieval["Retrieval Engine"]
+Q[User Query]
+R[Intent Engine]
+S[Role Engine]
+T[Query Embedding]
+U[Vector Search]
+V[Scoring Layer]
+W[Document Grouping]
+X[Context Builder]
+end
+
+subgraph Output["Response Layer"]
+Y[LLM Reasoning / Answer Generation]
+end
+
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
+G --> H
+H --> I
+I --> J
+J --> K
+
+F --> L
+H --> M
+I --> N
+J --> O
+E --> P
+
+Q --> R
+R --> S
+S --> T
+T --> U
+U --> V
+V --> W
+W --> X
+X --> Y
+
+O --> U
+M --> W
+L --> V
+```
+
+------------------------------------------------------------------------
+
+## Architectural Layers
+
+### Knowledge Construction Layer
+
+Responsible for transforming documents into structured, vectorized
+knowledge.
+
+Key capabilities:
+
+-   document onboarding
+-   metadata classification
+-   governance validation
+-   chunking
+-   embedding generation
+-   vector index creation
+
+Artifacts produced:
+
+-   document_registry.json
+-   chunks.json
+-   embeddings.pt
+-   index.faiss
+
+------------------------------------------------------------------------
+
+### Knowledge Base
+
+Persistent storage layer containing:
+
+-   document metadata
+-   document chunks
+-   vector embeddings
+-   FAISS vector index
+-   audit logs
+
+------------------------------------------------------------------------
+
+### Retrieval Engine
+
+Processes user queries and retrieves the most relevant knowledge.
+
+Pipeline:
+
+query\
+→ intent detection\
+→ role detection\
+→ query embedding\
+→ vector search\
+→ scoring\
+→ document grouping\
+→ context generation
+
+------------------------------------------------------------------------
+
+### Response Layer
+
+The retrieved context is passed to an LLM for reasoning and answer
+generation.
+
+The LLM receives:
+
+-   top-ranked chunks
+-   document metadata
+-   contextual grouping
+
+------------------------------------------------------------------------
+
+## Design Principles
+
+-   Separation of Construction and Retrieval layers
+-   Explainable knowledge sources
+-   Incremental updates to the vector index
+-   Metadata-aware retrieval scoring
+-   Deterministic governance where possible
+
+------------------------------------------------------------------------
+
+## Result
+
+The Strategic Knowledge Engine enables:
+
+-   structured enterprise knowledge bases
+-   explainable AI retrieval
+-   advisory-grade reasoning contexts
+

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_aws_sovereignty_1c18e9",
+  "title": "AWS Digital_Sovereignty_Messaging Framework 3",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "strategy",
+    "knowledge_domain": "cloud_technology",
+    "topic": "sovereign_cloud",
+    "origin": "cloud_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

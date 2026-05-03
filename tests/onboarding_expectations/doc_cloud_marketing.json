@@ -1,0 +1,14 @@
+{
+  "doc_id": "doc_cloud_marketing",
+  "title": "AWS-insurance-on-the-cloud",
+  "expected": {
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "unknown",
+    "confidence": 0.9,
+    "bias": "medium",
+    "domain_layer": "business"
+  },
+  "status": "TO_REVIEW"
+}

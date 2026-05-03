@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_consulting_cloud_95e9f7",
+  "title": "AWS-insurance-on-the-cloud",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "Global",
+    "confidence": 0.97,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

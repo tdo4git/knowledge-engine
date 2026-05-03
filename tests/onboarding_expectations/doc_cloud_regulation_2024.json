@@ -1,0 +1,14 @@
+{
+  "doc_id": "doc_cloud_regulation_2024",
+  "title": "bafin_cloud_outsourcing_2024",
+  "expected": {
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.9,
+    "bias": "very_low",
+    "domain_layer": "regulation"
+  },
+  "status": "APPROVED"
+}
