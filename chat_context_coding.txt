@@ -816,7 +816,7 @@ Chunks are grouped by the
 ├── pyproject.toml
 └── requirements.txt
 
-=== TAXONOMY (STRICT) ===
+=== TAXONOMY (STRICT) ====
 
 DOCUMENT_TYPES:
 - regulatory_text
