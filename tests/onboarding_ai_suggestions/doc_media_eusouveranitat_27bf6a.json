@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_media_eusouveranitat_27bf6a",
+  "title": "SZ EU-Souvera\u0308nita\u0308t und USA | \u201eWo ist unsere Wu\u0308rde? Wo ist unser Selbstbewusstsein?\u201c",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "sovereign_cloud",
+    "origin": "media",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "elevated"
+  }
+}

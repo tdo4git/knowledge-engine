@@ -1,5 +1,5 @@
 # Technical Debt – Strategic Knowledge Engine
-Zuletzt aktualisiert: 2026-05-03
+Zuletzt aktualisiert: 2026-05-06
 
 ---
 
@@ -28,7 +28,7 @@ Jeder Eintrag enthält:
 
 ### TD-005 — Topic als Klassifikationsdimension einführen
 - **Bereich:** Knowledge Construction / Klassifikation
-- **Beschreibung:** `topic` ist in `config/taxonomy.py` definiert und im Prompt Builder integriert, wird aber nicht in der Registry gespeichert und nicht für Retrieval/Scoring genutzt. Claude klassifiziert bereits korrekt mit Topic-Werten — diese werden aktuell per `LLM_DOMAIN_NORMALIZATION` auf `knowledge_domain` gemappt (Workaround). Saubere Lösung: Topic als eigene Dimension in Registry + Scoring einführen.
+- **Beschreibung:** `topic` ist in `config/taxonomy.py` definiert und im Prompt Builder integriert, wird aber nicht in der Registry gespeichert und nicht für Retrieval/Scoring genutzt. Claude klassifiziert bereits korrekt mit Topic-Werten — diese werden aktuell per `LLM_DOMAIN_NORMALIZATION` auf `knowledge_domain` gemappt (Workaround). Saubere Lösung: Topic als eigene Dimension in Registry + Scoring einführen. Konkret sichtbar: 4 SZ-KI-Artikel haben den generischen Doc-ID-Prefix `kunstliche`, weil "Künstliche Intelligenz" kein KEYWORD in `_extract_topic` ist — ein dedizierter Topic würde hier präzisere IDs und besseres Retrieval ermöglichen.
 - **Aufwand:** mittel
 - **Priorität:** mittel
 - **Status:** offen
@@ -37,9 +37,16 @@ Jeder Eintrag enthält:
 
 ### TD-007 — Reklassifizierungs-Skript
 - **Bereich:** Knowledge Construction / Operations
-- **Beschreibung:** Bei Taxonomie-Änderungen müssen alle Dokumente reklassifiziert werden. Kein Skript vorhanden. Aktuell manueller Reset + vollständiges Re-Onboarding notwendig.
+- **Beschreibung:** Bei Taxonomie-Änderungen müssen betroffene Dokumente reklassifiziert werden. Kein Skript vorhanden — aktuell manueller Reset + vollständiges Re-Onboarding notwendig. Konkret ausstehend: 7 Dokumente mit Fehlklassifikation (6× falscher Document Type, 1× falsche Origin), identifiziert via `generate_snapshot.py`:
+  - `doc_supervisory_insurance_83c73b` → research_report statt supervisory_guidance
+  - `doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd` → research_report statt supervisory_guidance
+  - `doc_consulting_dora_2024_d54141` → blog_article statt consulting_framework
+  - `doc_consulting_insurance_2024_19f71c` → research_report statt consulting_framework
+  - `doc_consulting_insurance_2030_131197` → research_report statt consulting_framework
+  - `doc_vendor_heiseacademymycompany_6d0ccf` → research_report statt vendor_marketing
+  - `doc_research_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f` → Origin research_institution statt industry_association
 - **Aufwand:** mittel
-- **Priorität:** niedrig
+- **Priorität:** mittel
 - **Status:** offen
 
 ---
@@ -55,7 +62,7 @@ Jeder Eintrag enthält:
 
 ### TD-009 — AUTHOR_ORIGIN_MAP Keyword-Qualität
 - **Bereich:** Knowledge Construction / Governance
-- **Beschreibung:** Kurze Keywords in `AUTHOR_ORIGIN_MAP` erzeugen False Positives durch Substring-Matches (z.B. `"ey"` matcht `"they"`, `"money"` etc., `"msg"` matcht `"messaging"`). Gelöst für `ey` und `msg` — aber weitere kurze Keywords könnten dasselbe Problem haben. Langfristig: Wort-Grenz-Matching statt einfachem Substring-Check.
+- **Beschreibung:** Kurze Keywords in `AUTHOR_ORIGIN_MAP` erzeugen False Positives durch Substring-Matches (z.B. `"ey"` matcht `"they"`, `"money"` etc., `"msg"` matcht `"messaging"`). Gelöst für `ey` und `msg` — aber weitere kurze Keywords könnten dasselbe Problem haben. Mit Einführung von `media` (2026-05-06) hinzugekommen: `"spiegel"` könnte in anderen Kontexten matchen. Langfristig: Wort-Grenz-Matching statt einfachem Substring-Check.
 - **Aufwand:** mittel
 - **Priorität:** niedrig
 - **Status:** offen

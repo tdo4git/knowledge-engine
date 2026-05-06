@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_media_digitale_7fb28c",
+  "title": "SZ Digitale Souvera\u0308nita\u0308t | Warum Europas Tech-Abha\u0308ngigkeit so riskant ist | Wirtsch",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "sovereign_cloud",
+    "origin": "media",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "elevated"
+  }
+}

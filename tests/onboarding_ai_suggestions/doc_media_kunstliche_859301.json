@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_media_kunstliche_859301",
+  "title": "SZ Ku\u0308nstliche Intelligenz | Der Hype um KI-Agenten ist gefa\u0308hrlich | Wirtschaft",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "market",
+    "knowledge_domain": "ai_genai_agentic",
+    "origin": "media",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "bias": "elevated"
+  }
+}

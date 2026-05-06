@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_media_kunstliche_8d77be",
+  "title": "SZ Ku\u0308nstliche Intelligenz | Wo die Grenzen der KI liegen sollten | Wirtschaft",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "strategy",
+    "knowledge_domain": "ai_genai_agentic",
+    "topic": "transformation_strategy",
+    "origin": "media",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "llm",
+    "bias": "elevated"
+  }
+}

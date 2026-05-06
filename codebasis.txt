@@ -187,9 +187,7 @@ ALLOWED_EXTENSIONS = [
 IGNORE_HIDDEN_FILES = True
 === ./config/governance_config.py ===
 # =========================================================
-# GOVERNANCE CONFIG
-# Strategic Knowledge Engine
-#
+# governance_config.py
 # Single Source of Truth für alle Governance-Regeln.
 # Änderungen hier wirken sich auf alle Dokumente aus.
 # =========================================================
@@ -324,6 +322,20 @@ AUTHOR_ORIGIN_MAP = {
     "signal iduna":                         "corporate",
     "huk-coburg":                           "corporate",
     "r+v":                                  "corporate",
+
+    # --------------------------------------------------
+    # Media (Presse, Zeitungen, Onlinemedien)
+    # --------------------------------------------------
+    "süddeutsche zeitung":                  "media",
+    "sueddeutsche zeitung":                 "media",
+    "süddeutsche":                          "media",
+    "frankfurter allgemeine":               "media",
+    "handelsblatt":                         "media",
+    "der spiegel":                          "media",
+    "manager magazin":                      "media",
+    "wirtschaftswoche":                     "media",
+    "versicherungsjournal":                 "media",
+    "pfefferminzia":                        "media",
 }
 
 
@@ -400,6 +412,15 @@ FILENAME_KEYWORDS = {
         "talanx",
         "rv",
     ],
+
+    "media": [
+        "sueddeutsche",
+        "handelsblatt",
+        "spiegel",
+        "wirtschaftswoche",
+        "versicherungsjournal",
+        "pfefferminzia",
+    ],
 }
 
 
@@ -428,120 +449,169 @@ JURISDICTION_KEYWORDS = {
 
 # =========================================================
 # 3. DOCUMENT TYPE CORRECTIONS
-# Überschreibt LLM-Klassifikation deterministisch.
 # =========================================================
 
 DOCUMENT_TYPE_CORRECTIONS = [
-    # Beispiel:
-    # {
-    #     "condition": {"origin": "legislator"},
-    #     "set": {"document_type": "regulatory_text"}
-    # },
+    {
+        "if": {
+            "origin": "supervisory_authority",
+            "document_type": "regulatory_text"
+        },
+        "then": {
+            "document_type": "supervisory_guidance"
+        }
+    },
+    {
+        "if": {
+            "origin": "consulting_firm",
+            "document_type": "regulatory_text"
+        },
+        "then": {
+            "document_type": "consulting_framework"
+        }
+    },
+    {
+        "if": {
+            "origin": "corporate",
+            "document_type": "vendor_marketing"
+        },
+        "then": {
+            "document_type": "blog_article"
+        }
+    },
+    {
+        "if": {
+            "origin": "media",
+            "document_type": "blog_article"
+        },
+        "then": {
+            "document_type": "press_article"
+        }
+    }
 ]
 
 
 # =========================================================
-# 4. DOMAIN DETECTION
+# 4. DOMAIN CLASSIFICATION
 # =========================================================
 
 DOMAIN_KEYWORDS = {
     "insurance_domain": [
         "versicherung",
         "insurance",
-        "assekuranz",
-        "schaden",
-        "claims",
-        "underwriting",
+        "financial",
+        "finanz",
+        "bank",
+        "regulation",
+        "dora",
         "solvency",
-        "vait",
-        "bait",
+        "risk management"
     ],
     "cloud_technology": [
         "cloud",
+        "infrastructure",
+        "devops",
         "aws",
         "azure",
-        "gcp",
-        "kubernetes",
-        "infrastructure",
-        "sovereign",
+        "gcp"
     ],
     "ai_genai_agentic": [
+        "ai",
         "artificial intelligence",
-        "künstliche intelligenz",
-        "generative ai",
         "llm",
-        "large language model",
-        "machine learning",
-        "deep learning",
-        "agentic",
-        "rag",
-    ],
-    "portfolio_gtm": [
-        "offering",
-        "portfolio",
-        "go-to-market",
-        "gtm",
-        "proposal",
-        "business development",
-        "rfp",
-        "ausschreibung",
-        "capabilities",
-    ],
+        "generative ai",
+        "machine learning"
+    ]
 }
+
+
+# =========================================================
+# 5. DOMAIN PRIORITY
+# =========================================================
 
 DOMAIN_PRIORITY = [
     "insurance_domain",
     "cloud_technology",
-    "ai_genai_agentic",
-    "portfolio_gtm",
-    "misc",
+    "ai_genai_agentic"
 ]
 
-DOMAIN_LAYER_MAPPING = []
 
-ENABLE_DOMAIN_RULES = True
+# =========================================================
+# 6. DOMAIN LAYER → DOMAIN MAPPING
+# =========================================================
+
+DOMAIN_LAYER_MAPPING = [
+    {
+        "if": {
+            "domain_layer": "regulation"
+        },
+        "then": "insurance_domain"
+    }
+]
+
+
+# =========================================================
+# 7. ANTI-MISC CONTROL
+# =========================================================
+
 ENABLE_ANTI_MISC = True
 ANTI_MISC_FALLBACK_DOMAIN = "insurance_domain"
 
 
 # =========================================================
-# 5. LLM DOMAIN NORMALIZATION
-# Mappt LLM-Ausgaben auf gültige KNOWLEDGE_DOMAINS.
-# TD-005: Workaround bis Topic als eigene Dimension eingeführt wird.
+# 8. CONFIDENCE RULES
+# =========================================================
+
+CONFIDENCE_RULES = [
+    {
+        "if": {"origin": "legislator"},
+        "min_confidence": 0.9
+    },
+    {
+        "if": {"document_type": "regulatory_text"},
+        "min_confidence": 0.85
+    }
+]
+
+
+# =========================================================
+# 9. FEATURE SWITCHES
+# =========================================================
+
+ENABLE_ORIGIN_RULES = True
+ENABLE_JURISDICTION_RULES = True
+ENABLE_DOCUMENT_TYPE_RULES = True
+ENABLE_DOMAIN_RULES = True
+ENABLE_CONFIDENCE_RULES = True
+ENABLE_ANTI_MISC = True
+
+
+# =========================================================
+# 10. LLM DOMAIN NORMALIZATION
+# Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
+# Claude verwendet präzise Topic-Begriffe die nicht in
+# KNOWLEDGE_DOMAINS stehen — diese werden hier korrigiert.
 # =========================================================
 
 LLM_DOMAIN_NORMALIZATION = {
-    # Consulting / Strategy
-    "transformation_strategy":      "portfolio_gtm",
-    "digital_transformation":       "portfolio_gtm",
-    "strategy":                     "portfolio_gtm",
-    "consulting":                   "portfolio_gtm",
-    "advisory":                     "portfolio_gtm",
+    # Cloud-Topics → cloud_technology
+    "cloud_governance":     "cloud_technology",
+    "cloud_architecture":   "cloud_technology",
+    "cloud_security":       "cloud_technology",
+    "sovereign_cloud":      "cloud_technology",
+    "cloud_infrastructure": "cloud_technology",
 
-    # Insurance
-    "insurance":                    "insurance_domain",
-    "insurance_business":           "insurance_domain",
-    "insurance_regulation":         "insurance_domain",
-    "claims_management":            "insurance_domain",
-    "underwriting":                 "insurance_domain",
+    # Insurance-Topics → insurance_domain
+    "insurance_business":   "insurance_domain",
+    "insurance_regulation": "insurance_domain",
+    "financial_regulation": "insurance_domain",
 
-    # Cloud
-    "cloud_governance":             "cloud_technology",
-    "cloud_architecture":           "cloud_technology",
-    "cloud_security":               "cloud_technology",
-    "sovereign_cloud":              "cloud_technology",
-    "cloud":                        "cloud_technology",
+    # AI-Topics → ai_genai_agentic
+    "generative_ai":        "ai_genai_agentic",
+    "agentic_ai":           "ai_genai_agentic",
 
-    # AI
-    "ai":                           "ai_genai_agentic",
-    "genai":                        "ai_genai_agentic",
-    "llm":                          "ai_genai_agentic",
-    "machine_learning":             "ai_genai_agentic",
-
-    # Market / Vendor / Portfolio
-    "vendor_landscape":             "portfolio_gtm",
-    "market_analysis":              "portfolio_gtm",
-    "market":                       "portfolio_gtm",
+    # Advisory → trusted_advisor
+    "advisory_methods":     "trusted_advisor",
 }
 === ./config/llm_config.py ===
 from dotenv import load_dotenv
@@ -593,34 +663,35 @@ SCORING_CONFIG = {
 
     "origin_weights": {
 
-        "legislator": 0.6,
+        "legislator":            0.6,
         "supervisory_authority": 0.2,
-        "consulting_firm": 0.1,
-        "cloud_vendor": -0.05,
-        "unknown": 0.0
+        "consulting_firm":       0.1,
+        "cloud_vendor":          -0.05,
+        "media":                 -0.1,    # journalistisch, nicht autoritativ
+        "unknown":               0.0
     },
 
     "confidence_weights": {
 
-        "high": 0.10,
+        "high":   0.10,
         "medium": 0.0,
-        "low": -0.10
+        "low":    -0.10
     },
 
     "document_type_weights": {
 
-        "regulatory_text": 0.4,
+        "regulatory_text":      0.4,
         "supervisory_guidance": 0.2,
-        "expert_opinion": 0.05,
+        "expert_opinion":       0.05,
         "consulting_framework": 0.05,
-        "research_report": 0.05,
-        "vendor_marketing": -0.2,
-        "blog_article": -0.1,
-        "unknown": 0.0
+        "research_report":      0.05,
+        "press_article":        -0.05,   # journalistisch, Kontext/Marktbeobachtung
+        "vendor_marketing":     -0.2,
+        "blog_article":         -0.1,
+        "unknown":              0.0
     }
 
 }
-
 === ./config/taxonomy.py ===
 DOCUMENT_TYPES = [
     "regulatory_text",        # Gesetz / Verordnung (DORA etc.)
@@ -631,6 +702,7 @@ DOCUMENT_TYPES = [
     "research_report",        # Studien
     "vendor_marketing",       # Anbieter-Marketing
     "blog_article",           # Blog / LinkedIn
+    "press_article",          # Zeitungsartikel / journalistischer Onlineartikel
     "internal_strategy",      # interne Dokumente
     "unknown"
 ]
@@ -673,6 +745,7 @@ ORIGINS = [
     "cloud_vendor",
     "software_vendor",
     "corporate",               # Unternehmen (Versicherer, Banken etc.)
+    "media",                   # Presse, Zeitungen, Onlinemedien
     "internal",
     "unknown"
 ]
@@ -1630,6 +1703,7 @@ ORIGIN_PRIORITY = [
     "cloud_vendor",
     "software_vendor",
     "corporate",
+    "media",          # niedrigste Prio — journalistisch, nicht autoritativ
 ]
 
 
@@ -2679,6 +2753,7 @@ def _normalize_origin(origin: Optional[str]) -> str:
         "industry_association":  "industry",
         "research_institution":  "research",
         "corporate":             "corporate",   # ← FIX: war nicht vorhanden
+        "media":                 "media",       # ← NEU
         "internal":              "internal",
         "unknown":               "unknown",
     }
@@ -4756,6 +4831,196 @@ def main():
 
 if __name__ == "__main__":
     main()
+=== ./scripts/generate_snapshot.py ===
+"""
+generate_snapshot.py
+
+Erzeugt einen kompakten System-Snapshot für den Claude-Kontext.
+Output: knowledge_base/audit/snapshot.txt
+
+Usage:
+    python -m scripts.generate_snapshot
+"""
+
+import json
+import faiss
+from pathlib import Path
+from datetime import datetime
+from collections import Counter
+
+# --------------------------------------------------
+# PATHS
+# --------------------------------------------------
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+REGISTRY_PATH  = BASE_PATH / "knowledge_base/registry/document_registry.json"
+CHUNKS_PATH    = BASE_PATH / "knowledge_base/chunks/chunks.json"
+FAISS_PATH     = BASE_PATH / "knowledge_base/vector_index/index.faiss"
+CHUNK_IDS_PATH = BASE_PATH / "knowledge_base/vector_index/chunk_ids.json"
+AUDIT_LOG_PATH = BASE_PATH / "knowledge_base/audit/onboarding_audit_log.jsonl"
+INTAKE_PATH    = BASE_PATH / "knowledge_sources/intake"
+ARCHIVE_PATH   = BASE_PATH / "knowledge_sources/archive"
+OUTPUT_PATH    = BASE_PATH / "knowledge_base/audit/snapshot.txt"
+
+
+# --------------------------------------------------
+# LOADERS
+# --------------------------------------------------
+
+def load_json(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def load_jsonl(path, last_n=10):
+    lines = path.read_text(encoding="utf-8").strip().splitlines()
+    return [json.loads(l) for l in lines[-last_n:]]
+
+
+# --------------------------------------------------
+# SECTIONS
+# --------------------------------------------------
+
+def section_knowledge_base(registry, chunks):
+    lines = ["## Knowledge Base"]
+
+    # Counts
+    lines.append(f"Dokumente : {len(registry)}")
+    lines.append(f"Chunks    : {len(chunks)}")
+
+    # FAISS
+    try:
+        index = faiss.read_index(str(FAISS_PATH))
+        lines.append(f"FAISS     : {index.ntotal} entries")
+        consistent = (index.ntotal == len(chunks))
+        lines.append(f"Konsistenz: {'✔ OK' if consistent else '⚠ MISMATCH'}")
+    except Exception as e:
+        lines.append(f"FAISS     : ⚠ nicht lesbar ({e})")
+
+    return lines
+
+
+def section_registry(registry):
+    lines = ["", "## Registry — Dokumente nach Origin"]
+
+    by_origin = Counter(d.get("origin", "unknown") for d in registry)
+    for origin, count in sorted(by_origin.items(), key=lambda x: -x[1]):
+        lines.append(f"  {origin:<30} {count}")
+
+    lines.append("")
+    lines.append("## Registry — Dokumente nach Document Type")
+    by_type = Counter(d.get("document_type", "unknown") for d in registry)
+    for doc_type, count in sorted(by_type.items(), key=lambda x: -x[1]):
+        lines.append(f"  {doc_type:<30} {count}")
+
+    lines.append("")
+    lines.append("## Registry — Alle Dokumente")
+    lines.append(f"{'Doc-ID':<45} {'Origin':<25} {'Type':<25} {'Domain'}")
+    lines.append("-" * 130)
+    for d in registry:
+        lines.append(
+            f"{d.get('doc_id','?'):<45} "
+            f"{d.get('origin','?'):<25} "
+            f"{d.get('document_type','?'):<25} "
+            f"{d.get('knowledge_domain','?')}"
+        )
+
+    return lines
+
+
+def section_intake():
+    lines = ["", "## Intake (ausstehend)"]
+
+    if not INTAKE_PATH.exists():
+        lines.append("  (Verzeichnis nicht gefunden)")
+        return lines
+
+    files = [f for f in INTAKE_PATH.iterdir() if f.is_file() and not f.name.startswith(".")]
+    if not files:
+        lines.append("  ✔ Leer — keine Dokumente ausstehend")
+    else:
+        lines.append(f"  {len(files)} Dokument(e) ausstehend:")
+        for f in sorted(files):
+            lines.append(f"  - {f.name}")
+
+    return lines
+
+
+def section_archive():
+    lines = ["", "## Archive"]
+
+    if not ARCHIVE_PATH.exists():
+        lines.append("  (Verzeichnis nicht gefunden)")
+        return lines
+
+    files = [f for f in ARCHIVE_PATH.iterdir() if f.is_file() and not f.name.startswith(".")]
+    lines.append(f"  {len(files)} Dokument(e) archiviert")
+
+    return lines
+
+
+def section_audit(audit_log_path, last_n=5):
+    lines = ["", f"## Audit Log — letzte {last_n} Einträge"]
+
+    if not audit_log_path.exists():
+        lines.append("  (kein Audit Log gefunden)")
+        return lines
+
+    try:
+        entries = load_jsonl(audit_log_path, last_n=last_n)
+        for e in entries:
+            ts = e.get("timestamp", "?")[:19]
+            doc_id = e.get("doc_id", "?")
+            origin = e.get("classification", {}).get("origin", "?")
+            review = "⚠ REVIEW" if e.get("review", {}).get("review_required") else "✔"
+            lines.append(f"  {ts}  {doc_id:<45} {origin:<20} {review}")
+    except Exception as ex:
+        lines.append(f"  ⚠ Fehler beim Lesen: {ex}")
+
+    return lines
+
+
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
+
+def main():
+
+    print("Generating snapshot...")
+
+    # Load
+    registry = load_json(REGISTRY_PATH)
+    chunks   = load_json(CHUNKS_PATH)
+
+    # Build
+    output_lines = [
+        "=" * 70,
+        "STRATEGIC KNOWLEDGE ENGINE — SYSTEM SNAPSHOT",
+        f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        "=" * 70,
+    ]
+
+    output_lines += section_knowledge_base(registry, chunks)
+    output_lines += section_registry(registry)
+    output_lines += section_intake()
+    output_lines += section_archive()
+    output_lines += section_audit(AUDIT_LOG_PATH)
+
+    output_lines += ["", "=" * 70]
+
+    output = "\n".join(output_lines)
+
+    # Save
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(output, encoding="utf-8")
+
+    print(output)
+    print(f"\nSaved: {OUTPUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()
+    
 === ./scripts/reset_knowledge_base.py ===
 import shutil
 from pathlib import Path
