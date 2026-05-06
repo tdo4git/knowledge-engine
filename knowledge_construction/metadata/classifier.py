@@ -7,7 +7,8 @@ from knowledge_construction.validation.validation import validate_enums
 
 from config.construction_config import (
     CLASSIFIER_TEMPERATURE,
-    CLASSIFIER_MAX_TOKENS
+    CLASSIFIER_MAX_TOKENS,
+    PREVIEW_MAX_CHARS          # ← import erzwingt bewussten Umgang mit Preview-Größe
 )
 from config.governance_config import LLM_DOMAIN_NORMALIZATION
 
@@ -33,7 +34,18 @@ def classify_document(
     IMPORTANT:
     - NO governance logic here
     - NO review logic here
+
+    Preview-Truncation:
+    - Die Größe des preview_text wird AUSSCHLIESSLICH durch
+      PREVIEW_MAX_CHARS in construction_config.py gesteuert.
+    - Kein hardcodiertes Truncation hier. Wer die Preview-Größe
+      ändern will, ändert die Config — nicht den Classifier.
     """
+
+    # -------------------------------------------------
+    # Guard: preview_text darf nicht stiller truncated werden
+    # -------------------------------------------------
+    assert isinstance(preview_text, str), "preview_text must be a string"
 
     # -------------------------------------------------
     # 1. Load contract
@@ -42,14 +54,16 @@ def classify_document(
     contract = load_contract_by_task("classification")
 
     # -------------------------------------------------
-    # 2. Build context (bounded)
+    # 2. Build context
+    # Preview-Größe kommt aus PREVIEW_MAX_CHARS (via preview_extractor).
+    # Kein [:N] hier — Single Source of Truth ist die Config.
     # -------------------------------------------------
 
     context = f"""
 Title: {title}
 
 Preview:
-{preview_text[:2000]}
+{preview_text}
 """.strip()
 
     # -------------------------------------------------

@@ -1,11 +1,5 @@
 ONBOARDING REVIEW REPORT
-Generated: 2026-05-03T19:19:39.192383
+Generated: 2026-05-06T19:45:41.156416
 ==================================================
 
-1 Dokument(e) benoetigen Aufmerksamkeit:
-
-Datei:   Blog - ChatGPT wird zum Versicherungsvermittler.pdf
-Doc-ID:  doc_unknown_blog_ff0eb5
-Grund:   review_required
-Detail:  ['unknown_origin']
-----------------------------------------
+✔ Keine Review-Punkte — alle Dokumente sauber verarbeitet.

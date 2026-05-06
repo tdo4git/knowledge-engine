@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_media_digitale_dec231",
+  "title": "SZ Digitale Souvera\u0308nita\u0308t | Zwei Drittel der Internetnutzer bevorzugen Firmen aus Eu",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "market",
+    "knowledge_domain": "cloud_technology",
+    "topic": "sovereign_cloud",
+    "origin": "media",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "elevated"
+  }
+}

@@ -55,18 +55,25 @@ def _normalize_text(text: str) -> str:
 
 def _normalize_origin(origin: Optional[str]) -> str:
     """
-    Kürzt Origin auf kompaktes Präfix.
+    Kürzt Origin auf kompaktes, semantisch korrektes Präfix.
+
+    WICHTIG: "supervisory_authority" → "supervisory" (nicht "bafin").
+    BaFin ist eine spezifische Behörde — das Präfix muss die
+    Origin-Kategorie beschreiben, nicht eine konkrete Institution.
+    EIOPA, BaFin, FCA etc. sind alle "supervisory_authority".
     """
     mapping = {
-        "legislator":           "eu",
-        "supervisory_authority": "bafin",
-        "consulting_firm":      "consulting",
-        "cloud_vendor":         "aws",
-        "software_vendor":      "vendor",
-        "industry_association": "industry",
-        "research_institution": "research",
-        "internal":             "internal",
-        "unknown":              "unknown",
+        "legislator":            "eu",
+        "supervisory_authority": "supervisory",
+        "consulting_firm":       "consulting",
+        "cloud_vendor":          "aws",
+        "software_vendor":       "vendor",
+        "industry_association":  "industry",
+        "research_institution":  "research",
+        "corporate":             "corporate",   # ← FIX: war nicht vorhanden
+        "media":                 "media",       # ← NEU
+        "internal":              "internal",
+        "unknown":               "unknown",
     }
     return mapping.get(origin, "unknown") if origin else "unknown"
 

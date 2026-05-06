@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_sind_2026_0b05a4",
+  "title": "Das sind die IT-Trends 2026",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "technology",
+    "knowledge_domain": "cloud_technology",
+    "topic": "transformation_strategy",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_supervisory_insurance_83c73b",
+  "title": "Eiopa-REPORT ON THE DIGITALISATION OF THE EUROPEAN INSURANCE SECTOR",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.98,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

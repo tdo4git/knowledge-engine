@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120",
+  "title": "conet_rfp_allianz_business_proposal_2026",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "internal",
+    "jurisdiction": "EU",
+    "confidence": 0.93,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

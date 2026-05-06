@@ -62,15 +62,6 @@ Jeder Eintrag enthält:
 
 ---
 
-### TD-010 — Doc-ID enthält Origin aus LLM, nicht aus Governance
-- **Bereich:** Knowledge Construction / Metadata
-- **Beschreibung:** `generate_doc_id()` wird mit `origin` aus der LLM-Klassifikation aufgerufen, bevor Governance läuft. Wenn Governance die Origin korrigiert (z.B. `unknown` → `corporate`), spiegelt die Doc-ID nicht die finale Origin wider (z.B. `doc_unknown_allianz_6ae771` statt `doc_corporate_allianz_6ae771`). Funktional kein Problem — nur kosmetisch.
-- **Aufwand:** klein
-- **Priorität:** niedrig
-- **Status:** offen
-
----
-
 ## Erledigt
 
 ### TD-001 — Doc-Hash Duplicate Check ✔
@@ -88,3 +79,7 @@ Jeder Eintrag enthält:
 ### TD-006 — Bias-Logik korrigieren ✔
 - **Erledigt:** 2026-05-03
 - **Lösung:** `bias.py` korrigiert: `"legislator"` statt `"regulator"` als Key. `"corporate"` als neue Origin-Kategorie mit Bias `"medium"` ergänzt.
+
+### TD-010 — Doc-ID enthält Origin aus LLM, nicht aus Governance ✔
+- **Erledigt:** 2026-05-03
+- **Lösung:** `generate_doc_id()` wird nach `apply_governance_pipeline()` aufgerufen und verwendet `classification.get("origin")` — also die finale, governance-korrigierte Origin. Zusätzlich: `"corporate"` in `_normalize_origin()` ergänzt (fehlender Eintrag war der eigentliche Bug). `doc_unknown_allianz_*` → `doc_corporate_allianz_*`.

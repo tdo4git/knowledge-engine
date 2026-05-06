@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_vendor_heiseacademymycompany_6d0ccf",
+  "title": "HeiseAcademy-MyCompany GPT",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

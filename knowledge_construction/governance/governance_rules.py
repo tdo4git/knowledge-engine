@@ -36,6 +36,7 @@ ORIGIN_PRIORITY = [
     "cloud_vendor",
     "software_vendor",
     "corporate",
+    "media",          # niedrigste Prio — journalistisch, nicht autoritativ
 ]
 
 

@@ -1,68 +1,238 @@
 # =========================================================
-# GOVERNANCE CONFIG – PRODUCTION VERSION
+# governance_config.py
+# Single Source of Truth für alle Governance-Regeln.
+# Änderungen hier wirken sich auf alle Dokumente aus.
 # =========================================================
+
+
+# =========================================================
+# FIELD PRIORITY
+# Bestimmt welche Quelle bei Konflikten gewinnt.
+# Niedrigerer Index = höhere Priorität.
+# =========================================================
+
+FIELD_PRIORITY = {
+    "origin": [
+        "filename_rule",    # Dateiname ist stärkstes Signal
+        "preview_rule",     # Titel/Author-Match
+        "llm",              # LLM-Klassifikation als Fallback
+    ],
+    "jurisdiction": [
+        "preview_rule",
+        "llm",
+    ],
+    "knowledge_domain": [
+        "domain_rule",
+        "llm",
+    ],
+}
+
 
 # =========================================================
 # 1. ORIGIN DETECTION
 # =========================================================
 
 AUTHOR_ORIGIN_MAP = {
+
+    # --------------------------------------------------
     # Legislator
-    "europäische union": "legislator",
-    "european parliament": "legislator",
-    "rat der europäischen union": "legislator",
-    "european commission": "legislator",
+    # --------------------------------------------------
+    "europäische union":                    "legislator",
+    "european parliament":                  "legislator",
+    "rat der europäischen union":           "legislator",
+    "european commission":                  "legislator",
 
-    # Supervisory
-    "eba": "supervisory_authority",
-    "eiopa": "supervisory_authority",
-    "bafin": "supervisory_authority",
+    # --------------------------------------------------
+    # Supervisory Authority
+    # --------------------------------------------------
+    "eba":                                  "supervisory_authority",
+    "eiopa":                                "supervisory_authority",
+    "bafin":                                "supervisory_authority",
+    "finma":                                "supervisory_authority",
+    "fca":                                  "supervisory_authority",
 
-    # Consulting
-    "deloitte": "consulting_firm",
-    "pwc": "consulting_firm",
-    "kpmg": "consulting_firm",
-    "accenture": "consulting_firm",
-    "msg group": "consulting_firm",
-    "msg systems": "consulting_firm",
-    "ernst & young": "consulting_firm",
-    "ernst and young": "consulting_firm",
-    "bain": "consulting_firm",
-    "bcg": "consulting_firm",
-    "mckinsey": "consulting_firm",
-    "exxeta": "consulting_firm",
+    # --------------------------------------------------
+    # Consulting Firms
+    # --------------------------------------------------
+    "deloitte":                             "consulting_firm",
+    "pwc":                                  "consulting_firm",
+    "adesso":                               "consulting_firm",
+    "kpmg":                                 "consulting_firm",
+    "accenture":                            "consulting_firm",
+    "msg group":                            "consulting_firm",
+    "msg systems":                          "consulting_firm",
+    "ernst & young":                        "consulting_firm",
+    "ernst and young":                      "consulting_firm",
+    "bain":                                 "consulting_firm",
+    "bcg":                                  "consulting_firm",
+    "mckinsey":                             "consulting_firm",
+    "exxeta":                               "consulting_firm",
+    "capgemini":                            "consulting_firm",
+    "bearingpoint":                         "consulting_firm",
+    "bearing point":                        "consulting_firm",
+    "oliver wyman":                         "consulting_firm",
+    "roland berger":                        "consulting_firm",
+    "zeb":                                  "consulting_firm",
 
+    # --------------------------------------------------
+    # Research Institutions
+    # --------------------------------------------------
+    "lünendonk":                            "research_institution",
+    "luenendonk":                           "research_institution",
+    "trendzowl":                            "research_institution",
+    "fraunhofer":                           "research_institution",
+    "bitkom research":                      "research_institution",
+    "oecd":                                 "research_institution",
+
+    # --------------------------------------------------
     # Cloud Vendors
-    "amazon web services": "cloud_vendor",
-    "aws": "cloud_vendor",
-    "microsoft azure": "cloud_vendor",
-    "google cloud": "cloud_vendor",
+    # --------------------------------------------------
+    "amazon web services":                  "cloud_vendor",
+    "aws":                                  "cloud_vendor",
+    "microsoft azure":                      "cloud_vendor",
+    "google cloud":                         "cloud_vendor",
 
+    # --------------------------------------------------
+    # Software Vendors
+    # --------------------------------------------------
+    "heise":                                "software_vendor",
+    "heise academy":                        "software_vendor",
+    "amber":                                "software_vendor",
+
+    # --------------------------------------------------
+    # Industry Associations
+    # --------------------------------------------------
+    "gdv":                                  "industry_association",
+    "bitkom":                               "industry_association",
+    "beltios":                              "industry_association",
+    "gesamtverband der deutschen versicherungswirtschaft": "industry_association",
+
+    # --------------------------------------------------
+    # Internal (conet-eigene Dokumente)
+    # Vor corporate — verhindert dass "allianz" im
+    # Titel die interne Origin überschreibt.
+    # --------------------------------------------------
+    "conet":                                "internal",
+    "conet deutschland":                    "internal",
+    "conet deutschland gmbh":              "internal",
+    "conet group":                          "internal",
+
+    # --------------------------------------------------
     # Corporate (Versicherer, Banken, Unternehmen)
-    "allianz": "corporate",
-    "munich re": "corporate",
-    "hannover re": "corporate",
-    "axa": "corporate",
-    "zurich": "corporate",
-    "generali": "corporate",
-    "deutsche bank": "corporate",
-    "commerzbank": "corporate",
+    # --------------------------------------------------
+    "allianz":                              "corporate",
+    "munich re":                            "corporate",
+    "hannover re":                          "corporate",
+    "axa":                                  "corporate",
+    "zurich":                               "corporate",
+    "generali":                             "corporate",
+    "deutsche bank":                        "corporate",
+    "commerzbank":                          "corporate",
+    "ergo":                                 "corporate",
+    "talanx":                               "corporate",
+    "swiss re":                             "corporate",
+    "signal iduna":                         "corporate",
+    "huk-coburg":                           "corporate",
+    "r+v":                                  "corporate",
 
-    # Industry
-    "gdv": "industry_association",
-    "bitkom": "industry_association",
-
-    # Research
-    "whitepaper": "research_institution",
-    "study": "research_institution"
+    # --------------------------------------------------
+    # Media (Presse, Zeitungen, Onlinemedien)
+    # --------------------------------------------------
+    "süddeutsche zeitung":                  "media",
+    "sueddeutsche zeitung":                 "media",
+    "süddeutsche":                          "media",
+    "frankfurter allgemeine":               "media",
+    "handelsblatt":                         "media",
+    "der spiegel":                          "media",
+    "manager magazin":                      "media",
+    "wirtschaftswoche":                     "media",
+    "versicherungsjournal":                 "media",
+    "pfefferminzia":                        "media",
 }
 
 
 FILENAME_KEYWORDS = {
-    "consulting_firm": ["deloitte", "pwc", "kpmg", "accenture", "exxeta"],
-    "cloud_vendor": ["aws", "azure", "gcp"],
-    "corporate": ["allianz", "munichre", "axa", "zurich"],
-    "research_institution": ["whitepaper", "study", "report"]
+
+    "supervisory_authority": [
+        "bafin",
+        "eiopa",
+        "eba",
+        "finma",
+    ],
+
+    "legislator": [
+        "dora verordnung",
+        "regulation eu",
+    ],
+
+    "consulting_firm": [
+        "deloitte",
+        "pwc",
+        "kpmg",
+        "accenture",
+        "exxeta",
+        "capgemini",
+        "bearingpoint",
+        "playbook",
+    ],
+
+    "research_institution": [
+        "luenendonk",
+        "lünendonk",
+        "trendzowl",
+        "oecd",
+        "studie",
+        "study",
+        "report",
+        "whitepaper",
+    ],
+
+    "cloud_vendor": [
+        "aws",
+        "azure",
+        "gcp",
+    ],
+
+    "software_vendor": [
+        "heise",
+        "amber",
+    ],
+
+    "industry_association": [
+        "gdv",
+        "beltios",
+        "bitkom",
+    ],
+
+    # --------------------------------------------------
+    # Internal VOR corporate — kritisch für korrekte
+    # Priorität bei Dateinamen wie:
+    #   conet_rfp_allianz_2026.docx
+    # "conet" muss vor "allianz" greifen.
+    # --------------------------------------------------
+    "internal": [
+        "conet",
+    ],
+
+    "corporate": [
+        "allianz",
+        "munichre",
+        "munich re",
+        "axa",
+        "zurich",
+        "ergo",
+        "talanx",
+        "rv",
+    ],
+
+    "media": [
+        "sueddeutsche",
+        "handelsblatt",
+        "spiegel",
+        "wirtschaftswoche",
+        "versicherungsjournal",
+        "pfefferminzia",
+    ],
 }
 
 
@@ -119,6 +289,15 @@ DOCUMENT_TYPE_CORRECTIONS = [
         },
         "then": {
             "document_type": "blog_article"
+        }
+    },
+    {
+        "if": {
+            "origin": "media",
+            "document_type": "blog_article"
+        },
+        "then": {
+            "document_type": "press_article"
         }
     }
 ]
@@ -208,28 +387,7 @@ CONFIDENCE_RULES = [
 
 
 # =========================================================
-# 9. FIELD PRIORITY (CORE GOVERNANCE MECHANISM)
-# =========================================================
-
-FIELD_PRIORITY = {
-    "origin": [
-        "preview_rule",
-        "filename_rule",
-        "llm"
-    ],
-    "jurisdiction": [
-        "rule_based",
-        "llm"
-    ],
-    "knowledge_domain": [
-        "rule_based",
-        "llm"
-    ]
-}
-
-
-# =========================================================
-# 10. FEATURE SWITCHES
+# 9. FEATURE SWITCHES
 # =========================================================
 
 ENABLE_ORIGIN_RULES = True
@@ -241,7 +399,7 @@ ENABLE_ANTI_MISC = True
 
 
 # =========================================================
-# 11. LLM DOMAIN NORMALIZATION
+# 10. LLM DOMAIN NORMALIZATION
 # Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
 # Claude verwendet präzise Topic-Begriffe die nicht in
 # KNOWLEDGE_DOMAINS stehen — diese werden hier korrigiert.

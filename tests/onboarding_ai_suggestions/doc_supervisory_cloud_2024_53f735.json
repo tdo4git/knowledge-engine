@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_supervisory_cloud_2024_53f735",
+  "title": "bafin_aufsichtsmitteilung_cloud_auslagerung_2024",
+  "ai": {
+    "document_type": "supervisory_guidance",
+    "domain_layer": "regulation",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_governance",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.99,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

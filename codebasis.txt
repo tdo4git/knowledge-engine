@@ -90,7 +90,7 @@ class RegistryBuilder:
 PROJECT_NAME = "Strategic Knowledge Engine"
 DEFAULT_ENCODING = "utf-8"
 === ./config/construction_config.py ===
-PREVIEW_MAX_CHARS = 6000
+PREVIEW_MAX_CHARS = 12000
 
 MAX_PDF_PAGES_PREVIEW = 5
 DOCX_PARAGRAPH_PREVIEW = 80
@@ -104,7 +104,7 @@ GOVERNANCE_REVIEW_MAX_TOKENS = 600
 CHUNKS_PATH = "knowledge_base/chunks/chunks.json"
 CHUNK_SIZE = 600
 CHUNK_OVERLAP = 80
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 EMBEDDINGS_PATH = "knowledge_base/vector_index/embeddings.pt"
 FAISS_INDEX_PATH = "knowledge_base/vector_index/index.faiss"
@@ -117,6 +117,16 @@ CHUNK_IDS_PATH = "knowledge_base/vector_index/chunk_ids.json"
 LLM_MODEL = "claude-sonnet-4-6"
 LLM_TEMPERATURE = 0.0
 LLM_TIMEOUT = 30
+
+# ----------------------------------
+# Review Configuration
+# ----------------------------------
+
+# Minimale Confidence für automatische Akzeptanz.
+# Dokumente unterhalb dieses Schwellwerts werden zur
+# manuellen Prüfung geflaggt und nicht in die
+# Knowledge Base übernommen.
+REVIEW_LOW_CONFIDENCE_THRESHOLD = 0.70
 === ./config/engine_config.py ===
 """
 Engine Configuration
@@ -177,70 +187,219 @@ ALLOWED_EXTENSIONS = [
 IGNORE_HIDDEN_FILES = True
 === ./config/governance_config.py ===
 # =========================================================
-# GOVERNANCE CONFIG – PRODUCTION VERSION
+# GOVERNANCE CONFIG
+# Strategic Knowledge Engine
+#
+# Single Source of Truth für alle Governance-Regeln.
+# Änderungen hier wirken sich auf alle Dokumente aus.
 # =========================================================
+
+
+# =========================================================
+# FIELD PRIORITY
+# Bestimmt welche Quelle bei Konflikten gewinnt.
+# Niedrigerer Index = höhere Priorität.
+# =========================================================
+
+FIELD_PRIORITY = {
+    "origin": [
+        "filename_rule",    # Dateiname ist stärkstes Signal
+        "preview_rule",     # Titel/Author-Match
+        "llm",              # LLM-Klassifikation als Fallback
+    ],
+    "jurisdiction": [
+        "preview_rule",
+        "llm",
+    ],
+    "knowledge_domain": [
+        "domain_rule",
+        "llm",
+    ],
+}
+
 
 # =========================================================
 # 1. ORIGIN DETECTION
 # =========================================================
 
 AUTHOR_ORIGIN_MAP = {
+
+    # --------------------------------------------------
     # Legislator
-    "europäische union": "legislator",
-    "european parliament": "legislator",
-    "rat der europäischen union": "legislator",
-    "european commission": "legislator",
+    # --------------------------------------------------
+    "europäische union":                    "legislator",
+    "european parliament":                  "legislator",
+    "rat der europäischen union":           "legislator",
+    "european commission":                  "legislator",
 
-    # Supervisory
-    "eba": "supervisory_authority",
-    "eiopa": "supervisory_authority",
-    "bafin": "supervisory_authority",
+    # --------------------------------------------------
+    # Supervisory Authority
+    # --------------------------------------------------
+    "eba":                                  "supervisory_authority",
+    "eiopa":                                "supervisory_authority",
+    "bafin":                                "supervisory_authority",
+    "finma":                                "supervisory_authority",
+    "fca":                                  "supervisory_authority",
 
-    # Consulting
-    "deloitte": "consulting_firm",
-    "pwc": "consulting_firm",
-    "kpmg": "consulting_firm",
-    "accenture": "consulting_firm",
-    "msg group": "consulting_firm",
-    "msg systems": "consulting_firm",
-    "ernst & young": "consulting_firm",
-    "ernst and young": "consulting_firm",
-    "bain": "consulting_firm",
-    "bcg": "consulting_firm",
-    "mckinsey": "consulting_firm",
-    "exxeta": "consulting_firm",
+    # --------------------------------------------------
+    # Consulting Firms
+    # --------------------------------------------------
+    "deloitte":                             "consulting_firm",
+    "pwc":                                  "consulting_firm",
+    "adesso":                               "consulting_firm",
+    "kpmg":                                 "consulting_firm",
+    "accenture":                            "consulting_firm",
+    "msg group":                            "consulting_firm",
+    "msg systems":                          "consulting_firm",
+    "ernst & young":                        "consulting_firm",
+    "ernst and young":                      "consulting_firm",
+    "bain":                                 "consulting_firm",
+    "bcg":                                  "consulting_firm",
+    "mckinsey":                             "consulting_firm",
+    "exxeta":                               "consulting_firm",
+    "capgemini":                            "consulting_firm",
+    "bearingpoint":                         "consulting_firm",
+    "bearing point":                        "consulting_firm",
+    "oliver wyman":                         "consulting_firm",
+    "roland berger":                        "consulting_firm",
+    "zeb":                                  "consulting_firm",
 
+    # --------------------------------------------------
+    # Research Institutions
+    # --------------------------------------------------
+    "lünendonk":                            "research_institution",
+    "luenendonk":                           "research_institution",
+    "trendzowl":                            "research_institution",
+    "fraunhofer":                           "research_institution",
+    "bitkom research":                      "research_institution",
+    "oecd":                                 "research_institution",
+
+    # --------------------------------------------------
     # Cloud Vendors
-    "amazon web services": "cloud_vendor",
-    "aws": "cloud_vendor",
-    "microsoft azure": "cloud_vendor",
-    "google cloud": "cloud_vendor",
+    # --------------------------------------------------
+    "amazon web services":                  "cloud_vendor",
+    "aws":                                  "cloud_vendor",
+    "microsoft azure":                      "cloud_vendor",
+    "google cloud":                         "cloud_vendor",
 
+    # --------------------------------------------------
+    # Software Vendors
+    # --------------------------------------------------
+    "heise":                                "software_vendor",
+    "heise academy":                        "software_vendor",
+    "amber":                                "software_vendor",
+
+    # --------------------------------------------------
+    # Industry Associations
+    # --------------------------------------------------
+    "gdv":                                  "industry_association",
+    "bitkom":                               "industry_association",
+    "beltios":                              "industry_association",
+    "gesamtverband der deutschen versicherungswirtschaft": "industry_association",
+
+    # --------------------------------------------------
+    # Internal (conet-eigene Dokumente)
+    # Vor corporate — verhindert dass "allianz" im
+    # Titel die interne Origin überschreibt.
+    # --------------------------------------------------
+    "conet":                                "internal",
+    "conet deutschland":                    "internal",
+    "conet deutschland gmbh":              "internal",
+    "conet group":                          "internal",
+
+    # --------------------------------------------------
     # Corporate (Versicherer, Banken, Unternehmen)
-    "allianz": "corporate",
-    "munich re": "corporate",
-    "hannover re": "corporate",
-    "axa": "corporate",
-    "zurich": "corporate",
-    "generali": "corporate",
-    "deutsche bank": "corporate",
-    "commerzbank": "corporate",
-
-    # Industry
-    "gdv": "industry_association",
-    "bitkom": "industry_association",
-
-    # Research
-    "whitepaper": "research_institution",
-    "study": "research_institution"
+    # --------------------------------------------------
+    "allianz":                              "corporate",
+    "munich re":                            "corporate",
+    "hannover re":                          "corporate",
+    "axa":                                  "corporate",
+    "zurich":                               "corporate",
+    "generali":                             "corporate",
+    "deutsche bank":                        "corporate",
+    "commerzbank":                          "corporate",
+    "ergo":                                 "corporate",
+    "talanx":                               "corporate",
+    "swiss re":                             "corporate",
+    "signal iduna":                         "corporate",
+    "huk-coburg":                           "corporate",
+    "r+v":                                  "corporate",
 }
 
 
 FILENAME_KEYWORDS = {
-    "consulting_firm": ["deloitte", "pwc", "kpmg", "accenture", "exxeta"],
-    "cloud_vendor": ["aws", "azure", "gcp"],
-    "corporate": ["allianz", "munichre", "axa", "zurich"],
-    "research_institution": ["whitepaper", "study", "report"]
+
+    "supervisory_authority": [
+        "bafin",
+        "eiopa",
+        "eba",
+        "finma",
+    ],
+
+    "legislator": [
+        "dora verordnung",
+        "regulation eu",
+    ],
+
+    "consulting_firm": [
+        "deloitte",
+        "pwc",
+        "kpmg",
+        "accenture",
+        "exxeta",
+        "capgemini",
+        "bearingpoint",
+        "playbook",
+    ],
+
+    "research_institution": [
+        "luenendonk",
+        "lünendonk",
+        "trendzowl",
+        "oecd",
+        "studie",
+        "study",
+        "report",
+        "whitepaper",
+    ],
+
+    "cloud_vendor": [
+        "aws",
+        "azure",
+        "gcp",
+    ],
+
+    "software_vendor": [
+        "heise",
+        "amber",
+    ],
+
+    "industry_association": [
+        "gdv",
+        "beltios",
+        "bitkom",
+    ],
+
+    # --------------------------------------------------
+    # Internal VOR corporate — kritisch für korrekte
+    # Priorität bei Dateinamen wie:
+    #   conet_rfp_allianz_2026.docx
+    # "conet" muss vor "allianz" greifen.
+    # --------------------------------------------------
+    "internal": [
+        "conet",
+    ],
+
+    "corporate": [
+        "allianz",
+        "munichre",
+        "munich re",
+        "axa",
+        "zurich",
+        "ergo",
+        "talanx",
+        "rv",
+    ],
 }
 
 
@@ -269,181 +428,120 @@ JURISDICTION_KEYWORDS = {
 
 # =========================================================
 # 3. DOCUMENT TYPE CORRECTIONS
+# Überschreibt LLM-Klassifikation deterministisch.
 # =========================================================
 
 DOCUMENT_TYPE_CORRECTIONS = [
-    {
-        "if": {
-            "origin": "supervisory_authority",
-            "document_type": "regulatory_text"
-        },
-        "then": {
-            "document_type": "supervisory_guidance"
-        }
-    },
-    {
-        "if": {
-            "origin": "consulting_firm",
-            "document_type": "regulatory_text"
-        },
-        "then": {
-            "document_type": "consulting_framework"
-        }
-    },
-    {
-        "if": {
-            "origin": "corporate",
-            "document_type": "vendor_marketing"
-        },
-        "then": {
-            "document_type": "blog_article"
-        }
-    }
+    # Beispiel:
+    # {
+    #     "condition": {"origin": "legislator"},
+    #     "set": {"document_type": "regulatory_text"}
+    # },
 ]
 
 
 # =========================================================
-# 4. DOMAIN CLASSIFICATION
+# 4. DOMAIN DETECTION
 # =========================================================
 
 DOMAIN_KEYWORDS = {
     "insurance_domain": [
         "versicherung",
         "insurance",
-        "financial",
-        "finanz",
-        "bank",
-        "regulation",
-        "dora",
+        "assekuranz",
+        "schaden",
+        "claims",
+        "underwriting",
         "solvency",
-        "risk management"
+        "vait",
+        "bait",
     ],
     "cloud_technology": [
         "cloud",
-        "infrastructure",
-        "devops",
         "aws",
         "azure",
-        "gcp"
+        "gcp",
+        "kubernetes",
+        "infrastructure",
+        "sovereign",
     ],
     "ai_genai_agentic": [
-        "ai",
         "artificial intelligence",
-        "llm",
+        "künstliche intelligenz",
         "generative ai",
-        "machine learning"
-    ]
+        "llm",
+        "large language model",
+        "machine learning",
+        "deep learning",
+        "agentic",
+        "rag",
+    ],
+    "portfolio_gtm": [
+        "offering",
+        "portfolio",
+        "go-to-market",
+        "gtm",
+        "proposal",
+        "business development",
+        "rfp",
+        "ausschreibung",
+        "capabilities",
+    ],
 }
-
-
-# =========================================================
-# 5. DOMAIN PRIORITY
-# =========================================================
 
 DOMAIN_PRIORITY = [
     "insurance_domain",
     "cloud_technology",
-    "ai_genai_agentic"
+    "ai_genai_agentic",
+    "portfolio_gtm",
+    "misc",
 ]
 
+DOMAIN_LAYER_MAPPING = []
 
-# =========================================================
-# 6. DOMAIN LAYER → DOMAIN MAPPING
-# =========================================================
-
-DOMAIN_LAYER_MAPPING = [
-    {
-        "if": {
-            "domain_layer": "regulation"
-        },
-        "then": "insurance_domain"
-    }
-]
-
-
-# =========================================================
-# 7. ANTI-MISC CONTROL
-# =========================================================
-
+ENABLE_DOMAIN_RULES = True
 ENABLE_ANTI_MISC = True
 ANTI_MISC_FALLBACK_DOMAIN = "insurance_domain"
 
 
 # =========================================================
-# 8. CONFIDENCE RULES
-# =========================================================
-
-CONFIDENCE_RULES = [
-    {
-        "if": {"origin": "legislator"},
-        "min_confidence": 0.9
-    },
-    {
-        "if": {"document_type": "regulatory_text"},
-        "min_confidence": 0.85
-    }
-]
-
-
-# =========================================================
-# 9. FIELD PRIORITY (CORE GOVERNANCE MECHANISM)
-# =========================================================
-
-FIELD_PRIORITY = {
-    "origin": [
-        "preview_rule",
-        "filename_rule",
-        "llm"
-    ],
-    "jurisdiction": [
-        "rule_based",
-        "llm"
-    ],
-    "knowledge_domain": [
-        "rule_based",
-        "llm"
-    ]
-}
-
-
-# =========================================================
-# 10. FEATURE SWITCHES
-# =========================================================
-
-ENABLE_ORIGIN_RULES = True
-ENABLE_JURISDICTION_RULES = True
-ENABLE_DOCUMENT_TYPE_RULES = True
-ENABLE_DOMAIN_RULES = True
-ENABLE_CONFIDENCE_RULES = True
-ENABLE_ANTI_MISC = True
-
-
-# =========================================================
-# 11. LLM DOMAIN NORMALIZATION
-# Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
-# Claude verwendet präzise Topic-Begriffe die nicht in
-# KNOWLEDGE_DOMAINS stehen — diese werden hier korrigiert.
+# 5. LLM DOMAIN NORMALIZATION
+# Mappt LLM-Ausgaben auf gültige KNOWLEDGE_DOMAINS.
+# TD-005: Workaround bis Topic als eigene Dimension eingeführt wird.
 # =========================================================
 
 LLM_DOMAIN_NORMALIZATION = {
-    # Cloud-Topics → cloud_technology
-    "cloud_governance":     "cloud_technology",
-    "cloud_architecture":   "cloud_technology",
-    "cloud_security":       "cloud_technology",
-    "sovereign_cloud":      "cloud_technology",
-    "cloud_infrastructure": "cloud_technology",
+    # Consulting / Strategy
+    "transformation_strategy":      "portfolio_gtm",
+    "digital_transformation":       "portfolio_gtm",
+    "strategy":                     "portfolio_gtm",
+    "consulting":                   "portfolio_gtm",
+    "advisory":                     "portfolio_gtm",
 
-    # Insurance-Topics → insurance_domain
-    "insurance_business":   "insurance_domain",
-    "insurance_regulation": "insurance_domain",
-    "financial_regulation": "insurance_domain",
+    # Insurance
+    "insurance":                    "insurance_domain",
+    "insurance_business":           "insurance_domain",
+    "insurance_regulation":         "insurance_domain",
+    "claims_management":            "insurance_domain",
+    "underwriting":                 "insurance_domain",
 
-    # AI-Topics → ai_genai_agentic
-    "generative_ai":        "ai_genai_agentic",
-    "agentic_ai":           "ai_genai_agentic",
+    # Cloud
+    "cloud_governance":             "cloud_technology",
+    "cloud_architecture":           "cloud_technology",
+    "cloud_security":               "cloud_technology",
+    "sovereign_cloud":              "cloud_technology",
+    "cloud":                        "cloud_technology",
 
-    # Advisory → trusted_advisor
-    "advisory_methods":     "trusted_advisor",
+    # AI
+    "ai":                           "ai_genai_agentic",
+    "genai":                        "ai_genai_agentic",
+    "llm":                          "ai_genai_agentic",
+    "machine_learning":             "ai_genai_agentic",
+
+    # Market / Vendor / Portfolio
+    "vendor_landscape":             "portfolio_gtm",
+    "market_analysis":              "portfolio_gtm",
+    "market":                       "portfolio_gtm",
 }
 === ./config/llm_config.py ===
 from dotenv import load_dotenv
@@ -1583,10 +1681,16 @@ def _set_with_priority(result, field, value, source):
 
 # ------------------------------------------------
 # ORIGIN DETECTION
+#
+# FIX: Preview-Text wird NICHT für Origin-Detection
+# verwendet. Origin = wer hat das Dokument geschrieben,
+# erkennbar an Titel und Dateiname — nicht am Inhalt.
+# Ein heise-Whitepaper das BaFin erwähnt, ist trotzdem
+# von heise, nicht von BaFin.
 # ------------------------------------------------
 def _apply_origin(result, title, preview_text, file_path: Path):
 
-    text = f"{title} {preview_text}".lower()
+    text = title.lower()                    # ← nur Titel, kein Preview-Text
     filename = str(file_path).lower()
     combined = f"{text} {filename}"
 
@@ -1993,7 +2097,7 @@ def _format_list(name: str, values: list) -> str:
 
 
 # -------------------------------------------------
-# MAIN BUILDER
+# MAIN BUILDER (IMPROVED V2)
 # -------------------------------------------------
 
 def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str, str]:
@@ -2032,9 +2136,45 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
             "Classify the document strictly according to the allowed taxonomy values."
         )
 
-        # -----------------------------
+        # ================================================
+        # CLOUD VENDOR DETECTION — PRIORITY SECTION (NEW)
+        # ================================================
+        
+        system_parts.append("\n---\nCLOUD VENDOR DETECTION (HIGH PRIORITY)\n---")
+        
+        system_parts.append(
+            "Check for these cloud vendor signals FIRST, before other origin analysis:"
+        )
+        
+        system_parts.append("""
+1. AUTHOR/PUBLISHER SIGNAL (HIGHEST PRIORITY):
+   - Amazon Web Services, AWS, Inc. (author/publisher) → origin = cloud_vendor
+   - Microsoft Azure, Microsoft Corporation → cloud_vendor
+   - Google Cloud, Alphabet Inc. → cloud_vendor
+   - Name appears in: document header, footer, copyright, or publication metadata
+   
+2. DOMAIN SIGNAL:
+   - aws.amazon.com in URL/references → cloud_vendor
+   - azure.microsoft.com → cloud_vendor
+   - cloud.google.com → cloud_vendor
+   
+3. SERVICE REFERENCES:
+   - Amazon EC2, S3, Lambda, SageMaker, Connect, Personalize, etc. → cloud_vendor
+   - Azure Virtual Machines, Cosmos DB, etc. → cloud_vendor
+   - GCP Compute Engine, Dataflow, etc. → cloud_vendor
+
+4. MARKETING PATTERN FOR VENDORS:
+   - Cloud vendors use case studies, strategic frameworks, best practices
+   - This is NORMAL vendor_marketing behavior (not consulting_firm behavior)
+   - DO NOT confuse "vendor consulting guidance" with "consulting_firm origin"
+   
+RULE: If author is a cloud vendor (signals 1-3), origin = cloud_vendor
+      REGARDLESS of content being marketing, advisory, or thought leadership
+""")
+
+        # -------------------------------------------------
         # TAXONOMY (Single Source of Truth)
-        # -----------------------------
+        # -------------------------------------------------
 
         system_parts.append("\nAllowed Values:")
 
@@ -2045,13 +2185,54 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         system_parts.append(_format_list("origin", ORIGINS))
         system_parts.append(_format_list("jurisdiction", JURISDICTIONS))
 
-        # -----------------------------
+        # ================================================
+        # ORIGIN DETECTION GUIDANCE (REFINED)
+        # ================================================
+
+        system_parts.append("\n---\nORIGIN DETECTION GUIDANCE\n---")
+        
+        system_parts.append("""
+STEP 1: Check Cloud Vendor Signals (see section above first)
+
+STEP 2: If NOT a cloud vendor, apply these rules in order:
+
+LEGISLATOR (EU Parliament, European Commission, etc.):
+- Keywords: "Verordnung", "Regulation (EU)", "European Commission", "legislator"
+- Example: "DORA Verordnung EU 2022"
+
+SUPERVISORY_AUTHORITY (BaFin, EBA, EIOPA, FINMA):
+- Keywords: "BaFin", "EBA", "EIOPA", "FINMA", "regulatory guidance"
+- Example: "BaFin Stellungnahme zu Cloud Outsourcing"
+
+CONSULTING_FIRM (Deloitte, PWC, KPMG, Accenture, Exxeta, BearingPoint, etc.):
+- Keywords: firm name + consulting service
+- Pattern: Framework/playbook that is NOT from vendor or regulator
+- Rule: Must be written by a consulting firm for third parties, not by vendor for vendor promotion
+- Example: "BearingPoint Playbook für Versicherung 2030"
+- Counter-example: AWS whitepaper is vendor_marketing, NOT consulting_firm
+
+INDUSTRY_ASSOCIATION (GDV, Bitkom):
+- Keywords: association name
+- Example: "GDV Stellungnahme"
+
+RESEARCH_INSTITUTION (Research, Whitepaper, Study):
+- Keywords: "whitepaper", "study", "research", "OECD", "analysis"
+- Pattern: Academic or neutral third-party analysis
+- Example: "OECD Global Insurance Market Trends 2025"
+
+CORPORATE (Allianz, Munich Re, AXA, Zurich, Deutsche Bank):
+- Keywords: company name (insurer, bank, corporate)
+- Pattern: Blog, internal strategy, corporate perspective
+- Example: "Allianz - Wie wir zum Tech-Konzern werden"
+""")
+
+        # -------------------------------------------------
         # RULES
-        # -----------------------------
+        # -------------------------------------------------
 
         rules = contract.get("rules", {})
 
-        system_parts.append("\nRules:")
+        system_parts.append("\nClassification Rules:")
 
         if rules.get("strict_enum_usage", True):
             system_parts.append("- Use only the allowed values above.")
@@ -2065,9 +2246,9 @@ def build_prompt(query: str, context: str, contract: Dict[str, Any]) -> Dict[str
         if rules.get("output_format") == "json_only":
             system_parts.append("- Return valid JSON only.")
 
-        # -----------------------------
+        # -------------------------------------------------
         # OUTPUT SCHEMA
-        # -----------------------------
+        # -------------------------------------------------
 
         schema = contract.get("output_schema", {})
         required_fields = schema.get("required_fields", [])
@@ -2160,6 +2341,7 @@ Document:
 {context}
 
 Classify this document according to the taxonomy.
+IMPORTANT: Check cloud vendor signals FIRST (see system rules above).
 """.strip()
 
     else:
@@ -2239,7 +2421,8 @@ from knowledge_construction.validation.validation import validate_enums
 
 from config.construction_config import (
     CLASSIFIER_TEMPERATURE,
-    CLASSIFIER_MAX_TOKENS
+    CLASSIFIER_MAX_TOKENS,
+    PREVIEW_MAX_CHARS          # ← import erzwingt bewussten Umgang mit Preview-Größe
 )
 from config.governance_config import LLM_DOMAIN_NORMALIZATION
 
@@ -2265,7 +2448,18 @@ def classify_document(
     IMPORTANT:
     - NO governance logic here
     - NO review logic here
+
+    Preview-Truncation:
+    - Die Größe des preview_text wird AUSSCHLIESSLICH durch
+      PREVIEW_MAX_CHARS in construction_config.py gesteuert.
+    - Kein hardcodiertes Truncation hier. Wer die Preview-Größe
+      ändern will, ändert die Config — nicht den Classifier.
     """
+
+    # -------------------------------------------------
+    # Guard: preview_text darf nicht stiller truncated werden
+    # -------------------------------------------------
+    assert isinstance(preview_text, str), "preview_text must be a string"
 
     # -------------------------------------------------
     # 1. Load contract
@@ -2274,14 +2468,16 @@ def classify_document(
     contract = load_contract_by_task("classification")
 
     # -------------------------------------------------
-    # 2. Build context (bounded)
+    # 2. Build context
+    # Preview-Größe kommt aus PREVIEW_MAX_CHARS (via preview_extractor).
+    # Kein [:N] hier — Single Source of Truth ist die Config.
     # -------------------------------------------------
 
     context = f"""
 Title: {title}
 
 Preview:
-{preview_text[:2000]}
+{preview_text}
 """.strip()
 
     # -------------------------------------------------
@@ -2467,18 +2663,24 @@ def _normalize_text(text: str) -> str:
 
 def _normalize_origin(origin: Optional[str]) -> str:
     """
-    Kürzt Origin auf kompaktes Präfix.
+    Kürzt Origin auf kompaktes, semantisch korrektes Präfix.
+
+    WICHTIG: "supervisory_authority" → "supervisory" (nicht "bafin").
+    BaFin ist eine spezifische Behörde — das Präfix muss die
+    Origin-Kategorie beschreiben, nicht eine konkrete Institution.
+    EIOPA, BaFin, FCA etc. sind alle "supervisory_authority".
     """
     mapping = {
-        "legislator":           "eu",
-        "supervisory_authority": "bafin",
-        "consulting_firm":      "consulting",
-        "cloud_vendor":         "aws",
-        "software_vendor":      "vendor",
-        "industry_association": "industry",
-        "research_institution": "research",
-        "internal":             "internal",
-        "unknown":              "unknown",
+        "legislator":            "eu",
+        "supervisory_authority": "supervisory",
+        "consulting_firm":       "consulting",
+        "cloud_vendor":          "aws",
+        "software_vendor":       "vendor",
+        "industry_association":  "industry",
+        "research_institution":  "research",
+        "corporate":             "corporate",   # ← FIX: war nicht vorhanden
+        "internal":              "internal",
+        "unknown":               "unknown",
     }
     return mapping.get(origin, "unknown") if origin else "unknown"
 
@@ -2734,7 +2936,6 @@ class OnboardingPipeline:
             print(f"⚠ Validation error: {validation_error}")
 
         if validation_error:
-            # Dokument bleibt in intake — kein Registry-Eintrag, keine Archivierung
             self._review_items.append({
                 "file": file_path.name,
                 "doc_id": doc_id,
@@ -2754,7 +2955,12 @@ class OnboardingPipeline:
             raise ValueError(f"Validation failed: {validation_error}")
 
         # -------------------------------------------------
-        # 8. Review Decision (Audit-Signal, kein harter Stop)
+        # 8. Review Decision
+        #
+        # review_required → kein Registry-Eintrag, kein Chunking,
+        # keine Archivierung. Dokument bleibt in intake/ bis es
+        # manuell freigegeben wird (z.B. durch Umbenennung oder
+        # Threshold-Anpassung).
         # -------------------------------------------------
 
         review_decision_result = review_decision(classification)
@@ -2766,12 +2972,26 @@ class OnboardingPipeline:
         )
 
         if review_info.get("review_required"):
+
             self._review_items.append({
                 "file": file_path.name,
                 "doc_id": doc_id,
                 "reason": "review_required",
                 "detail": review_info.get("review_reasons", [])
             })
+
+            log_classification({
+                "file": file_path.name,
+                "doc_id": doc_id,
+                "classification": classification,
+                "review": review_info,
+                "validation_error": None,
+                "is_new": is_new_document
+            })
+
+            print(f"⚠ Review required — skipping registry, chunking, archiving: {file_path.name}")
+
+            return None
 
         # -------------------------------------------------
         # 9. Registry (nur bei neu)
@@ -2826,7 +3046,7 @@ class OnboardingPipeline:
             print("ℹ Skipping chunking/embedding (already processed)")
 
         # -------------------------------------------------
-        # 11. Archivierung — nur bei neuen, validen Dokumenten (TD-003)
+        # 11. Archivierung
         # -------------------------------------------------
 
         if is_new_document:
@@ -3045,11 +3265,7 @@ def governance_review(document_metadata: dict, *args, **kwargs) -> dict:
 === ./knowledge_construction/review/review_decision.py ===
 from typing import Dict, List
 
-
-# ------------------------------------------------
-# CONFIG
-# ------------------------------------------------
-LOW_CONFIDENCE_THRESHOLD = 0.75
+from config.construction_config import REVIEW_LOW_CONFIDENCE_THRESHOLD
 
 
 # ------------------------------------------------
@@ -3064,8 +3280,8 @@ def review_decision(classification: Dict) -> Dict:
     - Unknown document type → review
     - Unknown origin → review
 
-    Note: regulatory_content is NOT a review trigger —
-    Claude classifies regulatory documents reliably at high confidence.
+    Threshold is configured in config/construction_config.py:
+    REVIEW_LOW_CONFIDENCE_THRESHOLD
     """
 
     reasons: List[str] = []
@@ -3080,7 +3296,7 @@ def review_decision(classification: Dict) -> Dict:
 
     if confidence is not None:
         try:
-            if float(confidence) < LOW_CONFIDENCE_THRESHOLD:
+            if float(confidence) < REVIEW_LOW_CONFIDENCE_THRESHOLD:
                 reasons.append("low_confidence")
         except (TypeError, ValueError):
             reasons.append("invalid_confidence")
@@ -4590,36 +4806,43 @@ def backup_directory(path: Path):
 
 
 # --------------------------------------------------
-# STEP 0 – CLEAN INTAKE
+# STEP 1 – MOVE ARCHIVE → INTAKE
 # --------------------------------------------------
 
-#def reset_intake():
-#    print("\n🧹 Clearing intake directory")
-#    ensure_directory(INTAKE_PATH)
-#    clear_directory(INTAKE_PATH)
-#    print("✅ Intake cleared")
+def restore_documents_to_intake():
+    """
+    Moves documents from archive/ back to intake/ for re-onboarding.
+    
+    This prepares the system for a full re-processing cycle.
+    After this, intake/ contains all previously processed documents,
+    ready to be re-onboarded with potentially updated classifiers/governance rules.
+    """
+    
+    if not ARCHIVE_PATH.exists():
+        print("⚠ Archive directory not found — nothing to restore")
+        return 0
 
-
-# --------------------------------------------------
-# STEP 1 – COPY ARCHIVE → INTAKE
-# --------------------------------------------------
-
-def copy_archive_to_intake():
-    print("\n🔁 Copying documents from archive → intake")
-
+    print("\n🔁 Moving documents from archive → intake (for re-onboarding)")
+    
+    ensure_directory(INTAKE_PATH)
+    
     count = 0
-
+    
     for file in ARCHIVE_PATH.rglob("*"):
         if file.is_file():
+            # Preserve directory structure relative to archive
             relative_path = file.relative_to(ARCHIVE_PATH)
             target_path = INTAKE_PATH / relative_path
-
-            ensure_directory(target_path.parent)
-            shutil.copy2(file, target_path)
-
+            
+            # Create parent directories if needed
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Move file (not copy)
+            shutil.move(str(file), str(target_path))
             count += 1
-
-    print(f"✅ {count} documents copied to intake")
+    
+    print(f"✅ {count} document(s) moved to intake")
+    return count
 
 
 # --------------------------------------------------
@@ -4627,6 +4850,16 @@ def copy_archive_to_intake():
 # --------------------------------------------------
 
 def reset_knowledge_base():
+    """
+    Clears all knowledge base artifacts:
+    - registry (document_registry.json)
+    - chunks (chunks.json)
+    - vector_index (FAISS index, embeddings, chunk_ids)
+    - audit logs
+    
+    After this, the knowledge base is empty and ready for fresh onboarding.
+    """
+    
     print("\n🧹 Resetting Knowledge Base")
 
     if BACKUP_ENABLED:
@@ -4652,21 +4885,26 @@ def reset_knowledge_base():
 # --------------------------------------------------
 
 def main():
-    print("🚀 Knowledge Base Reset & Re-Onboarding Preparation")
-
-    if not ARCHIVE_PATH.exists():
-        raise ValueError(f"Archive path not found: {ARCHIVE_PATH}")
-
-    # Step 0
-    #reset_intake()
-
-    # Step 1
-    copy_archive_to_intake()
-
-    # Step 2
+    print("\n" + "=" * 60)
+    print("🚀 RESET KNOWLEDGE BASE & PREPARE FOR RE-ONBOARDING")
+    print("=" * 60)
+    
+    # Step 1: Move archive → intake
+    doc_count = restore_documents_to_intake()
+    
+    # Step 2: Reset knowledge base
     reset_knowledge_base()
-
-    print("\n🎯 System ready for full re-onboarding")
+    
+    print("\n" + "=" * 60)
+    print("✅ RESET COMPLETE")
+    print("=" * 60)
+    print(f"\nState after reset:")
+    print(f"  intake/:     {doc_count} documents (ready for re-onboarding)")
+    print(f"  archive/:    empty")
+    print(f"  knowledge_base/: empty")
+    print(f"\nNext step:")
+    print(f"  python -m scripts.run_onboarding")
+    print()
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ DOCUMENT_TYPES = [
     "research_report",        # Studien
     "vendor_marketing",       # Anbieter-Marketing
     "blog_article",           # Blog / LinkedIn
+    "press_article",          # Zeitungsartikel / journalistischer Onlineartikel
     "internal_strategy",      # interne Dokumente
     "unknown"
 ]
@@ -49,6 +50,7 @@ ORIGINS = [
     "cloud_vendor",
     "software_vendor",
     "corporate",               # Unternehmen (Versicherer, Banken etc.)
+    "media",                   # Presse, Zeitungen, Onlinemedien
     "internal",
     "unknown"
 ]

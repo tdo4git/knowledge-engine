@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_supervisory_stellungnahmemenschundmaschinekurzfassung_6ba9b6",
+  "title": "stellungnahme-mensch-und-maschine-kurzfassung",
+  "ai": {
+    "document_type": "expert_opinion",
+    "domain_layer": "strategy",
+    "knowledge_domain": "cloud_technology",
+    "topic": "transformation_strategy",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}
