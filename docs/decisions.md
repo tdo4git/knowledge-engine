@@ -152,3 +152,21 @@ Sie teilen dieselbe Knowledge Base und Engine, unterscheiden sich durch Promptin
 - Engine bleibt generisch und wiederverwendbar
 - Bot-spezifische Logik (Tonalität, Rollenverhalten) gehört nicht in die Engine
 - Mehrere Bots können parallel betrieben werden ohne Engine-Änderungen
+
+## D-012: Reklassifizierung ist Bestandsbereinigung, nicht Governance-Ersatz
+
+**Entscheidung:** Fehlklassifikationen werden primär durch Korrektur der Governance-Regeln
+behoben. Das Reklassifizierungs-Skript (TD-007) wird ausschließlich zur Bereinigung
+bestehender Einträge eingesetzt — nach der Governance-Korrektur, nicht stattdessen.
+
+**Reihenfolge bei Fehlklassifikation:**
+1. Ursache analysieren (Governance-Regel fehlt oder falsch)
+2. Governance korrigieren (AUTHOR_ORIGIN_MAP, document-type-Regeln etc.)
+3. Reklassifizierungs-Skript für Bestand ausführen
+
+**Begründung:**
+- Ein Skript das Symptome behebt ohne die Ursache zu korrigieren produziert denselben
+  Fehler bei jedem neuen Dokument
+- Governance ist Single Point of Control — Korrekturen dort wirken für alle zukünftigen
+  Dokumente automatisch
+- Manuelle Nachbearbeitung skaliert nicht und ist fehleranfällig

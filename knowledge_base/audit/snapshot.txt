@@ -1,6 +1,6 @@
 ======================================================================
 STRATEGIC KNOWLEDGE ENGINE — SYSTEM SNAPSHOT
-Generated: 2026-05-06 22:12:46
+Generated: 2026-05-06 23:13:45
 ======================================================================
 ## Knowledge Base
 Dokumente : 37
@@ -10,65 +10,64 @@ Konsistenz: ✔ OK
 
 ## Registry — Dokumente nach Origin
   media                          11
-  research_institution           6
+  consulting_firm                7
   supervisory_authority          5
-  consulting_firm                5
-  software_vendor                4
+  research_institution           4
+  software_vendor                3
   cloud_vendor                   2
   corporate                      2
   internal                       1
+  industry_association           1
   legislator                     1
 
 ## Registry — Dokumente nach Document Type
-  research_report                11
-  press_article                  11
-  blog_article                   5
-  vendor_marketing               4
-  consulting_framework           2
-  expert_opinion                 2
-  supervisory_guidance           1
+  press_article                  13
+  consulting_framework           8
+  vendor_marketing               5
+  supervisory_guidance           5
+  research_report                5
   regulatory_text                1
 
 ## Registry — Alle Dokumente
 Doc-ID                                        Origin                    Type                      Domain
 ----------------------------------------------------------------------------------------------------------------------------------
-doc_vendor_heiseacademymycompany_6d0ccf       software_vendor           research_report           cloud_technology
+doc_vendor_heiseacademymycompany_6d0ccf       software_vendor           vendor_marketing          insurance_domain
+doc_media_europas_38857c                      media                     press_article             insurance_domain
 doc_supervisory_cloud_2024_53f735             supervisory_authority     supervisory_guidance      insurance_domain
-doc_research_insurance_2025_abeb26            research_institution      research_report           insurance_domain
-doc_supervisory_insurance_83c73b              supervisory_authority     research_report           insurance_domain
+doc_consulting_insurance_2025_abeb26          consulting_firm           consulting_framework      insurance_domain
+doc_media_digitale_7fb28c                     media                     press_article             insurance_domain
+doc_media_eusouveranitat_27bf6a               media                     press_article             insurance_domain
+doc_supervisory_insurance_83c73b              supervisory_authority     supervisory_guidance      insurance_domain
 doc_research_insurance_2025_1ebdd0            research_institution      research_report           insurance_domain
 doc_consulting_playbookbearingpointversicherung2030_2030_717627 consulting_firm           consulting_framework      insurance_domain
 doc_research_insurance_2a0a0c                 research_institution      research_report           insurance_domain
-doc_supervisory_stellungnahmemenschundmaschinekurzfassung_6ba9b6 supervisory_authority     expert_opinion            cloud_technology
-doc_consulting_dora_2024_d54141               consulting_firm           blog_article              insurance_domain
-doc_consulting_insurance_2024_19f71c          consulting_firm           research_report           insurance_domain
+doc_media_microsoft_ccf347                    media                     press_article             cloud_technology
+doc_media_versicherer_fdc5e6                  media                     press_article             insurance_domain
+doc_supervisory_stellungnahmemenschundmaschinekurzfassung_6ba9b6 supervisory_authority     supervisory_guidance      cloud_technology
+doc_media_kunstliche_b4ae99                   media                     press_article             ai_genai_agentic
+doc_consulting_dora_2024_d54141               consulting_firm           consulting_framework      insurance_domain
+doc_consulting_insurance_2024_19f71c          consulting_firm           consulting_framework      insurance_domain
 doc_research_elingassekuranz20302_2030_3862f3 research_institution      research_report           insurance_domain
-doc_consulting_insurance_2030_131197          consulting_firm           research_report           insurance_domain
-doc_vendor_ambermcpansatz_440506              software_vendor           vendor_marketing          cloud_technology
+doc_consulting_insurance_2030_131197          consulting_firm           consulting_framework      insurance_domain
+doc_vendor_ambermcpansatz_440506              software_vendor           vendor_marketing          insurance_domain
+doc_media_ai_2934fe                           media                     press_article             insurance_domain
 doc_aws_sovereignty_1c18e9                    cloud_vendor              vendor_marketing          insurance_domain
 doc_research_insurance_2025_588dcd            research_institution      research_report           insurance_domain
-doc_consulting_sind_2026_0b05a4               consulting_firm           blog_article              cloud_technology
-doc_corporate_allianz_6ae771                  corporate                 blog_article              insurance_domain
-doc_supervisory_cloud_a51b3a                  supervisory_authority     expert_opinion            insurance_domain
-doc_corporate_digitalesschadenmanagement_846423 corporate                 blog_article              insurance_domain
-doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120 internal                  consulting_framework      insurance_domain
-doc_vendor_insurance_474aeb                   software_vendor           blog_article              insurance_domain
-doc_research_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f research_institution      research_report           insurance_domain
-doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd supervisory_authority     research_report           insurance_domain
+doc_consulting_sind_2026_0b05a4               consulting_firm           consulting_framework      cloud_technology
+doc_corporate_allianz_6ae771                  corporate                 press_article             insurance_domain
+doc_supervisory_cloud_a51b3a                  supervisory_authority     supervisory_guidance      insurance_domain
+doc_corporate_digitalesschadenmanagement_846423 corporate                 press_article             insurance_domain
+doc_media_kunstliche_8d77be                   media                     press_article             ai_genai_agentic
+doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120 internal                  consulting_framework      cloud_technology
+doc_media_kunstliche_859301                   media                     press_article             ai_genai_agentic
+doc_consulting_insurance_474aeb               consulting_firm           consulting_framework      insurance_domain
+doc_media_kunstliche_8f5fba                   media                     press_article             insurance_domain
+doc_media_digitale_dec231                     media                     press_article             cloud_technology
+doc_industry_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f industry_association      research_report           insurance_domain
+doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd supervisory_authority     supervisory_guidance      insurance_domain
 doc_eu_dora_2022_0eb896                       legislator                regulatory_text           insurance_domain
 doc_vendor_ai_d59357                          software_vendor           vendor_marketing          cloud_technology
 doc_aws_cloud_95e9f7                          cloud_vendor              vendor_marketing          insurance_domain
-doc_media_digitale_dec231                     media                     press_article             cloud_technology
-doc_media_digitale_7fb28c                     media                     press_article             insurance_domain
-doc_media_eusouveranitat_27bf6a               media                     press_article             insurance_domain
-doc_media_versicherer_fdc5e6                  media                     press_article             insurance_domain
-doc_media_europas_38857c                      media                     press_article             insurance_domain
-doc_media_microsoft_ccf347                    media                     press_article             cloud_technology
-doc_media_kunstliche_b4ae99                   media                     press_article             ai_genai_agentic
-doc_media_ai_2934fe                           media                     press_article             insurance_domain
-doc_media_kunstliche_8d77be                   media                     press_article             ai_genai_agentic
-doc_media_kunstliche_859301                   media                     press_article             ai_genai_agentic
-doc_media_kunstliche_8f5fba                   media                     press_article             insurance_domain
 
 ## Intake (ausstehend)
   ✔ Leer — keine Dokumente ausstehend
@@ -77,10 +76,10 @@ doc_media_kunstliche_8f5fba                   media                     press_ar
   37 Dokument(e) archiviert
 
 ## Audit Log — letzte 5 Einträge
-  2026-05-06T19:58:09  doc_media_kunstliche_b4ae99                   media                ✔
-  2026-05-06T19:58:12  doc_media_ai_2934fe                           media                ✔
-  2026-05-06T19:58:16  doc_media_kunstliche_8d77be                   media                ✔
-  2026-05-06T19:58:18  doc_media_kunstliche_859301                   media                ✔
-  2026-05-06T19:58:21  doc_media_kunstliche_8f5fba                   media                ✔
+  2026-05-06T21:12:58  doc_industry_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f industry_association ✔
+  2026-05-06T21:13:14  doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd supervisory_authority ✔
+  2026-05-06T21:13:30  doc_eu_dora_2022_0eb896                       legislator           ✔
+  2026-05-06T21:13:38  doc_vendor_ai_d59357                          software_vendor      ✔
+  2026-05-06T21:13:42  doc_aws_cloud_95e9f7                          cloud_vendor         ✔
 
 ======================================================================

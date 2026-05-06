@@ -158,6 +158,9 @@ knowledge-engine/
 - **Pfadlogik**: `BASE_PATH = Path(__file__).resolve().parent.parent`
 - **Script-Ausführung**: immer als Module `python -m scripts.<name>`
 - **Keine Architektur-Brüche**, keine Workarounds
+- **Ursache vor Symptom**: Fehlklassifikationen werden durch Governance-Korrekturen behoben,
+  nicht durch manuelle Nachbearbeitung. Das Reklassifizierungs-Skript ist Bestandsbereinigung,
+  kein Ersatz für korrekte Governance-Regeln.
 
 ---
 

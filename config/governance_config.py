@@ -2,6 +2,17 @@
 # governance_config.py
 # Single Source of Truth für alle Governance-Regeln.
 # Änderungen hier wirken sich auf alle Dokumente aus.
+#
+# Änderungen 2026-05-06 (TD-007 Ursachenbehebung):
+#   - FILENAME_KEYWORDS["research_institution"]: generische
+#     Formatbegriffe entfernt ("studie", "study", "report",
+#     "whitepaper"). Dokumentformat ≠ Author-Origin.
+#   - DOCUMENT_TYPE_CORRECTIONS: fehlende Regeln ergänzt für
+#     supervisory_authority, consulting_firm, software_vendor,
+#     cloud_vendor. Supervisory-Regeln setzen jetzt auch
+#     domain_layer="regulation" (Cross-Field-Validation Fix).
+#   - LLM_DOMAIN_NORMALIZATION: "transformation_strategy"
+#     ergänzt (Classifier-Normalization vor validate_enums).
 # =========================================================
 
 
@@ -176,15 +187,21 @@ FILENAME_KEYWORDS = {
         "playbook",
     ],
 
+    # --------------------------------------------------
+    # FIX TD-007: Generische Formatbegriffe entfernt.
+    # "studie", "study", "report", "whitepaper" beschreiben
+    # die Dokumentform, nicht den Author.
+    # Beispiel: ein GDV-Whitepaper ist industry_association,
+    # kein research_institution — aber "whitepaper" im
+    # Dateinamen hat research_institution mit filename_rule-
+    # Priorität gesetzt und den korrekten AUTHOR_ORIGIN_MAP-
+    # Match für "gdv" / "beltios" überschrieben.
+    # --------------------------------------------------
     "research_institution": [
         "luenendonk",
         "lünendonk",
         "trendzowl",
         "oecd",
-        "studie",
-        "study",
-        "report",
-        "whitepaper",
     ],
 
     "cloud_vendor": [
@@ -261,45 +278,109 @@ JURISDICTION_KEYWORDS = {
 
 # =========================================================
 # 3. DOCUMENT TYPE CORRECTIONS
+#
+# Logik: origin + LLM-document_type → korrekter document_type
+#
+# Prinzip: Der LLM klassifiziert nach Inhalt und Form.
+# Die Governance korrigiert nach Author-Origin, weil Origin
+# stärker ist als die inhaltliche Formeinschätzung des LLM.
+# Ein BaFin-Dokument ist supervisory_guidance — unabhängig
+# davon ob der LLM es als research_report einschätzt.
+#
+# FIX TD-007: Fehlende Regeln ergänzt.
+# Bisher nur *_regulatory_text → * abgedeckt.
+# Jetzt vollständige Abdeckung aller relevanten LLM-Typen
+# pro Origin-Kategorie.
+#
+# FIX Cross-Field-Validation:
+# Supervisory-Regeln setzen domain_layer="regulation" mit,
+# da cross_field_rules.py Rule 6 erfordert dass
+# supervisory_guidance immer domain_layer=regulation hat.
+# Semantik: wenn wir eine Behörde-Publikation als
+# supervisory_guidance einstufen, ist sie per Definition
+# normativ → regulation layer.
 # =========================================================
 
 DOCUMENT_TYPE_CORRECTIONS = [
+
+    # --------------------------------------------------
+    # supervisory_authority
+    # BaFin, EBA, EIOPA etc. → immer supervisory_guidance
+    # + domain_layer=regulation (Cross-Field-Validation)
+    # --------------------------------------------------
     {
-        "if": {
-            "origin": "supervisory_authority",
-            "document_type": "regulatory_text"
-        },
-        "then": {
-            "document_type": "supervisory_guidance"
-        }
+        "if": {"origin": "supervisory_authority", "document_type": "regulatory_text"},
+        "then": {"document_type": "supervisory_guidance", "domain_layer": "regulation"}
     },
     {
-        "if": {
-            "origin": "consulting_firm",
-            "document_type": "regulatory_text"
-        },
-        "then": {
-            "document_type": "consulting_framework"
-        }
+        "if": {"origin": "supervisory_authority", "document_type": "research_report"},
+        "then": {"document_type": "supervisory_guidance", "domain_layer": "regulation"}
     },
     {
-        "if": {
-            "origin": "corporate",
-            "document_type": "vendor_marketing"
-        },
-        "then": {
-            "document_type": "blog_article"
-        }
+        "if": {"origin": "supervisory_authority", "document_type": "expert_opinion"},
+        "then": {"document_type": "supervisory_guidance", "domain_layer": "regulation"}
+    },
+
+    # --------------------------------------------------
+    # consulting_firm
+    # Beratungsunternehmen → immer consulting_framework
+    # --------------------------------------------------
+    {
+        "if": {"origin": "consulting_firm", "document_type": "regulatory_text"},
+        "then": {"document_type": "consulting_framework"}
     },
     {
-        "if": {
-            "origin": "media",
-            "document_type": "blog_article"
-        },
-        "then": {
-            "document_type": "press_article"
-        }
-    }
+        "if": {"origin": "consulting_firm", "document_type": "research_report"},
+        "then": {"document_type": "consulting_framework"}
+    },
+    {
+        "if": {"origin": "consulting_firm", "document_type": "blog_article"},
+        "then": {"document_type": "consulting_framework"}
+    },
+
+    # --------------------------------------------------
+    # software_vendor
+    # Software-Anbieter → immer vendor_marketing
+    # --------------------------------------------------
+    {
+        "if": {"origin": "software_vendor", "document_type": "research_report"},
+        "then": {"document_type": "vendor_marketing"}
+    },
+    {
+        "if": {"origin": "software_vendor", "document_type": "blog_article"},
+        "then": {"document_type": "vendor_marketing"}
+    },
+
+    # --------------------------------------------------
+    # cloud_vendor
+    # Cloud-Anbieter → immer vendor_marketing
+    # --------------------------------------------------
+    {
+        "if": {"origin": "cloud_vendor", "document_type": "research_report"},
+        "then": {"document_type": "vendor_marketing"}
+    },
+    {
+        "if": {"origin": "cloud_vendor", "document_type": "blog_article"},
+        "then": {"document_type": "vendor_marketing"}
+    },
+
+    # --------------------------------------------------
+    # corporate
+    # Unternehmen → kein vendor_marketing (das ist für Anbieter)
+    # --------------------------------------------------
+    {
+        "if": {"origin": "corporate", "document_type": "vendor_marketing"},
+        "then": {"document_type": "blog_article"}
+    },
+
+    # --------------------------------------------------
+    # media
+    # Presseartikel → immer press_article
+    # --------------------------------------------------
+    {
+        "if": {"origin": "media", "document_type": "blog_article"},
+        "then": {"document_type": "press_article"}
+    },
 ]
 
 
@@ -401,8 +482,12 @@ ENABLE_ANTI_MISC = True
 # =========================================================
 # 10. LLM DOMAIN NORMALIZATION
 # Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
-# Claude verwendet präzise Topic-Begriffe die nicht in
-# KNOWLEDGE_DOMAINS stehen — diese werden hier korrigiert.
+#
+# WICHTIG: Diese Normalization läuft im Classifier (vor
+# validate_enums), nicht nur in der Governance-Pipeline.
+# classifier.py importiert LLM_DOMAIN_NORMALIZATION direkt.
+# Neue Einträge hier wirken also bereits bei der
+# LLM-Ausgabe-Validierung.
 # =========================================================
 
 LLM_DOMAIN_NORMALIZATION = {
@@ -417,6 +502,12 @@ LLM_DOMAIN_NORMALIZATION = {
     "insurance_business":   "insurance_domain",
     "insurance_regulation": "insurance_domain",
     "financial_regulation": "insurance_domain",
+
+    # Strategy-Topics → insurance_domain
+    # "transformation_strategy" ist ein TOPIC-Wert
+    # (config/taxonomy.py), kein KNOWLEDGE_DOMAIN-Wert.
+    # Der LLM verwendet ihn fälschlich als knowledge_domain.
+    "transformation_strategy": "insurance_domain",
 
     # AI-Topics → ai_genai_agentic
     "generative_ai":        "ai_genai_agentic",

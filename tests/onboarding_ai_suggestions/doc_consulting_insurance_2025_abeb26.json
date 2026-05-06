@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_insurance_2025_abeb26",
+  "title": "global-insurance-report-2025-the-pursuit-of-growth",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "bias": "medium"
+  }
+}
