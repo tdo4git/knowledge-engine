@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_supervisory_dora_2024_82d35d",
+  "title": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA",
+  "ai": {
+    "document_type": "supervisory_guidance",
+    "domain_layer": "regulation",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_governance",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "very_low"
+  }
+}

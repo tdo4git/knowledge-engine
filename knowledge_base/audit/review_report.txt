@@ -1,5 +1,5 @@
 ONBOARDING REVIEW REPORT
-Generated: 2026-05-06T21:13:42.986718
+Generated: 2026-05-07T10:54:18.680454
 ==================================================
 
 ✔ Keine Review-Punkte — alle Dokumente sauber verarbeitet.

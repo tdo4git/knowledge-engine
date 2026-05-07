@@ -752,36 +752,63 @@ Governance Scoring Configuration
 
 SCORING_CONFIG = {
 
+    # --------------------------------------------------
+    # Kombinations-Gewichte (müssen sich zu 1.0 summieren)
+    # Überschreibbar pro Bot
+    # --------------------------------------------------
+    "semantic_weight":    0.65,
+    "governance_weight":  0.35,
+
+    # --------------------------------------------------
+    # Origin — normalisiert 0.0–1.0
+    # --------------------------------------------------
     "origin_weights": {
-
-        "legislator":            0.6,
-        "supervisory_authority": 0.2,
-        "consulting_firm":       0.1,
-        "cloud_vendor":          -0.05,
-        "media":                 -0.1,    # journalistisch, nicht autoritativ
-        "unknown":               0.0
+        "legislator":            1.0,
+        "supervisory_authority": 0.8,
+        "industry_association":  0.6,
+        "consulting_firm":       0.5,
+        "research_institution":  0.5,
+        "corporate":             0.3,
+        "internal":              0.3,
+        "cloud_vendor":          0.2,
+        "software_vendor":       0.2,
+        "media":                 0.1,
+        "unknown":               0.3,
     },
 
-    "confidence_weights": {
-
-        "high":   0.10,
-        "medium": 0.0,
-        "low":    -0.10
-    },
-
+    # --------------------------------------------------
+    # Document Type — normalisiert 0.0–1.0
+    # --------------------------------------------------
     "document_type_weights": {
+        "regulatory_text":      1.0,
+        "supervisory_guidance": 0.8,
+        "expert_opinion":       0.6,
+        "consulting_framework": 0.6,
+        "research_report":      0.5,
+        "industry_position":    0.4,
+        "press_article":        0.2,
+        "blog_article":         0.2,
+        "vendor_marketing":     0.1,
+        "unknown":              0.3,
+    },
 
-        "regulatory_text":      0.4,
-        "supervisory_guidance": 0.2,
-        "expert_opinion":       0.05,
-        "consulting_framework": 0.05,
-        "research_report":      0.05,
-        "press_article":        -0.05,   # journalistisch, Kontext/Marktbeobachtung
-        "vendor_marketing":     -0.2,
-        "blog_article":         -0.1,
-        "unknown":              0.0
+    # --------------------------------------------------
+    # Confidence — normalisiert 0.0–1.0
+    # --------------------------------------------------
+    "confidence_weights": {
+        "high":   1.0,
+        "medium": 0.6,
+        "low":    0.2,
+    },
+
+    # --------------------------------------------------
+    # Gewichtung innerhalb des Governance-Scores
+    # --------------------------------------------------
+    "governance_components": {
+        "origin":        0.50,
+        "document_type": 0.35,
+        "confidence":    0.15,
     }
-
 }
 === ./config/taxonomy.py ===
 DOCUMENT_TYPES = [
@@ -4712,71 +4739,65 @@ from knowledge_core.retrieval.retrieval_models import RankedDocument
 
 class ScoringEngine:
 
-    def __init__(self):
+    def __init__(self, config_override: dict = None):
 
-        self.origin_weights = SCORING_CONFIG["origin_weights"]
-        self.confidence_weights = SCORING_CONFIG["confidence_weights"]
-        self.document_type_weights = SCORING_CONFIG["document_type_weights"]
+        cfg = config_override or SCORING_CONFIG
+
+        self.semantic_weight    = cfg["semantic_weight"]
+        self.governance_weight  = cfg["governance_weight"]
+
+        self.origin_weights     = cfg["origin_weights"]
+        self.doc_type_weights   = cfg["document_type_weights"]
+        self.confidence_weights = cfg["confidence_weights"]
+        self.gov_components     = cfg["governance_components"]
 
     def score(self, document_candidates):
 
-        ranked_documents = []
+        ranked = []
 
         for doc in document_candidates:
 
             meta = doc.document_metadata
 
-            # ------------------------------
-            # Semantic score
-            # ------------------------------
+            # --------------------------------------------------
+            # Semantic score (normalized ~0–1 by FAISS)
+            # --------------------------------------------------
             semantic_score = doc.aggregated_similarity
 
-            # ------------------------------
-            # Governance score
-            # ------------------------------
-            origin_score = self.origin_weights.get(meta.get("origin"), 0)
-
-            confidence_score = self.confidence_weights.get(
-                meta.get("confidence_level"),
-                0
-            )
-
-            doc_type_score = self.document_type_weights.get(
-                meta.get("document_type"),
-                0
-            )
+            # --------------------------------------------------
+            # Governance score (normalized 0–1)
+            # --------------------------------------------------
+            origin_score     = self.origin_weights.get(meta.get("origin"), 0.3)
+            doc_type_score   = self.doc_type_weights.get(meta.get("document_type"), 0.3)
+            confidence_score = self.confidence_weights.get(meta.get("confidence_level"), 0.6)
 
             governance_score = (
-                origin_score +
-                confidence_score +
-                doc_type_score
+                origin_score     * self.gov_components["origin"] +
+                doc_type_score   * self.gov_components["document_type"] +
+                confidence_score * self.gov_components["confidence"]
             )
 
-            # ------------------------------
+            # --------------------------------------------------
             # Final score
-            # ------------------------------
-            final_score = semantic_score + governance_score
+            # --------------------------------------------------
+            final_score = (
+                self.semantic_weight   * semantic_score +
+                self.governance_weight * governance_score
+            )
 
-            ranked_documents.append(
+            ranked.append(
                 RankedDocument(
                     doc_id=doc.doc_id,
-                    score=final_score,                 # 🔥 zentral
+                    score=final_score,
                     chunks=doc.chunks,
                     document_metadata=meta,
                     semantic_score=semantic_score,
-                    governance_score=governance_score
+                    governance_score=governance_score,
                 )
             )
 
-        # ------------------------------
-        # Sort
-        # ------------------------------
-        ranked_documents.sort(
-            key=lambda d: d.score,
-            reverse=True
-        )
-
-        return ranked_documents
+        ranked.sort(key=lambda d: d.score, reverse=True)
+        return ranked
 === ./knowledge_core/utils/file_filter.py ===
 import os
 from config.file_config import ALLOWED_EXTENSIONS, IGNORE_HIDDEN_FILES
@@ -5971,6 +5992,119 @@ def run_onboarding():
 
 if __name__ == "__main__":
     run_onboarding()
+=== ./scripts/run_query.py ===
+import argparse
+from pathlib import Path
+
+from config.construction_config import EMBEDDING_MODEL
+
+BASE_PATH = Path(__file__).resolve().parent.parent
+
+(BASE_PATH / "knowledge_base" / "audit").mkdir(parents=True, exist_ok=True)
+
+from knowledge_core.pipeline.query_pipeline import QueryPipeline
+from knowledge_core.retrieval.retrieval_engine import RetrievalEngine
+from knowledge_core.scoring.scoring_engine import ScoringEngine
+from knowledge_core.perspectives.perspective_orchestrator import PerspectiveOrchestrator
+from knowledge_core.pipeline.context_builder import ContextBuilder
+from knowledge_core.prompt.prompt_governance import PromptBuilder
+from knowledge_core.intent.intent_engine import detect_intent
+from knowledge_core.roles.role_engine import RoleEngine
+from knowledge_base.knowledge_base import KnowledgeBase
+from sentence_transformers import SentenceTransformer
+
+
+class _NoLLM:
+    def generate(self, prompt: str) -> str:
+        return "[RETRIEVAL-ONLY MODE — LLM skipped]"
+
+
+class _IntentAdapter:
+    def detect_intent(self, query):
+        return detect_intent(query)
+
+
+def run_query(query: str, retrieval_only: bool = False):
+
+    import os
+    os.chdir(BASE_PATH)
+
+    kb    = KnowledgeBase.load_from_disk("knowledge_base")
+    model = SentenceTransformer(EMBEDDING_MODEL)
+
+    if retrieval_only:
+        llm_client = _NoLLM()
+    else:
+        from knowledge_core.llm.llm_client import LLMClient
+        llm_client = LLMClient()
+
+    pipeline = QueryPipeline(
+        intent_engine=_IntentAdapter(),
+        role_engine=RoleEngine(),
+        retrieval_engine=RetrievalEngine(knowledge_base=kb, embedding_model=model),
+        scoring_engine=ScoringEngine(),
+        perspective_orchestrator=PerspectiveOrchestrator(),
+        context_builder=ContextBuilder(),
+        prompt_builder=PromptBuilder(),
+        llm_client=llm_client,
+        log_path="knowledge_base/audit/query_audit_log.jsonl"
+    )
+
+    ctx = pipeline.run(query)
+
+    print("\n" + "=" * 60)
+    print("QUERY")
+    print("=" * 60)
+    print(ctx.query)
+
+    print("\n=== INTENT ===")
+    print(ctx.intent)
+
+    print("\n=== ROLE ===")
+    print(ctx.role)
+
+    print("\n=== RAW CHUNKS — Top 10 (by similarity) ===")
+    for c in ctx.retrieval_result.chunk_candidates[:10]:
+        print(f"  {round(c.similarity_score, 4)}  {c.chunk_id}  ({c.doc_id})")
+
+    print("\n=== RANKED DOCUMENTS (after scoring) ===")
+    for d in ctx.ranked_documents:
+        print(f"  score={round(d.score, 4)}  "
+              f"semantic={round(d.semantic_score, 4)}  "
+              f"governance={round(d.governance_score, 4)}  "
+              f"{d.doc_id}")
+
+    print("\n=== CONTEXT CHUNKS (selected for LLM) ===")
+    for c in ctx.context_package.chunks:
+        print(f"\n  [{c.doc_id} | {c.chunk_id}]")
+        print(f"  {c.text[:600].strip()}")
+
+    print("\n=== RESPONSE ===")
+    print(ctx.response)
+
+    print("\n=== DIAGNOSTICS ===")
+    print(f"  chunk_candidates : {len(ctx.retrieval_result.chunk_candidates)}")
+    print(f"  ranked_documents : {len(ctx.ranked_documents)}")
+    print(f"  context_chunks   : {len(ctx.context_package.chunks)}")
+    print(f"  sources          : {ctx.context_package.sources}")
+    print(f"  embedding_model  : {EMBEDDING_MODEL}")
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run a query through the Knowledge Engine")
+    parser.add_argument("query", help="The query string")
+    parser.add_argument(
+        "--retrieval-only",
+        action="store_true",
+        help="Skip LLM — validate retrieval pipeline only"
+    )
+    args = parser.parse_args()
+    run_query(args.query, retrieval_only=args.retrieval_only)
+
+
+if __name__ == "__main__":
+    main()
 === ./scripts/system_context_loader.py ===
 from pathlib import Path
 import importlib
@@ -6431,26 +6565,24 @@ for doc_id, score in doc_ranking:
 from sentence_transformers import SentenceTransformer
 import faiss
 import json
+import numpy as np
 from pathlib import Path
+from collections import defaultdict
 
-# ----------------------------------
-# Robust Path Handling
-# ----------------------------------
+from config.construction_config import EMBEDDING_MODEL
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 
-index_path = BASE_DIR / "knowledge_base/vector_index/index.faiss"
+index_path  = BASE_DIR / "knowledge_base/vector_index/index.faiss"
 chunks_path = BASE_DIR / "knowledge_base/chunks/chunks.json"
 
-print("BASE_DIR:", BASE_DIR)
-print("Index Path:", index_path)
+print("BASE_DIR:   ", BASE_DIR)
+print("Index Path: ", index_path)
 print("Chunks Path:", chunks_path)
+print("Model:      ", EMBEDDING_MODEL)
 
-# ----------------------------------
-# Load Data
-# ----------------------------------
 if not index_path.exists():
     raise FileNotFoundError(f"Index not found: {index_path}")
-
 if not chunks_path.exists():
     raise FileNotFoundError(f"Chunks not found: {chunks_path}")
 
@@ -6459,40 +6591,36 @@ index = faiss.read_index(str(index_path))
 with open(chunks_path) as f:
     chunks = json.load(f)
 
-# ----------------------------------
-# Model
-# ----------------------------------
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer(EMBEDDING_MODEL)
 
-# ----------------------------------
-# Query
-# ----------------------------------
-query = "What is DORA regulation about?"
-q_emb = model.encode([query])
+query  = "Was fordert DORA hinsichtlich Cloud-Auslagerung bei Versicherungen?"
+q_emb  = model.encode([query])
 
-# ----------------------------------
-# Search
-# ----------------------------------
-k = min(5, index.ntotal)
+k = min(20, index.ntotal)
 D, I = index.search(q_emb, k=k)
 
-# ----------------------------------
-# Results
-# ----------------------------------
-print("\n--- RESULTS ---\n")
-
-print("chunks:", len(chunks))
-
-print("\n--- INDEX INFO ---")
-print("ntotal:", index.ntotal)
-print("dim:", index.d)
+doc_scores = defaultdict(list)
 
 for score, idx in zip(D[0], I[0]):
     chunk = chunks[idx]
-    print(f"Score: {score:.4f}")
-    print(f"Doc: {chunk['doc_id']}")
-    print(f"Text: {chunk['text'][:200]}")
-    print("-" * 50)
+    doc_scores[chunk["doc_id"]].append(score)
+
+doc_ranking = []
+
+for doc_id, scores in doc_scores.items():
+    top_scores = sorted(scores)[:3]
+    agg_score  = np.mean(top_scores)
+    doc_ranking.append((doc_id, agg_score))
+
+doc_ranking = sorted(doc_ranking, key=lambda x: x[1])
+
+print("\n--- INDEX INFO ---")
+print(f"ntotal: {index.ntotal}")
+print(f"dim:    {index.d}")
+
+print("\n--- DOCUMENT RANKING ---\n")
+for doc_id, score in doc_ranking:
+    print(f"{score:.4f}  {doc_id}")
 === ./tests/run_onboarding_test.py ===
 import sys
 import os
@@ -6946,46 +7074,27 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# --------------------------------------------------
-# Ensure logs directory exists (TEST-SCOPE FIX)
-# --------------------------------------------------
 os.makedirs("logs", exist_ok=True)
 
-# --- Core Pipeline ---
-from knowledge_core.pipeline.query_pipeline import QueryPipeline
+from config.construction_config import EMBEDDING_MODEL
 
-# --- Engines ---
+from knowledge_core.pipeline.query_pipeline import QueryPipeline
 from knowledge_core.retrieval.retrieval_engine import RetrievalEngine
 from knowledge_core.scoring.scoring_engine import ScoringEngine
 from knowledge_core.perspectives.perspective_orchestrator import PerspectiveOrchestrator
 from knowledge_core.pipeline.context_builder import ContextBuilder
 from knowledge_core.prompt.prompt_governance import PromptBuilder
-
 from knowledge_core.intent.intent_engine import detect_intent
 from knowledge_core.roles.role_engine import RoleEngine
-
-# --- Infrastructure ---
 from knowledge_base.knowledge_base import KnowledgeBase
+from knowledge_core.llm.llm_client import LLMClient
 from sentence_transformers import SentenceTransformer
 
-# --- Dummy LLM ---
-# from tests.dummy_llm import DummyLLM
-
-from knowledge_core.llm.llm_client import LLMClient
-
-
-# =========================================================
-# ADAPTER (Intent bleibt funktional)
-# =========================================================
 
 class IntentEngineAdapter:
     def detect_intent(self, query):
         return detect_intent(query)
 
-
-# =========================================================
-# TEST RUNNER
-# =========================================================
 
 def run_test(query: str):
 
@@ -6994,22 +7103,13 @@ def run_test(query: str):
     print("==============================")
     print(query)
 
-    # --------------------------------------------------
-    # Init Dependencies
-    # --------------------------------------------------
-
-    kb = KnowledgeBase.load_from_disk("knowledge_base")
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-
-    retrieval_engine = RetrievalEngine(
-        knowledge_base=kb,
-        embedding_model=model
-    )
+    kb    = KnowledgeBase.load_from_disk("knowledge_base")
+    model = SentenceTransformer(EMBEDDING_MODEL)
 
     pipeline = QueryPipeline(
         intent_engine=IntentEngineAdapter(),
         role_engine=RoleEngine(),
-        retrieval_engine=retrieval_engine,
+        retrieval_engine=RetrievalEngine(knowledge_base=kb, embedding_model=model),
         scoring_engine=ScoringEngine(),
         perspective_orchestrator=PerspectiveOrchestrator(),
         context_builder=ContextBuilder(),
@@ -7018,15 +7118,7 @@ def run_test(query: str):
         log_path="logs/retrieval_log.jsonl"
     )
 
-    # --------------------------------------------------
-    # Run Pipeline
-    # --------------------------------------------------
-
     ctx = pipeline.run(query)
-
-    # --------------------------------------------------
-    # OUTPUT
-    # --------------------------------------------------
 
     print("\n=== INTENT ===")
     print(ctx.intent)
@@ -7038,22 +7130,24 @@ def run_test(query: str):
     for c in ctx.retrieval_result.chunk_candidates[:5]:
         print({
             "chunk_id": c.chunk_id,
-            "doc_id": c.doc_id,
+            "doc_id":   c.doc_id,
             "similarity": round(c.similarity_score, 4)
         })
 
     print("\n=== RANKED DOCUMENTS ===")
     for d in ctx.ranked_documents:
         print({
-            "doc_id": d.doc_id,
-            "score": round(d.score, 4)
+            "doc_id":   d.doc_id,
+            "score":    round(d.score, 4),
+            "semantic": round(d.semantic_score, 4),
+            "governance": round(d.governance_score, 4)
         })
 
     print("\n=== CONTEXT ===")
-    for c in ctx.context_package.chunks:   # 🔥 FIX
+    for c in ctx.context_package.chunks:
         print({
             "doc_id": c.doc_id,
-            "text": c.text[:150]
+            "text":   c.text[:150]
         })
 
     print("\n=== RESPONSE ===")
@@ -7061,9 +7155,10 @@ def run_test(query: str):
 
     print("\n=== DIAGNOSTICS ===")
     print({
-        "chunks": len(ctx.retrieval_result.chunk_candidates),
-        "documents": len(ctx.ranked_documents),
-        "context_chunks": len(ctx.context_package.chunks)
+        "chunks":          len(ctx.retrieval_result.chunk_candidates),
+        "documents":       len(ctx.ranked_documents),
+        "context_chunks":  len(ctx.context_package.chunks),
+        "embedding_model": EMBEDDING_MODEL
     })
 
 

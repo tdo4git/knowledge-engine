@@ -67,23 +67,32 @@ class QueryPipeline:
         )
 
         # --------------------------------------------------
-        # 5 Flatten documents → chunks
+        # 5 Flatten documents → chunks (mit Score-Propagation)
         # --------------------------------------------------
 
-        scored_chunks = [
-            chunk
-            for doc in ctx.ranked_documents
-            for chunk in doc.chunks
-        ]
+        scored_chunks = []
+        for doc in ctx.ranked_documents:
+            for chunk in doc.chunks:
+                chunk.score = doc.score
+                scored_chunks.append(chunk)
 
         # --------------------------------------------------
-        # 6 Perspective Orchestration (REAL selection step)
+        # 6 Score-basierte Selektion
+        #
+        # PerspectiveOrchestrator deaktiviert — die
+        # ScoringEngine liefert bereits governance-aware
+        # Ranking. Erzwungene Perspektiv-Quoten würden
+        # schwache Chunks in den Context ziehen.
+        # Reaktivierung sinnvoll wenn Knowledge Base
+        # pro Perspektive ausreichend starke Dokumente hat.
         # --------------------------------------------------
 
-        selected_chunks = self.perspective_orchestrator.orchestrate(
-            scored_chunks=scored_chunks,
-            content_intent=ctx.intent.content_intent
+        max_chunks = (
+            ctx.context_package is None and
+            10 or len(ctx.context_package.chunks)
         )
+
+        selected_chunks = scored_chunks[:10]
 
         # --------------------------------------------------
         # 7 Context Construction
@@ -116,7 +125,7 @@ class QueryPipeline:
         ctx.prompt = self.prompt_builder.build_prompt(
             query=ctx.query,
             role=ctx.role,
-            perspective=ctx.intent.content_intent,  # optional, falls benötigt
+            perspective=ctx.intent.content_intent,
             context_package=ctx.context_package
         )
 

@@ -49,7 +49,7 @@
     "jurisdiction": "EU",
     "confidence": 0.97,
     "bias": "medium",
-    "domain_layer": "market"
+    "domain_layer": "business"
   },
   {
     "doc_id": "doc_media_digitale_7fb28c",
@@ -112,7 +112,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "consulting_firm",
     "jurisdiction": "EU",
-    "confidence": 0.97,
+    "confidence": 0.95,
     "bias": "medium",
     "domain_layer": "strategy"
   },
@@ -140,7 +140,7 @@
     "jurisdiction": "EU",
     "confidence": 0.95,
     "bias": "elevated",
-    "domain_layer": "market"
+    "domain_layer": "strategy"
   },
   {
     "doc_id": "doc_media_versicherer_fdc5e6",
@@ -229,7 +229,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "consulting_firm",
     "jurisdiction": "Global",
-    "confidence": 0.95,
+    "confidence": 0.93,
     "bias": "medium",
     "domain_layer": "business"
   },
@@ -242,7 +242,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "software_vendor",
     "jurisdiction": "EU",
-    "confidence": 0.91,
+    "confidence": 0.92,
     "bias": "high",
     "domain_layer": "technology"
   },
@@ -255,7 +255,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "media",
     "jurisdiction": "EU",
-    "confidence": 0.95,
+    "confidence": 0.97,
     "bias": "elevated",
     "domain_layer": "technology"
   },
@@ -437,7 +437,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "supervisory_authority",
     "jurisdiction": "Switzerland",
-    "confidence": 0.98,
+    "confidence": 0.99,
     "bias": "very_low",
     "domain_layer": "regulation"
   },
@@ -479,5 +479,31 @@
     "confidence": 0.97,
     "bias": "high",
     "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_supervisory_dora_2024_82d35d",
+    "title": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA",
+    "source_file": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA.pdf",
+    "doc_hash": "82d35de9de7bd75355b52cee840b2afb1062aecd147bbd3bce240e516462072c",
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "bias": "very_low",
+    "domain_layer": "regulation"
+  },
+  {
+    "doc_id": "doc_supervisory_dora_b5e772",
+    "title": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA",
+    "source_file": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA.pdf",
+    "doc_hash": "b5e7720194d8b0922b9fe87de3e93cdae7d51af2ff4eeee516c49becea71b1f0",
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.99,
+    "bias": "very_low",
+    "domain_layer": "regulation"
   }
 ]

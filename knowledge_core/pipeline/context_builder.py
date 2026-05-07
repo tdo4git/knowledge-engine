@@ -1,11 +1,14 @@
-from config.engine_config import CONTEXT_CONFIG
+from config.engine_config import RETRIEVAL_CONFIG
 from knowledge_core.retrieval.retrieval_models import ContextChunk, ContextPackage
 
 
 class ContextBuilder:
 
     def __init__(self):
-        self.max_chunks = CONTEXT_CONFIG["max_documents"] * CONTEXT_CONFIG["max_chunks_per_document"]
+        _ctx = RETRIEVAL_CONFIG["context_construction"]
+        self.max_documents = _ctx["max_documents"]
+        self.max_chunks_per_document = _ctx["max_chunks_per_document"]
+        self.max_chunks = self.max_documents * self.max_chunks_per_document
 
     def build_context(self, query, chunks):
 

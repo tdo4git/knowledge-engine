@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 
@@ -10,6 +10,7 @@ class ChunkCandidate:
     chunk_index: int
     similarity_score: float
     document_metadata: dict
+    score: float = 0.0          # wird von QueryPipeline mit doc.score befüllt
 
 
 @dataclass

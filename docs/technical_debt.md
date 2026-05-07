@@ -1,5 +1,5 @@
 # Technical Debt – Strategic Knowledge Engine
-Zuletzt aktualisiert: 2026-05-06
+Zuletzt aktualisiert: 2026-05-07
 
 ---
 
@@ -35,23 +35,19 @@ Jeder Eintrag enthält:
 
 ---
 
-### TD-007 — Reklassifizierungs-Skript ✔
-- **Erledigt:** 2026-05-06
-- **Lösung:**
-  1. Ursache behoben in `config/governance_config.py`:
-     - `FILENAME_KEYWORDS["research_institution"]`: generische Formatbegriffe
-       entfernt ("studie", "study", "report", "whitepaper") — Dokumentformat ≠ Author-Origin.
-     - `DOCUMENT_TYPE_CORRECTIONS`: fehlende Regeln ergänzt für
-       `supervisory_authority + research_report/expert_opinion → supervisory_guidance`,
-       `consulting_firm + research_report/blog_article → consulting_framework`,
-       `software_vendor/cloud_vendor + research_report/blog_article → vendor_marketing`.
-       Supervisory-Regeln setzen zusätzlich `domain_layer="regulation"` (Cross-Field-Validation).
-     - `LLM_DOMAIN_NORMALIZATION`: `"transformation_strategy"` ergänzt.
-  2. Vollständiges Re-Onboarding aller 37 Dokumente: 37 processed, 0 errors.
-  3. `scripts/reclassify.py` als Operations-Tool für gezielte Einzelkorrekturen
-     ohne Re-Onboarding implementiert (für zukünftige Taxonomie-Änderungen).
-- **Architekturprinzip dokumentiert:** D-012 (decisions.md) + "Ursache vor Symptom"
-  (architecture.md).
+### TD-007 — Reklassifizierungs-Skript
+- **Bereich:** Knowledge Construction / Operations
+- **Beschreibung:** Bei Taxonomie-Änderungen müssen betroffene Dokumente reklassifiziert werden. Kein Skript vorhanden — aktuell manueller Reset + vollständiges Re-Onboarding notwendig. Konkret ausstehend: 7 Dokumente mit Fehlklassifikation (6× falscher Document Type, 1× falsche Origin), identifiziert via `generate_snapshot.py`:
+  - `doc_supervisory_insurance_83c73b` → research_report statt supervisory_guidance
+  - `doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd` → research_report statt supervisory_guidance
+  - `doc_consulting_dora_2024_d54141` → blog_article statt consulting_framework
+  - `doc_consulting_insurance_2024_19f71c` → research_report statt consulting_framework
+  - `doc_consulting_insurance_2030_131197` → research_report statt consulting_framework
+  - `doc_vendor_heiseacademymycompany_6d0ccf` → research_report statt vendor_marketing
+  - `doc_research_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f` → Origin research_institution statt industry_association
+- **Aufwand:** mittel
+- **Priorität:** mittel
+- **Status:** offen
 
 ---
 
@@ -67,6 +63,24 @@ Jeder Eintrag enthält:
 ### TD-009 — AUTHOR_ORIGIN_MAP Keyword-Qualität
 - **Bereich:** Knowledge Construction / Governance
 - **Beschreibung:** Kurze Keywords in `AUTHOR_ORIGIN_MAP` erzeugen False Positives durch Substring-Matches (z.B. `"ey"` matcht `"they"`, `"money"` etc., `"msg"` matcht `"messaging"`). Gelöst für `ey` und `msg` — aber weitere kurze Keywords könnten dasselbe Problem haben. Mit Einführung von `media` (2026-05-06) hinzugekommen: `"spiegel"` könnte in anderen Kontexten matchen. Langfristig: Wort-Grenz-Matching statt einfachem Substring-Check.
+- **Aufwand:** mittel
+- **Priorität:** niedrig
+- **Status:** offen
+
+---
+
+### TD-011 — Mindest-Score-Threshold im ContextBuilder
+- **Bereich:** Knowledge Engine / Retrieval
+- **Beschreibung:** Der ContextBuilder selektiert Chunks aus den top-ranked Dokumenten ohne Mindestqualität zu prüfen. Dokumente mit niedrigem Score (z.B. breite Research-Studien die Keywords zufällig treffen) landen mit irrelevanten Chunks im Context. Fix: `min_document_score` Schwellwert in `CONTEXT_CONFIG` — Dokumente unterhalb des Schwellwerts werden nicht in den Context aufgenommen. Sichtbar: `doc_research_insurance_2a0a0c` (score=0.252) liefert irrelevante Chunks während Supervisory-Dokumente (score=0.33) korrekt selektiert werden.
+- **Aufwand:** klein
+- **Priorität:** hoch
+- **Status:** offen
+
+---
+
+### TD-012 — Chunk-Strategie überprüfen
+- **Bereich:** Knowledge Construction / Chunking
+- **Beschreibung:** Token-basiertes Chunking (600 Token, 80 Overlap) erzeugt thematisch gemischte Chunks in breiten Dokumenten (Research-Studien, Marktberichte). Einzelne Chunks enthalten mehrere Themen — Keywords der Query werden getroffen ohne inhaltliche Relevanz. Evaluieren: (1) Chunk-Size reduzieren auf 400 Token für fokussiertere Chunks, (2) semantisches Chunking an Absatz-/Abschnittsgrenzen. Voraussetzung: ausreichende Knowledge-Base-Größe für systematische Retrieval-Evaluation. Jede Änderung erfordert vollständiges Re-Onboarding.
 - **Aufwand:** mittel
 - **Priorität:** niedrig
 - **Status:** offen
