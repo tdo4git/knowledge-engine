@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_zeitschrift_89b4fd",
+  "title": "Zeitschrift - 260116-ART-itmanagement-print-Souver\u00e4nit\u00e4tskompass",
+  "ai": {
+    "document_type": "expert_opinion",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "sovereign_cloud",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.85,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

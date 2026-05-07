@@ -1,14 +1,12 @@
-from config.engine_config import RETRIEVAL_CONFIG
+from config.engine_config import CONTEXT_CONFIG
 from knowledge_core.retrieval.retrieval_models import ContextChunk, ContextPackage
 
 
 class ContextBuilder:
 
     def __init__(self):
-        _ctx = RETRIEVAL_CONFIG["context_construction"]
-        self.max_documents = _ctx["max_documents"]
-        self.max_chunks_per_document = _ctx["max_chunks_per_document"]
-        self.max_chunks = self.max_documents * self.max_chunks_per_document
+        self.max_chunks = CONTEXT_CONFIG["max_documents"] * CONTEXT_CONFIG["max_chunks_per_document"]
+        self.min_document_score = CONTEXT_CONFIG.get("min_document_score", 0.0)
 
     def build_context(self, query, chunks):
 
@@ -16,7 +14,15 @@ class ContextBuilder:
         # Input: bereits selektierte Chunks (vom Orchestrator)
         # --------------------------------------------------
 
-        selected_chunks = chunks[:self.max_chunks]
+        # Filter: Chunks von Dokumenten unterhalb des Score-Threshold
+        # ausschließen
+        filtered_chunks = [
+            chunk for chunk in chunks
+            if self._get_chunk_score(chunk) >= self.min_document_score
+        ]
+
+        # Limitierung auf max_chunks
+        selected_chunks = filtered_chunks[:self.max_chunks]
 
         context_chunks = []
 
@@ -39,3 +45,21 @@ class ContextBuilder:
             chunks=context_chunks,
             sources=sources
         )
+
+    def _get_chunk_score(self, chunk):
+        """
+        Extrahiere den Score aus dem Chunk.
+
+        Score-Propagation (QueryPipeline Schritt 5) schreibt doc.score
+        direkt auf chunk.score — daher zuerst direktes Attribut prüfen.
+        """
+
+        # Zuerst direktes Attribut (Score-Propagation schreibt auf chunk.score)
+        if hasattr(chunk, 'score'):
+            return chunk.score
+
+        # Fallback: document_metadata
+        if hasattr(chunk, 'document_metadata') and chunk.document_metadata:
+            return chunk.document_metadata.get('score', 0.0)
+
+        return 0.0

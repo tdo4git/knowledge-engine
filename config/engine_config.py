@@ -31,3 +31,19 @@ RETRIEVAL_CONFIG = {
         "max_chunks_per_document": 2
     }
 }
+
+# ---------------------------------------------------
+# Context Configuration
+# ---------------------------------------------------
+
+CONTEXT_CONFIG = {
+
+    "max_documents": 5,
+    "max_chunks_per_document": 2,
+    
+    # Mindest-Score für Dokumente im Context
+    # Dokumente unterhalb dieses Schwellwerts werden 
+    # nicht in den Context aufgenommen.
+    # Empirisch: supervisory_authority Dokumente score ~0.33
+    "min_document_score": 0.30
+}

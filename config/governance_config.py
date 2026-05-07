@@ -13,6 +13,13 @@
 #     domain_layer="regulation" (Cross-Field-Validation Fix).
 #   - LLM_DOMAIN_NORMALIZATION: "transformation_strategy"
 #     ergänzt (Classifier-Normalization vor validate_enums).
+#
+# Änderungen 2026-05-07:
+#   - DOCUMENT_TYPE_CORRECTIONS: zwei fehlende Regeln ergänzt:
+#     consulting_firm + vendor_marketing → consulting_framework
+#     internal + vendor_marketing → internal_strategy
+#     Ursache: LLM klassifiziert Whitepapers/Präsentationen
+#     gelegentlich als vendor_marketing — Governance korrigiert.
 # =========================================================
 
 
@@ -70,30 +77,32 @@ AUTHOR_ORIGIN_MAP = {
     "adesso":                               "consulting_firm",
     "kpmg":                                 "consulting_firm",
     "accenture":                            "consulting_firm",
-    "msg group":                            "consulting_firm",
-    "msg systems":                          "consulting_firm",
-    "ernst & young":                        "consulting_firm",
-    "ernst and young":                      "consulting_firm",
-    "bain":                                 "consulting_firm",
-    "bcg":                                  "consulting_firm",
-    "mckinsey":                             "consulting_firm",
     "exxeta":                               "consulting_firm",
     "capgemini":                            "consulting_firm",
     "bearingpoint":                         "consulting_firm",
     "bearing point":                        "consulting_firm",
+    "msg":                                  "consulting_firm",
+    "msg group":                            "consulting_firm",
+    "msg systems":                          "consulting_firm",
     "oliver wyman":                         "consulting_firm",
+    "mckinsey":                             "consulting_firm",
+    "boston consulting":                    "consulting_firm",
+    "bcg":                                  "consulting_firm",
     "roland berger":                        "consulting_firm",
-    "zeb":                                  "consulting_firm",
+    "ey":                                   "consulting_firm",
+    "ernst & young":                        "consulting_firm",
+    "ernst and young":                      "consulting_firm",
 
     # --------------------------------------------------
     # Research Institutions
     # --------------------------------------------------
+    "oecd":                                 "research_institution",
     "lünendonk":                            "research_institution",
     "luenendonk":                           "research_institution",
     "trendzowl":                            "research_institution",
     "fraunhofer":                           "research_institution",
-    "bitkom research":                      "research_institution",
-    "oecd":                                 "research_institution",
+    "gartner":                              "research_institution",
+    "forrester":                            "research_institution",
 
     # --------------------------------------------------
     # Cloud Vendors
@@ -102,26 +111,29 @@ AUTHOR_ORIGIN_MAP = {
     "aws":                                  "cloud_vendor",
     "microsoft azure":                      "cloud_vendor",
     "google cloud":                         "cloud_vendor",
+    "google cloud platform":                "cloud_vendor",
 
     # --------------------------------------------------
     # Software Vendors
     # --------------------------------------------------
+    "sap":                                  "software_vendor",
+    "salesforce":                           "software_vendor",
+    "servicenow":                           "software_vendor",
+    "confluent":                            "software_vendor",
+    "databricks":                           "software_vendor",
+    "snowflake":                            "software_vendor",
     "heise":                                "software_vendor",
-    "heise academy":                        "software_vendor",
-    "amber":                                "software_vendor",
 
     # --------------------------------------------------
     # Industry Associations
     # --------------------------------------------------
     "gdv":                                  "industry_association",
+    "gesamtverband der deutschen versicherungswirtschaft": "industry_association",
     "bitkom":                               "industry_association",
     "beltios":                              "industry_association",
-    "gesamtverband der deutschen versicherungswirtschaft": "industry_association",
 
     # --------------------------------------------------
-    # Internal (conet-eigene Dokumente)
-    # Vor corporate — verhindert dass "allianz" im
-    # Titel die interne Origin überschreibt.
+    # Internal (conet)
     # --------------------------------------------------
     "conet":                                "internal",
     "conet deutschland":                    "internal",
@@ -185,6 +197,7 @@ FILENAME_KEYWORDS = {
         "capgemini",
         "bearingpoint",
         "playbook",
+        "msg",
     ],
 
     # --------------------------------------------------
@@ -337,6 +350,12 @@ DOCUMENT_TYPE_CORRECTIONS = [
         "if": {"origin": "consulting_firm", "document_type": "blog_article"},
         "then": {"document_type": "consulting_framework"}
     },
+    # FIX 2026-05-07: LLM klassifiziert Consulting-Whitepapers
+    # gelegentlich als vendor_marketing — Governance korrigiert.
+    {
+        "if": {"origin": "consulting_firm", "document_type": "vendor_marketing"},
+        "then": {"document_type": "consulting_framework"}
+    },
 
     # --------------------------------------------------
     # software_vendor
@@ -371,6 +390,25 @@ DOCUMENT_TYPE_CORRECTIONS = [
     {
         "if": {"origin": "corporate", "document_type": "vendor_marketing"},
         "then": {"document_type": "blog_article"}
+    },
+
+    # --------------------------------------------------
+    # internal
+    # Interne Dokumente (conet) → immer internal_strategy
+    # FIX 2026-05-07: LLM klassifiziert Unternehmenspräsentationen
+    # gelegentlich als vendor_marketing — Governance korrigiert.
+    # --------------------------------------------------
+    {
+        "if": {"origin": "internal", "document_type": "vendor_marketing"},
+        "then": {"document_type": "internal_strategy"}
+    },
+    {
+        "if": {"origin": "internal", "document_type": "blog_article"},
+        "then": {"document_type": "internal_strategy"}
+    },
+    {
+        "if": {"origin": "internal", "document_type": "research_report"},
+        "then": {"document_type": "internal_strategy"}
     },
 
     # --------------------------------------------------
@@ -468,51 +506,27 @@ CONFIDENCE_RULES = [
 
 
 # =========================================================
-# 9. FEATURE SWITCHES
-# =========================================================
-
-ENABLE_ORIGIN_RULES = True
-ENABLE_JURISDICTION_RULES = True
-ENABLE_DOCUMENT_TYPE_RULES = True
-ENABLE_DOMAIN_RULES = True
-ENABLE_CONFIDENCE_RULES = True
-ENABLE_ANTI_MISC = True
-
-
-# =========================================================
-# 10. LLM DOMAIN NORMALIZATION
-# Mappt ungültige LLM-Ausgaben auf gültige Taxonomy-Werte.
+# 9. LLM DOMAIN NORMALIZATION
 #
-# WICHTIG: Diese Normalization läuft im Classifier (vor
-# validate_enums), nicht nur in der Governance-Pipeline.
-# classifier.py importiert LLM_DOMAIN_NORMALIZATION direkt.
-# Neue Einträge hier wirken also bereits bei der
-# LLM-Ausgabe-Validierung.
+# Mappt LLM-Ausgaben auf gültige KNOWLEDGE_DOMAINS.
+# Wird in classifier.py VOR validate_enums angewendet.
 # =========================================================
 
 LLM_DOMAIN_NORMALIZATION = {
-    # Cloud-Topics → cloud_technology
-    "cloud_governance":     "cloud_technology",
-    "cloud_architecture":   "cloud_technology",
-    "cloud_security":       "cloud_technology",
-    "sovereign_cloud":      "cloud_technology",
-    "cloud_infrastructure": "cloud_technology",
-
-    # Insurance-Topics → insurance_domain
-    "insurance_business":   "insurance_domain",
-    "insurance_regulation": "insurance_domain",
-    "financial_regulation": "insurance_domain",
-
-    # Strategy-Topics → insurance_domain
-    # "transformation_strategy" ist ein TOPIC-Wert
-    # (config/taxonomy.py), kein KNOWLEDGE_DOMAIN-Wert.
-    # Der LLM verwendet ihn fälschlich als knowledge_domain.
-    "transformation_strategy": "insurance_domain",
-
-    # AI-Topics → ai_genai_agentic
-    "generative_ai":        "ai_genai_agentic",
-    "agentic_ai":           "ai_genai_agentic",
-
-    # Advisory → trusted_advisor
-    "advisory_methods":     "trusted_advisor",
+    "digital_transformation":       "ai_genai_agentic",
+    "transformation_strategy":      "ai_genai_agentic",
+    "data_analytics":               "ai_genai_agentic",
+    "cybersecurity":                "insurance_domain",
+    "risk_management":              "insurance_domain",
+    "compliance":                   "insurance_domain",
+    "regulatory_compliance":        "insurance_domain",
+    "financial_services":           "insurance_domain",
+    "portfolio_gtm":                "insurance_domain",
 }
+
+
+# =========================================================
+# 10. DOMAIN RULES ENABLED
+# =========================================================
+
+ENABLE_DOMAIN_RULES = True

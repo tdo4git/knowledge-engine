@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_aws_ai_dcad6d",
+  "title": "awsmp-attOn1u6CF2E6Pglv-awsmp-gim-kmpc-adhoc-mpd-devops-ai-hbr-devops-whitepaper",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Global",
+    "confidence": 0.82,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

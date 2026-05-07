@@ -102,17 +102,17 @@ YAML Contract → Prompt Builder → LLMClient
 
 ---
 
-## D-008: sentence-transformers/all-MiniLM-L6-v2 als Embedding-Modell
+## D-008: paraphrase-multilingual-MiniLM-L12-v2 als Embedding-Modell
 
-**Entscheidung:** Leichtgewichtiges Embedding-Modell für lokalen Betrieb.
+**Entscheidung:** Mehrsprachiges Embedding-Modell für lokalen Betrieb.
 
 **Begründung:**
+- Deutschsprachige Dokumente werden semantisch korrekt eingebettet
 - Läuft effizient auf MacBook ohne GPU
-- Ausreichende Qualität für semantische Suche im Fachkontext
-- Kann später durch ein stärkeres Modell ersetzt werden (nur Embeddings neu generieren)
+- Qualitativ überlegen gegenüber `all-MiniLM-L6-v2` für gemischtsprachige Knowledge Base
+- Modell-Wechsel erfordert vollständiges Re-Onboarding — einmalig durchgeführt (2026-05-07)
 
-**Offene Frage:** Für deutschsprachige Dokumente könnte ein mehrsprachiges Modell
-(z.B. `paraphrase-multilingual-MiniLM-L12-v2`) bessere Ergebnisse liefern. Noch nicht evaluiert.
+**Abgelöst:** `sentence-transformers/all-MiniLM-L6-v2` — unzureichend für deutschsprachige Dokumente.
 
 ---
 

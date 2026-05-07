@@ -69,15 +69,6 @@ Jeder Eintrag enthält:
 
 ---
 
-### TD-011 — Mindest-Score-Threshold im ContextBuilder
-- **Bereich:** Knowledge Engine / Retrieval
-- **Beschreibung:** Der ContextBuilder selektiert Chunks aus den top-ranked Dokumenten ohne Mindestqualität zu prüfen. Dokumente mit niedrigem Score (z.B. breite Research-Studien die Keywords zufällig treffen) landen mit irrelevanten Chunks im Context. Fix: `min_document_score` Schwellwert in `CONTEXT_CONFIG` — Dokumente unterhalb des Schwellwerts werden nicht in den Context aufgenommen. Sichtbar: `doc_research_insurance_2a0a0c` (score=0.252) liefert irrelevante Chunks während Supervisory-Dokumente (score=0.33) korrekt selektiert werden.
-- **Aufwand:** klein
-- **Priorität:** hoch
-- **Status:** offen
-
----
-
 ### TD-012 — Chunk-Strategie überprüfen
 - **Bereich:** Knowledge Construction / Chunking
 - **Beschreibung:** Token-basiertes Chunking (600 Token, 80 Overlap) erzeugt thematisch gemischte Chunks in breiten Dokumenten (Research-Studien, Marktberichte). Einzelne Chunks enthalten mehrere Themen — Keywords der Query werden getroffen ohne inhaltliche Relevanz. Evaluieren: (1) Chunk-Size reduzieren auf 400 Token für fokussiertere Chunks, (2) semantisches Chunking an Absatz-/Abschnittsgrenzen. Voraussetzung: ausreichende Knowledge-Base-Größe für systematische Retrieval-Evaluation. Jede Änderung erfordert vollständiges Re-Onboarding.
@@ -108,3 +99,7 @@ Jeder Eintrag enthält:
 ### TD-010 — Doc-ID enthält Origin aus LLM, nicht aus Governance ✔
 - **Erledigt:** 2026-05-03
 - **Lösung:** `generate_doc_id()` wird nach `apply_governance_pipeline()` aufgerufen und verwendet `classification.get("origin")` — also die finale, governance-korrigierte Origin. Zusätzlich: `"corporate"` in `_normalize_origin()` ergänzt (fehlender Eintrag war der eigentliche Bug). `doc_unknown_allianz_*` → `doc_corporate_allianz_*`.
+
+### TD-011 — Mindest-Score-Threshold im ContextBuilder ✔
+- **Erledigt:** 2026-05-07
+- **Lösung:** `min_document_score: 0.30` in `CONTEXT_CONFIG` (engine_config.py) eingeführt. `ContextBuilder` filtert Chunks via `_get_chunk_score()` vor Limitierung — Chunks von Dokumenten unterhalb des Schwellwerts werden ausgeschlossen. Score wird aus `chunk.document_metadata['score']` gelesen (setzt Score-Propagation aus QueryPipeline Schritt 5 voraus). Threshold ist config-driven und ohne Code-Change anpassbar.

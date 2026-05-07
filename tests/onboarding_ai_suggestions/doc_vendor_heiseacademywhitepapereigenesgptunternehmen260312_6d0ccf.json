@@ -1,0 +1,18 @@
+{
+  "doc_id": "doc_vendor_heiseacademywhitepapereigenesgptunternehmen260312_6d0ccf",
+  "title": "HeiseAcademy-Whitepaper-Eigenes-GPT-Unternehmen-260312",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "bias": "high"
+  }
+}

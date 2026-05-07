@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_vendor_ai_d1dc7e",
+  "title": "msg_claim_it_onepager_screen_DE_02",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

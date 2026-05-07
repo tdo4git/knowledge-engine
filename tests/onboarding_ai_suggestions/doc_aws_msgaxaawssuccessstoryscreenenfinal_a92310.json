@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_aws_msgaxaawssuccessstoryscreenenfinal_a92310",
+  "title": "msg_AXA_AWS_SuccessStory_screen_EN_FINAL",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_architecture",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Germany",
+    "confidence": 0.91,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_corporate_ergoversicherungvon_76deb8",
+  "title": "ERGO-Versicherung-Von der Theorie zur Praxis- KI im Einsatz",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

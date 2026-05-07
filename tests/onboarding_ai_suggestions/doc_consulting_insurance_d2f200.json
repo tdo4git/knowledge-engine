@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_insurance_d2f200",
+  "title": "KPMG-INS-Advancing-AI-across-insurance",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

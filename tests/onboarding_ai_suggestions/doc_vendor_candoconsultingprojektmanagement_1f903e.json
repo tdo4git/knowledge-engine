@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_vendor_candoconsultingprojektmanagement_1f903e",
+  "title": "Can-Do-Consulting-Projektmanagement mit KI in der IT und Software-Entwicklung  - Can Do",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "ai_genai_agentic",
+    "topic": "transformation_strategy",
+    "origin": "software_vendor",
+    "jurisdiction": "Germany",
+    "confidence": 0.91,
+    "origin_source": "llm",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "llm",
+    "bias": "high"
+  }
+}

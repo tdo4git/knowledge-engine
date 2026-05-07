@@ -1,5 +1,18 @@
 [
   {
+    "doc_id": "doc_vendor_confluent_2025_350c18",
+    "title": "Confluent - 20250423-EB-Event-Driven_Design_for_Agents",
+    "source_file": "Confluent - 20250423-EB-Event-Driven_Design_for_Agents.pdf",
+    "doc_hash": "350c185cd3d7e3f3d0f6d7ef9f83a15eaa4852e7a53ec55bb438891b3ab084e9",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_vendor_heiseacademymycompany_6d0ccf",
     "title": "HeiseAcademy-MyCompany GPT",
     "source_file": "HeiseAcademy-MyCompany GPT.pdf",
@@ -11,6 +24,19 @@
     "confidence": 0.82,
     "bias": "high",
     "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_research_ai_2024_97274c",
+    "title": "Claims Processing and Costs under Capacity Constraints (2024).09091",
+    "source_file": "Claims Processing and Costs under Capacity Constraints (2024).09091.pdf",
+    "doc_hash": "97274c15c2b01bb262ccf9b8149e10fd969f9bcb0764cd1061a27641ca235e33",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "low",
+    "domain_layer": "business"
   },
   {
     "doc_id": "doc_media_europas_38857c",
@@ -65,6 +91,19 @@
     "domain_layer": "strategy"
   },
   {
+    "doc_id": "doc_aws_microsoftkipotenzialenutzenschrittfrschritt1748701467_54bd0b",
+    "title": "Microsoft-KI_Potenziale_nutzen_Schritt_f_r_Schritt_1748701467",
+    "source_file": "Microsoft-KI_Potenziale_nutzen_Schritt_f_r_Schritt_1748701467.pdf",
+    "doc_hash": "54bd0b31e9d6f5e6cd0723eb455f0c9ba168c097b152f09fe486e2f4d49596bc",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_media_eusouveranitat_27bf6a",
     "title": "SZ EU-Souvera\u0308nita\u0308t und USA | \u201eWo ist unsere Wu\u0308rde? Wo ist unser Selbstbewusstsein?\u201c",
     "source_file": "SZ EU-Souvera\u0308nita\u0308t und USA | \u201eWo ist unsere Wu\u0308rde? Wo ist unser Selbstbewusstsein?\u201c.pdf",
@@ -99,9 +138,22 @@
     "knowledge_domain": "insurance_domain",
     "origin": "research_institution",
     "jurisdiction": "EU",
-    "confidence": 0.97,
+    "confidence": 0.98,
     "bias": "low",
     "domain_layer": "market"
+  },
+  {
+    "doc_id": "doc_corporate_allianzgroupmedienmitteilungallianzundanthropicschlieenglobalepartnerschaft_fad5e0",
+    "title": "allianz-group-medienmitteilung-allianz-und-anthropic-schlie\u00dfen-globale-partnerschaft",
+    "source_file": "allianz-group-medienmitteilung-allianz-und-anthropic-schlie\u00dfen-globale-partnerschaft.pdf",
+    "doc_hash": "fad5e011aa917fa9018e9639612bdeb58eca3e4d1782e01af228c9fbe19e10ca",
+    "document_type": "press_article",
+    "knowledge_domain": "ai_genai_agentic",
+    "origin": "corporate",
+    "jurisdiction": "Global",
+    "confidence": 0.82,
+    "bias": "medium",
+    "domain_layer": "strategy"
   },
   {
     "doc_id": "doc_consulting_playbookbearingpointversicherung2030_2030_717627",
@@ -117,6 +169,71 @@
     "domain_layer": "strategy"
   },
   {
+    "doc_id": "doc_consulting_bcgstateofinsurtech2024_2024_0f0f00",
+    "title": "BCG-State-of-Insurtech-2024",
+    "source_file": "BCG-State-of-Insurtech-2024.pdf",
+    "doc_hash": "0f0f00d03f04d0f695df562f243761155ce99dee522ad506d7b194ad30083c9f",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "bias": "medium",
+    "domain_layer": "market"
+  },
+  {
+    "doc_id": "doc_vendor_ai_31f41c",
+    "title": "RDT-Future-of-Claims-Whitepaper",
+    "source_file": "RDT-Future-of-Claims-Whitepaper.pdf",
+    "doc_hash": "31f41c88be9a3fb4fcbe45abdb34262289bd8ed12b9f21cb6d9f8c014a989b02",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "cloud_technology",
+    "origin": "software_vendor",
+    "jurisdiction": "UK",
+    "confidence": 0.88,
+    "bias": "high",
+    "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_corporate_ergoversicherungvon_76deb8",
+    "title": "ERGO-Versicherung-Von der Theorie zur Praxis- KI im Einsatz",
+    "source_file": "ERGO-Versicherung-Von der Theorie zur Praxis- KI im Einsatz.docx",
+    "doc_hash": "76deb89952f0e2b39189d4f6c4d1aa2a2de1f2720d8cafb965a47fcd7462a262",
+    "document_type": "blog_article",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "medium",
+    "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_research_articelmmaa622030_2030_7bf1bc",
+    "title": "Articel-MMAA-6-2-20-30",
+    "source_file": "Articel-MMAA-6-2-20-30.pdf",
+    "doc_hash": "7bf1bc04a32df8b301e616228e3aa1616d856216234d71a4823a6267f3cb2c93",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_consulting_insurance_d2f200",
+    "title": "KPMG-INS-Advancing-AI-across-insurance",
+    "source_file": "KPMG-INS-Advancing-AI-across-insurance.pdf",
+    "doc_hash": "d2f200ab5e7a0d0eda76ad9cbe34c2657e24100f559619b540acd3ad4e8ff20f",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "bias": "medium",
+    "domain_layer": "business"
+  },
+  {
     "doc_id": "doc_research_insurance_2a0a0c",
     "title": "Luenendonk-Studie_Digital_Outlook_Insurance_f240206",
     "source_file": "Luenendonk-Studie_Digital_Outlook_Insurance_f240206.pdf",
@@ -130,6 +247,19 @@
     "domain_layer": "business"
   },
   {
+    "doc_id": "doc_aws_symposiumaws_4d4d8e",
+    "title": "AWS NYC FSI Symposium_AWS Partner ebook",
+    "source_file": "AWS NYC FSI Symposium_AWS Partner ebook.pdf",
+    "doc_hash": "4d4d8e5447ff6984fb5fb38c523e2c8228ca22dfe92d11cccb52e7e60edb615f",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Global",
+    "confidence": 0.97,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_media_microsoft_ccf347",
     "title": "SZ Microsoft und KI | Eine Frage der Souvera\u0308nita\u0308t | Wirtschaft",
     "source_file": "SZ Microsoft und KI | Eine Frage der Souvera\u0308nita\u0308t | Wirtschaft.pdf",
@@ -140,6 +270,71 @@
     "jurisdiction": "EU",
     "confidence": 0.95,
     "bias": "elevated",
+    "domain_layer": "market"
+  },
+  {
+    "doc_id": "doc_vendor_cloud_f840e3",
+    "title": "VMWare-230426_Whitepaper_Cloud_intersektorale_Versorgung",
+    "source_file": "VMWare-230426_Whitepaper_Cloud_intersektorale_Versorgung.pdf",
+    "doc_hash": "f840e3a1128ffceb8a852192861f76d96d8cde7f8eacb223e47b4859e68cd707",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_aws_ai_dcad6d",
+    "title": "awsmp-attOn1u6CF2E6Pglv-awsmp-gim-kmpc-adhoc-mpd-devops-ai-hbr-devops-whitepaper",
+    "source_file": "awsmp-attOn1u6CF2E6Pglv-awsmp-gim-kmpc-adhoc-mpd-devops-ai-hbr-devops-whitepaper.pdf",
+    "doc_hash": "dcad6d5d01daab6c74a0f6cfe7d10fb76a441479f001eb8f89d9be2eea04a357",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Global",
+    "confidence": 0.72,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_consulting_ernirequirementsengineering1777999222_a5ebf0",
+    "title": "ERNI-Requirements_Engineering_1777999222",
+    "source_file": "ERNI-Requirements_Engineering_1777999222.pdf",
+    "doc_hash": "a5ebf0d8cde69962cbc04751c7ce775fe117b81f4541166006cfcdb60f2a326f",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "medium",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_vendor_jahr_2026_739ede",
+    "title": "SAP - KI im Jahr 2026 - F\u00fcnf bestimmende Themen",
+    "source_file": "SAP - KI im Jahr 2026 - F\u00fcnf bestimmende Themen.docx",
+    "doc_hash": "739ede00c45a90183363d8e2076d2f69a1ad3faf43a2fd364b8fc467d5f59b91",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_consulting_banking_2025_b78fb1",
+    "title": "msg banking - NEWS_02_2025",
+    "source_file": "msg banking - NEWS_02_2025.pdf",
+    "doc_hash": "b78fb147e7a9863e33610d28a1640e01159424c8c233a24b046b0d8cf6c0f1f1",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "medium",
     "domain_layer": "strategy"
   },
   {
@@ -151,7 +346,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "media",
     "jurisdiction": "EU",
-    "confidence": 0.95,
+    "confidence": 0.97,
     "bias": "elevated",
     "domain_layer": "business"
   },
@@ -169,6 +364,19 @@
     "domain_layer": "regulation"
   },
   {
+    "doc_id": "doc_consulting_vibecoding_2026_26fb8b",
+    "title": "Vibe-Coding - Marketing Playbook 2026",
+    "source_file": "Vibe-Coding - Marketing Playbook 2026.pdf",
+    "doc_hash": "26fb8b17f944d09ff41b95a8d85a774cabfe70b6f396717f4474f9f31cc5729e",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "cloud_technology",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "bias": "medium",
+    "domain_layer": "business"
+  },
+  {
     "doc_id": "doc_media_kunstliche_b4ae99",
     "title": "SZ Ku\u0308nstliche Intelligenz | Zusammen sind sie weniger allein | Wirtschaft",
     "source_file": "SZ Ku\u0308nstliche Intelligenz | Zusammen sind sie weniger allein | Wirtschaft.pdf",
@@ -182,6 +390,32 @@
     "domain_layer": "market"
   },
   {
+    "doc_id": "doc_industry_vfltd192025itauszugmsg_2025_e25ba4",
+    "title": "VFL_TD_19_2025_IT_Auszug-msg",
+    "source_file": "VFL_TD_19_2025_IT_Auszug-msg.pdf",
+    "doc_hash": "e25ba400e9ee93193440becd5541e8ca01adcb316c2167c3f7120370d73d36ba",
+    "document_type": "expert_opinion",
+    "knowledge_domain": "insurance_domain",
+    "origin": "industry_association",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_supervisory_dora_2024_82d35d",
+    "title": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA",
+    "source_file": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA.pdf",
+    "doc_hash": "82d35de9de7bd75355b52cee840b2afb1062aecd147bbd3bce240e516462072c",
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "bias": "very_low",
+    "domain_layer": "regulation"
+  },
+  {
     "doc_id": "doc_consulting_dora_2024_d54141",
     "title": "exxeta_dora_practical_guide_financial_services_2024",
     "source_file": "exxeta_dora_practical_guide_financial_services_2024.pdf",
@@ -190,7 +424,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "consulting_firm",
     "jurisdiction": "EU",
-    "confidence": 0.91,
+    "confidence": 0.92,
     "bias": "medium",
     "domain_layer": "regulation"
   },
@@ -208,6 +442,19 @@
     "domain_layer": "market"
   },
   {
+    "doc_id": "doc_vendor_nttdatacasestudyconcordiadeve126_1a1666",
+    "title": "NTT_DATA_Casestudy_Concordia_DE_VE1_26 01 13",
+    "source_file": "NTT_DATA_Casestudy_Concordia_DE_VE1_26 01 13.pdf",
+    "doc_hash": "1a1666f64eaef39c19015ed1e13e5e1a4560a26618fc04f314df2e9cc702378a",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_research_elingassekuranz20302_2030_3862f3",
     "title": "Eling-Assekuranz-2030-2",
     "source_file": "Eling-Assekuranz-2030-2.pdf",
@@ -221,6 +468,58 @@
     "domain_layer": "strategy"
   },
   {
+    "doc_id": "doc_aws_awsreinventfsi_8ad4dc",
+    "title": "AWS-reInvent-FSI",
+    "source_file": "AWS-reInvent-FSI.pdf",
+    "doc_hash": "8ad4dc06a5eefa85891a3aede65ce4f3dbb943c409f6ef2446f1569d9ae9539a",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.99,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_supervisory_insurance_2024_ccc654",
+    "title": "IAIS-Global-Insurance-Market-Report-2024",
+    "source_file": "IAIS-Global-Insurance-Market-Report-2024.pdf",
+    "doc_hash": "ccc654d17367a7e7779c1a051a98fad88f6842faafea178321a2cfe06617e0a1",
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "bias": "very_low",
+    "domain_layer": "regulation"
+  },
+  {
+    "doc_id": "doc_research_insurance_2024_aa6f27",
+    "title": "CELENT-insurance-fraud-detection-solutions-property-and-casualty-insurance-2024-edition-report-2",
+    "source_file": "CELENT-insurance-fraud-detection-solutions-property-and-casualty-insurance-2024-edition-report-2.pdf",
+    "doc_hash": "aa6f2773b2bd8ae88d7ca4616527364e57779dabd5be16ee7622b2c2fd454ad3",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_industry_vfltd1924itauszugmsg_6a9633",
+    "title": "VFL_TD_19_24_IT_Auszug-msg",
+    "source_file": "VFL_TD_19_24_IT_Auszug-msg.pdf",
+    "doc_hash": "6a963378b221f196c490408ae1934f8d5524b416247cabb88038ed0d8937b847",
+    "document_type": "expert_opinion",
+    "knowledge_domain": "insurance_domain",
+    "origin": "industry_association",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_consulting_insurance_2030_131197",
     "title": "claims-2030-a-talent-strategy-for-the-future-of-insurance-claims-f",
     "source_file": "claims-2030-a-talent-strategy-for-the-future-of-insurance-claims-f.pdf",
@@ -229,7 +528,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "consulting_firm",
     "jurisdiction": "Global",
-    "confidence": 0.93,
+    "confidence": 0.95,
     "bias": "medium",
     "domain_layer": "business"
   },
@@ -242,6 +541,45 @@
     "knowledge_domain": "insurance_domain",
     "origin": "software_vendor",
     "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_supervisory_dora_b5e772",
+    "title": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA",
+    "source_file": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA.pdf",
+    "doc_hash": "b5e7720194d8b0922b9fe87de3e93cdae7d51af2ff4eeee516c49becea71b1f0",
+    "document_type": "supervisory_guidance",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.99,
+    "bias": "very_low",
+    "domain_layer": "regulation"
+  },
+  {
+    "doc_id": "doc_research_cloud_98686e",
+    "title": "IJFMR - Cloud Computing in Insurance",
+    "source_file": "IJFMR - Cloud Computing in Insurance.pdf",
+    "doc_hash": "98686e409538882ce531be33c434a6c5da21a5038310fa3a26eac0014a68f2f2",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.88,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_aws_msgaxaawssuccessstoryscreenenfinal_a92310",
+    "title": "msg_AXA_AWS_SuccessStory_screen_EN_FINAL",
+    "source_file": "msg_AXA_AWS_SuccessStory_screen_EN_FINAL.pdf",
+    "doc_hash": "a92310cbde9e127b257870d11bc0fdd6e4eae5eadb4fa67065034b9bcd4af54d",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "cloud_vendor",
+    "jurisdiction": "Germany",
     "confidence": 0.92,
     "bias": "high",
     "domain_layer": "technology"
@@ -271,6 +609,19 @@
     "confidence": 0.98,
     "bias": "high",
     "domain_layer": "strategy"
+  },
+  {
+    "doc_id": "doc_corporate_11elevenlabsthe_91170d",
+    "title": "11ElevenLabs.The State of Conversational Agents in Financial Services",
+    "source_file": "11ElevenLabs.The State of Conversational Agents in Financial Services.pdf",
+    "doc_hash": "91170dd2caaa77b203ba7a929b9441e1580df51b9c564763b685f177cbfdd11c",
+    "document_type": "blog_article",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.88,
+    "bias": "medium",
+    "domain_layer": "business"
   },
   {
     "doc_id": "doc_research_insurance_2025_588dcd",
@@ -307,7 +658,7 @@
     "knowledge_domain": "insurance_domain",
     "origin": "corporate",
     "jurisdiction": "EU",
-    "confidence": 0.93,
+    "confidence": 0.95,
     "bias": "medium",
     "domain_layer": "strategy"
   },
@@ -325,6 +676,19 @@
     "domain_layer": "regulation"
   },
   {
+    "doc_id": "doc_consulting_msgagenticautomationcheckliste_e1de72",
+    "title": "msg-agentic-automation-checkliste",
+    "source_file": "msg-agentic-automation-checkliste.pdf",
+    "doc_hash": "e1de72421ae383a4f7d738125d586ea05ff1a63292a4b2a4fa3516e84059cacf",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "medium",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_corporate_digitalesschadenmanagement_846423",
     "title": "digitales-schadenmanagement",
     "source_file": "digitales-schadenmanagement.pdf",
@@ -336,6 +700,32 @@
     "confidence": 0.95,
     "bias": "medium",
     "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_research_cloud_2022_59a465",
+    "title": "2022-09-Whitepaper-Cloud-vs-On-Premise-FINAL-WEB",
+    "source_file": "2022-09-Whitepaper-Cloud-vs-On-Premise-FINAL-WEB.pdf",
+    "doc_hash": "59a465c37acd5fc00b5b87831e77201afeca0e9ddc8e3b16b802014c79851acb",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "low",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_research_ai_aaf4c1",
+    "title": "Whitepaper_AI_for_executives_pdf_1770845260",
+    "source_file": "Whitepaper_AI_for_executives_pdf_1770845260.pdf",
+    "doc_hash": "aaf4c1e6de18f20fc8fc13b4e42a6ecdf6265d0a7524c87c393d7427daab1c05",
+    "document_type": "research_report",
+    "knowledge_domain": "ai_genai_agentic",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "bias": "low",
+    "domain_layer": "strategy"
   },
   {
     "doc_id": "doc_media_kunstliche_8d77be",
@@ -351,6 +741,19 @@
     "domain_layer": "strategy"
   },
   {
+    "doc_id": "doc_vendor_msgkigestuetztemigrationonepagerscreendefinal_abd571",
+    "title": "msg_KIgestuetzteMigration_onepager_screen_DE_FINAL",
+    "source_file": "msg_KIgestuetzteMigration_onepager_screen_DE_FINAL.pdf",
+    "doc_hash": "abd57134f27350e39f3f225b77968559ad065a09b4c613cfd3992810597baa71",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120",
     "title": "conet_rfp_allianz_business_proposal_2026",
     "source_file": "conet_rfp_allianz_business_proposal_2026.docx",
@@ -362,6 +765,19 @@
     "confidence": 0.93,
     "bias": "medium",
     "domain_layer": "strategy"
+  },
+  {
+    "doc_id": "doc_vendor_ai_d1dc7e",
+    "title": "msg_claim_it_onepager_screen_DE_02",
+    "source_file": "msg_claim_it_onepager_screen_DE_02.pdf",
+    "doc_hash": "d1dc7e752fd1d88520c35f0fdb3e014657c80ccda693fa695bcd383313b86f7d",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
   },
   {
     "doc_id": "doc_media_kunstliche_859301",
@@ -390,6 +806,19 @@
     "domain_layer": "business"
   },
   {
+    "doc_id": "doc_vendor_candoconsultingprojektmanagement_1f903e",
+    "title": "Can-Do-Consulting-Projektmanagement mit KI in der IT und Software-Entwicklung  - Can Do",
+    "source_file": "Can-Do-Consulting-Projektmanagement mit KI in der IT und Software-Entwicklung  - Can Do.pdf",
+    "doc_hash": "1f903e5bb563442cc638d2cf9563df3d3943c1a06a82bf2becca8d2232be7182",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "ai_genai_agentic",
+    "origin": "software_vendor",
+    "jurisdiction": "Germany",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_media_kunstliche_8f5fba",
     "title": "SZ Ku\u0308nstliche Intelligenz | Blase? Welche Blase? | Wirtschaft",
     "source_file": "SZ Ku\u0308nstliche Intelligenz | Blase? Welche Blase? | Wirtschaft.pdf",
@@ -416,6 +845,45 @@
     "domain_layer": "market"
   },
   {
+    "doc_id": "doc_vendor_msgaskitonepagerscreendefinal2_5dc19f",
+    "title": "msg_ask_it_onepager_screen_DE_FINAL-2",
+    "source_file": "msg_ask_it_onepager_screen_DE_FINAL-2.pdf",
+    "doc_hash": "5dc19ffde89f4631cd54e840db8a72bf6f56ae2467a083d916414e0480e67809",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.93,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_consulting_cloud_73547c",
+    "title": "Souver\u00e4nit\u00e4t in der Cloud - Artikel IF-daily.net von Zweihoff",
+    "source_file": "Souver\u00e4nit\u00e4t in der Cloud - Artikel IF-daily.net von Zweihoff.docx",
+    "doc_hash": "73547ce41a5b25aa46042d4a721577c5d2fa2b8044c5f2c6c04c06ba3c67ee62",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.85,
+    "bias": "medium",
+    "domain_layer": "strategy"
+  },
+  {
+    "doc_id": "doc_vendor_ai_3489c5",
+    "title": "msg-Webpage KI K\u00fcnstliche Intelligenz f\u00fcr Schadenmanagement msg.claim it",
+    "source_file": "msg-Webpage KI K\u00fcnstliche Intelligenz f\u00fcr Schadenmanagement msg.claim it.docx",
+    "doc_hash": "3489c5fdcfd93d0402768c2dd2ace179e7632d616a4624c0c3d1e11c8a90d7e7",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_industry_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f",
     "title": "digitale-souveraenitaet-beltios-gdv-whitepaper-ausgabe-2-2025",
     "source_file": "digitale-souveraenitaet-beltios-gdv-whitepaper-ausgabe-2-2025.pdf",
@@ -437,9 +905,87 @@
     "knowledge_domain": "insurance_domain",
     "origin": "supervisory_authority",
     "jurisdiction": "Switzerland",
-    "confidence": 0.99,
+    "confidence": 0.98,
     "bias": "very_low",
     "domain_layer": "regulation"
+  },
+  {
+    "doc_id": "doc_corporate_msginterview_054f53",
+    "title": "msg-Interview Kotulla",
+    "source_file": "msg-Interview Kotulla.pdf",
+    "doc_hash": "054f5342c3e9243f3b84b7845f3d9277d731bbe2c2b0fdd05e05d355aa01f441",
+    "document_type": "expert_opinion",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.87,
+    "bias": "medium",
+    "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_vendor_vflwpregressmanagementinderversicherungswirtschaftshift2024_2024_621e08",
+    "title": "VFL_WP_Regressmanagement_in_der_Versicherungswirtschaft_Shift_2024",
+    "source_file": "VFL_WP_Regressmanagement_in_der_Versicherungswirtschaft_Shift_2024.pdf",
+    "doc_hash": "621e080e33ae9415af65cc69de56c316cae6d9da7df271da4e3d5de5577863cd",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "high",
+    "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_consulting_ai_975cfa",
+    "title": "McKinsey-one-year-of-agentic-ai-six-lessons-from-the-people-doing-the-work_vf",
+    "source_file": "McKinsey-one-year-of-agentic-ai-six-lessons-from-the-people-doing-the-work_vf.pdf",
+    "doc_hash": "975cfaec253d9721e5624acb9b878f80816ccaab7de2603dc0f035442cc48dd5",
+    "document_type": "expert_opinion",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "Global",
+    "confidence": 0.95,
+    "bias": "medium",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_vendor_msgprocessitonepagerscreendefinal1_100669",
+    "title": "msg_process_it_onepager_screen_DE_FINAL-1",
+    "source_file": "msg_process_it_onepager_screen_DE_FINAL-1.pdf",
+    "doc_hash": "100669f81bdb86a824cecda9f2f3a6637f10ef144f32efbc1198f9b2121d7a7d",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_corporate_ai_56c6d0",
+    "title": "GenAI in der Softwareentwicklung- Erst das Problem dann der Prompt - Volker Gruhn",
+    "source_file": "GenAI in der Softwareentwicklung- Erst das Problem dann der Prompt - Volker Gruhn.docx",
+    "doc_hash": "56c6d071ef6c86df2288cdc3334089618ee3d8a38042061109b9b1fd8012c117",
+    "document_type": "blog_article",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.88,
+    "bias": "medium",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_research_lnendonkdermarktfueritdienstleistungenindeutschland2025_2025_e1914c",
+    "title": "L\u00fcnendonk_Der-Markt-fuer-IT-Dienstleistungen-in-Deutschland_2025",
+    "source_file": "L\u00fcnendonk_Der-Markt-fuer-IT-Dienstleistungen-in-Deutschland_2025.pdf",
+    "doc_hash": "e1914ce14d916c8a7a3df3a5b84809ada34e95e478e649853431784b8f8036e8",
+    "document_type": "research_report",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "bias": "low",
+    "domain_layer": "market"
   },
   {
     "doc_id": "doc_eu_dora_2022_0eb896",
@@ -455,6 +1001,19 @@
     "domain_layer": "regulation"
   },
   {
+    "doc_id": "doc_vendor_cloud_2b7edd",
+    "title": "T-Systems T-Cloud Handout",
+    "source_file": "T-Systems T-Cloud Handout.pdf",
+    "doc_hash": "2b7eddf31aa7873d51b0c257c970df19c44057931b373d0713ef9a76a174adfa",
+    "document_type": "vendor_marketing",
+    "knowledge_domain": "insurance_domain",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "high",
+    "domain_layer": "technology"
+  },
+  {
     "doc_id": "doc_vendor_ai_d59357",
     "title": "Generative_AI_and_LLMs_for_Dummies_1770846083",
     "source_file": "Generative_AI_and_LLMs_for_Dummies_1770846083.pdf",
@@ -468,6 +1027,19 @@
     "domain_layer": "technology"
   },
   {
+    "doc_id": "doc_consulting_zeitschrift_89b4fd",
+    "title": "Zeitschrift - 260116-ART-itmanagement-print-Souver\u00e4nit\u00e4tskompass",
+    "source_file": "Zeitschrift - 260116-ART-itmanagement-print-Souver\u00e4nit\u00e4tskompass.pdf",
+    "doc_hash": "89b4fd8aa5f49926b92b5a7457efd605759453f6e5c180df6c2ef4221fa711ba",
+    "document_type": "expert_opinion",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.85,
+    "bias": "medium",
+    "domain_layer": "strategy"
+  },
+  {
     "doc_id": "doc_aws_cloud_95e9f7",
     "title": "AWS-insurance-on-the-cloud",
     "source_file": "AWS-insurance-on-the-cloud.pdf",
@@ -479,31 +1051,5 @@
     "confidence": 0.97,
     "bias": "high",
     "domain_layer": "business"
-  },
-  {
-    "doc_id": "doc_supervisory_dora_2024_82d35d",
-    "title": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA",
-    "source_file": "dl_2024_07_08_Aufsichtsmitteilung_Umsetzungshinweise_DORA.pdf",
-    "doc_hash": "82d35de9de7bd75355b52cee840b2afb1062aecd147bbd3bce240e516462072c",
-    "document_type": "supervisory_guidance",
-    "knowledge_domain": "insurance_domain",
-    "origin": "supervisory_authority",
-    "jurisdiction": "EU",
-    "confidence": 0.97,
-    "bias": "very_low",
-    "domain_layer": "regulation"
-  },
-  {
-    "doc_id": "doc_supervisory_dora_b5e772",
-    "title": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA",
-    "source_file": "EIOPA-BOS-24-425_Opinion_Impact of SII Review on Scope of DORA.pdf",
-    "doc_hash": "b5e7720194d8b0922b9fe87de3e93cdae7d51af2ff4eeee516c49becea71b1f0",
-    "document_type": "supervisory_guidance",
-    "knowledge_domain": "insurance_domain",
-    "origin": "supervisory_authority",
-    "jurisdiction": "EU",
-    "confidence": 0.99,
-    "bias": "very_low",
-    "domain_layer": "regulation"
   }
 ]

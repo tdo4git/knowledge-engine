@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_vibecoding_2026_26fb8b",
+  "title": "Vibe-Coding - Marketing Playbook 2026",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "business",
+    "knowledge_domain": "cloud_technology",
+    "topic": "transformation_strategy",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.72,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

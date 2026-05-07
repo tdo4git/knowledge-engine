@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_research_cloud_98686e",
+  "title": "IJFMR - Cloud Computing in Insurance",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.88,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_research_cloud_2022_59a465",
+  "title": "2022-09-Whitepaper-Cloud-vs-On-Premise-FINAL-WEB",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "cloud_architecture",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

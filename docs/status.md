@@ -15,15 +15,14 @@ Zuletzt aktualisiert: 2026-05-07
 - Audit Logging
 - Onboarding-Validierung mit Expectation-Framework
 
-**Knowledge Engine (Query-Seite)** — architektonisch vollständig, implementiert.
+**Knowledge Engine (Query-Seite)** — implementiert, validiert und produktiv.
 - Intent Engine
 - Role Engine
 - Retrieval Engine (FAISS vector search, Document Aggregation)
-- Scoring Engine (Governance-aware Ranking)
+- Scoring Engine (Governance-aware Ranking — neu: normalisiert und ausgewogen)
 - Context Builder
-- Perspective Orchestrator
 - Prompt Governance
-- QueryPipeline (End-to-End lauffähig)
+- QueryPipeline (End-to-End validiert mit echtem Claude)
 
 **Claude API Integration** — abgeschlossen (2026-05-01)
 - `knowledge_construction/llm/llm_client.py` auf Anthropic API umgestellt
@@ -57,85 +56,135 @@ Zuletzt aktualisiert: 2026-05-07
 **TD-007: Governance-Korrekturen & Re-Onboarding** — abgeschlossen (2026-05-06)
 - Ursachenanalyse: 7 Fehlklassifikationen auf 3 Governance-Lücken zurückgeführt
 - `FILENAME_KEYWORDS["research_institution"]`: Formatbegriffe entfernt
-  ("studie", "study", "report", "whitepaper" beschreiben Form, nicht Author)
-- `DOCUMENT_TYPE_CORRECTIONS`: Regeln für supervisory_authority, consulting_firm,
-  software_vendor, cloud_vendor vollständig ergänzt
+- `DOCUMENT_TYPE_CORRECTIONS`: Regeln vollständig ergänzt
 - `LLM_DOMAIN_NORMALIZATION`: `transformation_strategy` ergänzt
 - Cross-Field-Validation Fix: supervisory_authority-Regeln setzen `domain_layer=regulation`
 - Vollständiges Re-Onboarding: 37 Dokumente, 0 Errors, 0 Review-Punkte
-- `scripts/reclassify.py`: Operations-Tool für gezielte Einzelkorrekturen ohne Re-Onboarding
+- `scripts/reclassify.py`: Operations-Tool für Einzelkorrekturen ohne Re-Onboarding
 - Architekturprinzip dokumentiert: D-012 + "Ursache vor Symptom" (architecture.md)
 
 **Internal Origin & conet-Support** — abgeschlossen (2026-05-07)
-- Neue Origin `internal` für conet-eigene Dokumente in `AUTHOR_ORIGIN_MAP`
-  (`conet`, `conet deutschland`, `conet deutschland gmbh`, `conet group`)
-- `FILENAME_KEYWORDS["internal"]`: Keyword `conet` ergänzt
-- Prioritätsreihenfolge in `FILENAME_KEYWORDS` korrigiert:
-  `internal` vor `corporate` — verhindert False Match auf "allianz" in conet-Dateinamen
-  `industry_association` vor `research_institution` — verhindert False Match auf "whitepaper"
-- `portfolio_gtm` als neue Knowledge Domain (Keywords: offering, rfp, proposal, capabilities)
-- Erstes internes Dokument ongeboardet:
-  `doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120`
+- Neue Origin `internal` für conet-eigene Dokumente
+- `portfolio_gtm` als neue Knowledge Domain
+- Erstes internes Dokument ongeboardet: `doc_internal_conetrfpallianzbusinessproposal2026_2026_f74120`
+
+**Query Interface & Retrieval-Validierung** — abgeschlossen (2026-05-07)
+
+Query Interface `scripts/run_query.py` implementiert und validiert:
+- Zwei Modi: `--retrieval-only` (kein LLM, kein API-Cost) und vollständige Pipeline
+- Ausgabe: Intent, Role, RAW CHUNKS, RANKED DOCUMENTS (mit semantic/governance-Split),
+  CONTEXT CHUNKS (Volltext), RESPONSE, DIAGNOSTICS inkl. Embedding-Modell
+
+Scoring-Modell grundlegend überarbeitet (`config/scoring_config.py`, `scoring_engine.py`):
+- **Vorher:** additives Modell — Governance-Offset dominierte semantische Relevanz strukturell
+- **Nachher:** gewichtete Kombination `65% semantic + 35% governance`, beide Komponenten
+  normalisiert auf 0–1. Governance korrigiert, aber kann semantische Relevanz nicht mehr
+  vollständig überstimmen.
+- Bot-Override vorbereitet: `config_override`-Parameter in ScoringEngine
+
+Embedding-Modell konsolidiert:
+- `paraphrase-multilingual-MiniLM-L12-v2` als einzige Quelle der Wahrheit in
+  `config/construction_config.py`
+- Alle Stellen (Scripts, Tests) lesen aus Config — kein hartkodierter Modellname mehr
+- Vollständiges Re-Onboarding mit multilingual Modell durchgeführt
+
+PerspectiveOrchestrator deaktiviert (Schritt 6 in QueryPipeline):
+- Ersetzt durch score-basierte Top-k Selektion aus `CONTEXT_CONFIG`
+- Begründung: Erzwungene Perspektiv-Quoten zogen inhaltlich schwache Chunks in den
+  Context — bei aktueller KB-Größe überwiegen die Nachteile
+- Reaktivierung sinnvoll wenn KB pro Perspektive ausreichend starke Dokumente hat
+
+Score-Propagation implementiert (Schritt 5 in QueryPipeline):
+- `doc.score` (governance-aware) wird auf jeden Chunk übertragen
+- PerspectiveOrchestrator / Fallback nutzen finalen Score statt rohem similarity_score
+- Fix: Governance-Arbeit der ScoringEngine blieb vorher im nächsten Schritt wirkungslos
+
+`vector_top_k` auf 100 erhöht (war 60):
+- DORA-Dokument (broad regulatory text, niedrige semantische Scores) erscheint nun
+  konsistent im FAISS-Pool für DORA-spezifische Queries
+
+End-to-End Validierung erfolgreich:
+- Query: "Was fordert DORA hinsichtlich Cloud-Auslagerung bei Versicherungen?"
+- Claude halluziniert nicht — gibt korrekte Einschränkung wenn Context unvollständig
+- Nach Onboarding zweier DORA-spezifischer BaFin-Dokumente: Claude liefert substanzielle
+  Antwort mit konkreten Artikelreferenzen (Art. 4, 28, 30 DORA)
+- Quellen korrekt: BaFin DORA-Umsetzungshinweise Juni 2024, EIOPA, BaFin Cloud-Mitteilung
+
+**TD-011: Min-Score-Threshold im ContextBuilder** — abgeschlossen (2026-05-07)
+- Problem: Breit gefasste Research-Studien (z.B. score=0.252) lieferten irrelevante
+  Chunks neben qualitativ starken Dokumenten (supervisory_authority score≥0.33)
+- Lösung: `min_document_score: 0.30` in `CONTEXT_CONFIG` (engine_config.py)
+- ContextBuilder filtert Chunks via `_get_chunk_score()` vor Selektion
+- Score wird aus `chunk.document_metadata['score']` gelesen (Score-Propagation Schritt 5)
+- Threshold config-driven — Tuning ohne Code-Change möglich
 
 ---
 
 ## Knowledge Base (aktuell)
 
-```
-Dokumente : 26
-Chunks    : 833
-FAISS     : 833 entries
+​```
+Dokumente : 81
+Chunks    : 1777
+FAISS     : 1777 entries
 Konsistenz: ✔ OK
 Stand     : 2026-05-07
-```
+Modell    : paraphrase-multilingual-MiniLM-L12-v2
+​```
 
-Origin-Verteilung: consulting_firm 5 · supervisory_authority 5 · research_institution 4 ·
-software_vendor 3 · cloud_vendor 2 · corporate 2 · internal 1 ·
-industry_association 1 · legislator 1 · media 1 · aws 1
+Origin-Verteilung:
+​```
+software_vendor        16
+consulting_firm        16
+research_institution   11
+media                  11
+supervisory_authority   8
+cloud_vendor            7
+corporate               7
+industry_association    3
+internal                1
+legislator              1
+​```
 
 ---
 
-## Aktiver Use Case: Business Development / Insurance Offering (neu, 2026-05-07)
+## Aktiver Use Case: Business Development / Insurance Offering
 
 Ziel: Aufbau eines Insurance Offerings für conet auf Basis von:
 - **Intern:** conet-Capabilities, Methoden, Positionierung (aus RfP-Dokumenten)
 - **Extern:** Markttrends, Regulatorik, Studien, Wettbewerb (aus Knowledge Base)
 
 Vorgehen:
-1. Weitere RfP-Dokumente onboarden (Fragebogen, KI-Fragebogen, Präsentation)
-2. Query-CLI nutzen für explorative Analyse (Gap/Fit intern ↔ extern)
+1. ✔ Query-Interface implementiert und validiert
+2. Query-CLI für explorative Analyse nutzen
 3. Ggf. später: `business_development_bot` als strukturierte Anwendung auf der Engine
 
 Entscheidung: Kein spezialisierter Bot in dieser Phase — Use Case ist explorativ,
-nicht repetitiv. Direktzugang zur Engine via Query-CLI ist ausreichend.
+nicht repetitiv. Direktzugang zur Engine via `scripts/run_query.py` ist ausreichend.
 
 ---
 
 ## Offen
 
-**Query-CLI** — nächster Schritt (Priorität 1)
-- Ziel: direkter interaktiver Zugang zur Query Pipeline
-- Kein Bot, keine Persona — Engine-Direktzugang mit Quellenangaben
-- Umsetzung: `scripts/query_cli.py`
-- Ausführung: `python -m scripts.query_cli`
+**Query-Validierung fortsetzen**
+- Weitere Queries mit verschiedenen Themen testen (Cloud-Strategie, KI, Regulatorik)
+- Qualität und Korrektheit der Antworten systematisch beurteilen
 
-**Weitere RfP-Dokumente onboarden**
-- Fragebogen, KI-Fragebogen, Präsentation
-- Namenskonvention: `conet_rfp_allianz_<typ>_2026.docx`
+**Weitere Dokumente onboarden**
+- Weitere conet RfP-Dokumente (Fragebogen, KI-Fragebogen, Präsentation)
+- EIOPA RTS/ITS zu DORA für Versicherungen
+- VAIT (Versicherungsaufsichtliche Anforderungen an die IT)
 
 **Bot-Implementierung** — zurückgestellt
 - `trusted_advisor_bot/`, `marketing_bot/`, `insurance_portfolio_bot/`
 - Verzeichnisse vorhanden, Implementierung offen
 - Priorisierung nach Abschluss der explorativen Phase
 
-**Technical Debt** — 4 offene Punkte (siehe technical_debt.md)
+**Technical Debt** — 5 offene Punkte (siehe technical_debt.md)
 - TD-004: Regressionstest auf Referenzdokumente begrenzen (niedrig)
 - TD-005: Topic als Klassifikationsdimension einführen (mittel)
+- TD-007: Reklassifizierungs-Skript (mittel)
 - TD-008: Ingestion-Layer für Web-Quellen (niedrig)
-- TD-009: AUTHOR_ORIGIN_MAP Keyword-Qualität / Wort-Grenz-Matching (niedrig)
+- TD-009: AUTHOR_ORIGIN_MAP Keyword-Qualität (niedrig)
+- TD-012: Chunk-Strategie überprüfen (niedrig)
 
 ---
-
-## Nächster Schritt
-
-`scripts/query_cli.py` — interaktives Query-Interface direkt auf der Engine.

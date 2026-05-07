@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_industry_vfltd192025itauszugmsg_2025_e25ba4",
+  "title": "VFL_TD_19_2025_IT_Auszug-msg",
+  "ai": {
+    "document_type": "expert_opinion",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "industry_association",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

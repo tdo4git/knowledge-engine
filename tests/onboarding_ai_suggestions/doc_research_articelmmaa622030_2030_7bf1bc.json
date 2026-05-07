@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_research_articelmmaa622030_2030_7bf1bc",
+  "title": "Articel-MMAA-6-2-20-30",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

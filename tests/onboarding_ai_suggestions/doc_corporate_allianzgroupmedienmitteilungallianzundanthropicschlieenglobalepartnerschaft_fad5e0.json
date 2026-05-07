@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_corporate_allianzgroupmedienmitteilungallianzundanthropicschlieenglobalepartnerschaft_fad5e0",
+  "title": "allianz-group-medienmitteilung-allianz-und-anthropic-schlie\u00dfen-globale-partnerschaft",
+  "ai": {
+    "document_type": "press_article",
+    "domain_layer": "strategy",
+    "knowledge_domain": "ai_genai_agentic",
+    "topic": "transformation_strategy",
+    "origin": "corporate",
+    "jurisdiction": "Global",
+    "confidence": 0.82,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "llm",
+    "bias": "medium"
+  }
+}

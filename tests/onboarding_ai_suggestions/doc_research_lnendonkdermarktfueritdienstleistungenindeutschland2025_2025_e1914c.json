@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_research_lnendonkdermarktfueritdienstleistungenindeutschland2025_2025_e1914c",
+  "title": "L\u00fcnendonk_Der-Markt-fuer-IT-Dienstleistungen-in-Deutschland_2025",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "topic": "market_analysis",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.95,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

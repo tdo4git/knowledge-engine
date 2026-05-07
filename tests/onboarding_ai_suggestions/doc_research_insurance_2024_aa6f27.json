@@ -1,0 +1,16 @@
+{
+  "doc_id": "doc_research_insurance_2024_aa6f27",
+  "title": "CELENT-insurance-fraud-detection-solutions-property-and-casualty-insurance-2024-edition-report-2",
+  "ai": {
+    "document_type": "research_report",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "origin": "research_institution",
+    "jurisdiction": "EU",
+    "confidence": 0.92,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "low"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "doc_id": "doc_consulting_bcgstateofinsurtech2024_2024_0f0f00",
+  "title": "BCG-State-of-Insurtech-2024",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "market",
+    "knowledge_domain": "insurance_domain",
+    "topic": "market_analysis",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "bias": "medium"
+  }
+}

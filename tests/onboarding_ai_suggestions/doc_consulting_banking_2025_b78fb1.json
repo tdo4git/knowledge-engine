@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_banking_2025_b78fb1",
+  "title": "msg banking - NEWS_02_2025",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

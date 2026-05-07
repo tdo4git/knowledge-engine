@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_aws_microsoftkipotenzialenutzenschrittfrschritt1748701467_54bd0b",
+  "title": "Microsoft-KI_Potenziale_nutzen_Schritt_f_r_Schritt_1748701467",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "cloud_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

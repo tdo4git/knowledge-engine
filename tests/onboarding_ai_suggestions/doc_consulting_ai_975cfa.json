@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_ai_975cfa",
+  "title": "McKinsey-one-year-of-agentic-ai-six-lessons-from-the-people-doing-the-work_vf",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "strategy",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "consulting_firm",
+    "jurisdiction": "Global",
+    "confidence": 0.97,
+    "origin_source": "preview_rule",
+    "jurisdiction_source": "llm",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

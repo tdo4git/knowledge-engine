@@ -1,0 +1,18 @@
+{
+  "doc_id": "doc_supervisory_insurance_2024_ccc654",
+  "title": "IAIS-Global-Insurance-Market-Report-2024",
+  "ai": {
+    "document_type": "supervisory_guidance",
+    "domain_layer": "regulation",
+    "knowledge_domain": "insurance_domain",
+    "origin": "supervisory_authority",
+    "jurisdiction": "EU",
+    "confidence": 0.97,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "domain_layer_source": "rule_based",
+    "bias": "very_low"
+  }
+}

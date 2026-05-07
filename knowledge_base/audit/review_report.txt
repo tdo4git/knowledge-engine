@@ -1,5 +1,16 @@
 ONBOARDING REVIEW REPORT
-Generated: 2026-05-07T10:54:18.680454
+Generated: 2026-05-07T21:06:10.904676
 ==================================================
 
-✔ Keine Review-Punkte — alle Dokumente sauber verarbeitet.
+2 Dokument(e) benoetigen Aufmerksamkeit:
+
+Datei:   msg-20251126_Agentic-Automation_Whitepaper.pdf
+Doc-ID:  doc_consulting_msg20251126agenticautomationwhitepaper_2025_5aacc1
+Grund:   validation_error
+Detail:  Invalid combination: vendor_marketing must originate from vendor (got: consulting_firm)
+----------------------------------------
+Datei:   Unternehmenspräsentation_conet-Deutschland-GmbH.pdf
+Doc-ID:  doc_internal_unternehmensprasentationconetdeutschlandgmbh_b0516f
+Grund:   validation_error
+Detail:  Invalid combination: vendor_marketing must originate from vendor (got: internal)
+----------------------------------------

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_corporate_11elevenlabsthe_91170d",
+  "title": "11ElevenLabs.The State of Conversational Agents in Financial Services",
+  "ai": {
+    "document_type": "blog_article",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.88,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "document_type_source": "rule_based",
+    "bias": "medium"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_consulting_ernirequirementsengineering1777999222_a5ebf0",
+  "title": "ERNI-Requirements_Engineering_1777999222",
+  "ai": {
+    "document_type": "consulting_framework",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "advisory_methods",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

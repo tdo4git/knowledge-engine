@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_vendor_msgkigestuetztemigrationonepagerscreendefinal_abd571",
+  "title": "msg_KIgestuetzteMigration_onepager_screen_DE_FINAL",
+  "ai": {
+    "document_type": "vendor_marketing",
+    "domain_layer": "technology",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "software_vendor",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "origin_source": "llm",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "high"
+  }
+}

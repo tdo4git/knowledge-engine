@@ -1,0 +1,17 @@
+{
+  "doc_id": "doc_corporate_msginterview_054f53",
+  "title": "msg-Interview Kotulla",
+  "ai": {
+    "document_type": "expert_opinion",
+    "domain_layer": "business",
+    "knowledge_domain": "insurance_domain",
+    "topic": "transformation_strategy",
+    "origin": "corporate",
+    "jurisdiction": "EU",
+    "confidence": 0.87,
+    "origin_source": "filename_rule",
+    "jurisdiction_source": "rule_based",
+    "knowledge_domain_source": "rule_based",
+    "bias": "medium"
+  }
+}

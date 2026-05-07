@@ -140,7 +140,7 @@ Strategic Knowledge Engine
 RETRIEVAL_CONFIG = {
 
     # Anzahl der Kandidaten aus der Vektor-Suche
-    "vector_top_k": 60,
+    "vector_top_k": 100,
 
     # Document Aggregation
     "document_aggregation": {
@@ -162,15 +162,6 @@ RETRIEVAL_CONFIG = {
     }
 }
 
-# ---------------------------------------------------
-# Context Configuration
-# ---------------------------------------------------
-
-CONTEXT_CONFIG = {
-
-    "max_documents": 5,
-    "max_chunks_per_document": 2
-}
 === ./config/file_config.py ===
 # =========================
 # FILE HANDLING CONFIG
@@ -4173,14 +4164,17 @@ class PerspectiveOrchestrator:
 === ./knowledge_core/pipeline/__init__.py ===
 
 === ./knowledge_core/pipeline/context_builder.py ===
-from config.engine_config import CONTEXT_CONFIG
+from config.engine_config import RETRIEVAL_CONFIG
 from knowledge_core.retrieval.retrieval_models import ContextChunk, ContextPackage
 
 
 class ContextBuilder:
 
     def __init__(self):
-        self.max_chunks = CONTEXT_CONFIG["max_documents"] * CONTEXT_CONFIG["max_chunks_per_document"]
+        _ctx = RETRIEVAL_CONFIG["context_construction"]
+        self.max_documents = _ctx["max_documents"]
+        self.max_chunks_per_document = _ctx["max_chunks_per_document"]
+        self.max_chunks = self.max_documents * self.max_chunks_per_document
 
     def build_context(self, query, chunks):
 
@@ -4341,23 +4335,32 @@ class QueryPipeline:
         )
 
         # --------------------------------------------------
-        # 5 Flatten documents → chunks
+        # 5 Flatten documents → chunks (mit Score-Propagation)
         # --------------------------------------------------
 
-        scored_chunks = [
-            chunk
-            for doc in ctx.ranked_documents
-            for chunk in doc.chunks
-        ]
+        scored_chunks = []
+        for doc in ctx.ranked_documents:
+            for chunk in doc.chunks:
+                chunk.score = doc.score
+                scored_chunks.append(chunk)
 
         # --------------------------------------------------
-        # 6 Perspective Orchestration (REAL selection step)
+        # 6 Score-basierte Selektion
+        #
+        # PerspectiveOrchestrator deaktiviert — die
+        # ScoringEngine liefert bereits governance-aware
+        # Ranking. Erzwungene Perspektiv-Quoten würden
+        # schwache Chunks in den Context ziehen.
+        # Reaktivierung sinnvoll wenn Knowledge Base
+        # pro Perspektive ausreichend starke Dokumente hat.
         # --------------------------------------------------
 
-        selected_chunks = self.perspective_orchestrator.orchestrate(
-            scored_chunks=scored_chunks,
-            content_intent=ctx.intent.content_intent
+        max_chunks = (
+            ctx.context_package is None and
+            10 or len(ctx.context_package.chunks)
         )
+
+        selected_chunks = scored_chunks[:10]
 
         # --------------------------------------------------
         # 7 Context Construction
@@ -4390,7 +4393,7 @@ class QueryPipeline:
         ctx.prompt = self.prompt_builder.build_prompt(
             query=ctx.query,
             role=ctx.role,
-            perspective=ctx.intent.content_intent,  # optional, falls benötigt
+            perspective=ctx.intent.content_intent,
             context_package=ctx.context_package
         )
 
@@ -4621,7 +4624,7 @@ class RetrievalEngine:
             document_candidates=document_candidates
         )
 === ./knowledge_core/retrieval/retrieval_models.py ===
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 
 
@@ -4633,6 +4636,7 @@ class ChunkCandidate:
     chunk_index: int
     similarity_score: float
     document_metadata: dict
+    score: float = 0.0          # wird von QueryPipeline mit doc.score befüllt
 
 
 @dataclass
