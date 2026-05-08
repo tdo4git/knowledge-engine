@@ -1051,5 +1051,31 @@
     "confidence": 0.97,
     "bias": "high",
     "domain_layer": "business"
+  },
+  {
+    "doc_id": "doc_consulting_msg20251126agenticautomationwhitepaper_2025_5aacc1",
+    "title": "msg-20251126_Agentic-Automation_Whitepaper",
+    "source_file": "msg-20251126_Agentic-Automation_Whitepaper.pdf",
+    "doc_hash": "5aacc1821f490d1034a5ba5fe045470bd56d1a05e62f05b0e6632797a4a9ce7d",
+    "document_type": "consulting_framework",
+    "knowledge_domain": "insurance_domain",
+    "origin": "consulting_firm",
+    "jurisdiction": "EU",
+    "confidence": 0.82,
+    "bias": "medium",
+    "domain_layer": "technology"
+  },
+  {
+    "doc_id": "doc_internal_unternehmensprasentationconetdeutschlandgmbh_b0516f",
+    "title": "Unternehmenspra\u0308sentation_conet-Deutschland-GmbH",
+    "source_file": "Unternehmenspra\u0308sentation_conet-Deutschland-GmbH.pdf",
+    "doc_hash": "b0516f2fb7c7d61580913a07287a8144590b1445c49eb9ccbaaf7792ad9f7eb9",
+    "document_type": "internal_strategy",
+    "knowledge_domain": "insurance_domain",
+    "origin": "internal",
+    "jurisdiction": "EU",
+    "confidence": 0.91,
+    "bias": "medium",
+    "domain_layer": "strategy"
   }
 ]
