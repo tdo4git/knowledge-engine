@@ -103,3 +103,15 @@ Jeder Eintrag enthält:
 ### TD-011 — Mindest-Score-Threshold im ContextBuilder ✔
 - **Erledigt:** 2026-05-07
 - **Lösung:** `min_document_score: 0.30` in `CONTEXT_CONFIG` (engine_config.py) eingeführt. `ContextBuilder` filtert Chunks via `_get_chunk_score()` vor Limitierung — Chunks von Dokumenten unterhalb des Schwellwerts werden ausgeschlossen. Score wird aus `chunk.document_metadata['score']` gelesen (setzt Score-Propagation aus QueryPipeline Schritt 5 voraus). Threshold ist config-driven und ohne Code-Change anpassbar.
+
+### TD-012 — Unterstrich-Normalisierung in Origin-Erkennung
+
+- **Bereich:** Knowledge Construction / Governance
+- **Beschreibung:** `_apply_origin()` in `governance_rules.py` erkennt 
+  Mehrwort-Origins (z.B. "munich re", "signal iduna") nicht, wenn der 
+  Dateiname Unterstriche statt Leerzeichen enthält. Fix: eine Zeile in 
+  `_apply_origin()`:
+  `filename = str(file_path).lower().replace("_", " ")`
+- **Aufwand:** klein
+- **Priorität:** mittel
+- **Status:** offen

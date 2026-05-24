@@ -116,18 +116,23 @@ YAML Contract → Prompt Builder → LLMClient
 
 ---
 
-## D-009: Ziel-LLM ist Claude (Anthropic API)
+## D-009: Claude (Anthropic API) als produktives LLM
 
-**Entscheidung:** Das produktive LLM wird Claude (claude-sonnet-4-6) via Anthropic API.
-Aktuell noch DummyLLM als Platzhalter.
+**Entscheidung:** Das produktive LLM ist Claude (`claude-sonnet-4-6`) via Anthropic API.
+Integration abgeschlossen (2026-05-01).
+
+**Implementierung:**
+- `knowledge_construction/llm/llm_client.py` — Klassifikation (JSON-Output, niedrige Temperatur)
+- `knowledge_core/llm/llm_client.py` — Query Pipeline (Text-Output, höhere Temperatur)
+- Zwei separate Clients mit unterschiedlichen Parametern, gleiche API
+- API Key via `.env` (`ANTHROPIC_API_KEY`)
+- DummyLLM ausschließlich in Tests (`tests/`) als Isolations-Hilfsmittel
 
 **Begründung:**
 - Lernziel: Anthropic-Tools kennenlernen und erklären können
 - Claude eignet sich gut für document-grounded reasoning
-- Anthropic API ermöglicht später auch Nutzung für Knowledge Construction (Klassifikation)
+- Anthropic API ermöglicht Nutzung für Knowledge Construction (Klassifikation) und Query Pipeline
 - Kostenkontrolle: Prompt Caching und Batch API reduzieren Kosten
-
-**Noch offen:** API Key beschaffen, LLMClient implementieren.
 
 ---
 
@@ -152,6 +157,8 @@ Sie teilen dieselbe Knowledge Base und Engine, unterscheiden sich durch Promptin
 - Engine bleibt generisch und wiederverwendbar
 - Bot-spezifische Logik (Tonalität, Rollenverhalten) gehört nicht in die Engine
 - Mehrere Bots können parallel betrieben werden ohne Engine-Änderungen
+
+---
 
 ## D-012: Reklassifizierung ist Bestandsbereinigung, nicht Governance-Ersatz
 
