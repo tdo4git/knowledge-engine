@@ -6,7 +6,9 @@ Version: 3.3
 ## Zielbild
 
 Die Strategic Knowledge Engine ist ein mehrschichtiges, KI-gestütztes
-Wissensmanagementsystem für den Versicherungs- und Consulting-Kontext.
+Wissensmanagementsystem für den beruflichen Kontext in den Bereichen
+Versicherung, Cloud, Consulting, AI, Software-Architektur, Leadership & Management
+sowie Politik und Gesellschaft.
 Strikte Trennung von Wissenserstellung und Wissensnutzung.
 Explainability und Governance sind erstklassige Architekturprinzipien.
 
@@ -48,7 +50,7 @@ Dokument
 → Registry Entry
 → Text Extraction
 → Token-based Chunking
-→ Embedding Generation     (sentence-transformers/all-MiniLM-L6-v2)
+→ Embedding Generation     (paraphrase-multilingual-MiniLM-L12-v2)
 → FAISS Index Update
 → Consistency Check
 → Audit Log
@@ -88,8 +90,8 @@ Query
 → Role Engine
 → Retrieval Engine       (FAISS vector search → Chunk Candidates → Document Aggregation)
 → Scoring Engine         (Governance-aware Ranking)
-→ Context Builder        (max_documents=5, max_chunks_per_document=2)
-→ Perspective Orchestrator
+→ Context Builder        (max_documents=5, max_chunks_per_document=2, min_score=0.30)
+→ [Perspective Orchestrator deaktiviert — score-basierte Top-k Selektion]
 → Prompt Governance
 → LLM
 → Answer
@@ -200,5 +202,5 @@ Contract-driven — keine hardcodierten Prompts:
 YAML Contract → Prompt Builder → LLMClient → LLM
 ```
 
-Aktuell: DummyLLM (Platzhalter)
-Ziel: Claude (Anthropic API, claude-sonnet-4-6)
+Produktiv: Claude (`claude-sonnet-4-6`) via Anthropic API (seit 2026-05-01)
+DummyLLM ausschließlich in Tests als Isolations-Hilfsmittel.

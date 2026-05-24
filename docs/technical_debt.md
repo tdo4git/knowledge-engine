@@ -1,5 +1,5 @@
 # Technical Debt – Strategic Knowledge Engine
-Zuletzt aktualisiert: 2026-05-07
+Zuletzt aktualisiert: 2026-05-25
 
 ---
 
@@ -29,22 +29,6 @@ Jeder Eintrag enthält:
 ### TD-005 — Topic als Klassifikationsdimension einführen
 - **Bereich:** Knowledge Construction / Klassifikation
 - **Beschreibung:** `topic` ist in `config/taxonomy.py` definiert und im Prompt Builder integriert, wird aber nicht in der Registry gespeichert und nicht für Retrieval/Scoring genutzt. Claude klassifiziert bereits korrekt mit Topic-Werten — diese werden aktuell per `LLM_DOMAIN_NORMALIZATION` auf `knowledge_domain` gemappt (Workaround). Saubere Lösung: Topic als eigene Dimension in Registry + Scoring einführen. Konkret sichtbar: 4 SZ-KI-Artikel haben den generischen Doc-ID-Prefix `kunstliche`, weil "Künstliche Intelligenz" kein KEYWORD in `_extract_topic` ist — ein dedizierter Topic würde hier präzisere IDs und besseres Retrieval ermöglichen.
-- **Aufwand:** mittel
-- **Priorität:** mittel
-- **Status:** offen
-
----
-
-### TD-007 — Reklassifizierungs-Skript
-- **Bereich:** Knowledge Construction / Operations
-- **Beschreibung:** Bei Taxonomie-Änderungen müssen betroffene Dokumente reklassifiziert werden. Kein Skript vorhanden — aktuell manueller Reset + vollständiges Re-Onboarding notwendig. Konkret ausstehend: 7 Dokumente mit Fehlklassifikation (6× falscher Document Type, 1× falsche Origin), identifiziert via `generate_snapshot.py`:
-  - `doc_supervisory_insurance_83c73b` → research_report statt supervisory_guidance
-  - `doc_supervisory_20250903versicherungsmarktbericht2024_2025_10cbfd` → research_report statt supervisory_guidance
-  - `doc_consulting_dora_2024_d54141` → blog_article statt consulting_framework
-  - `doc_consulting_insurance_2024_19f71c` → research_report statt consulting_framework
-  - `doc_consulting_insurance_2030_131197` → research_report statt consulting_framework
-  - `doc_vendor_heiseacademymycompany_6d0ccf` → research_report statt vendor_marketing
-  - `doc_research_digitalesouveraenitaetbeltiosgdvwhitepaperausgabe22025_2025_913b5f` → Origin research_institution statt industry_association
 - **Aufwand:** mittel
 - **Priorität:** mittel
 - **Status:** offen
@@ -104,7 +88,11 @@ Jeder Eintrag enthält:
 - **Erledigt:** 2026-05-07
 - **Lösung:** `min_document_score: 0.30` in `CONTEXT_CONFIG` (engine_config.py) eingeführt. `ContextBuilder` filtert Chunks via `_get_chunk_score()` vor Limitierung — Chunks von Dokumenten unterhalb des Schwellwerts werden ausgeschlossen. Score wird aus `chunk.document_metadata['score']` gelesen (setzt Score-Propagation aus QueryPipeline Schritt 5 voraus). Threshold ist config-driven und ohne Code-Change anpassbar.
 
-### TD-012 — Unterstrich-Normalisierung in Origin-Erkennung
+### TD-007 — Reklassifizierungs-Skript ✔
+- **Erledigt:** 2026-05-06
+- **Lösung:** `scripts/reclassify.py` implementiert. Ursachenanalyse: 7 Fehlklassifikationen auf 3 Governance-Lücken zurückgeführt. Governance-Regeln korrigiert, vollständiges Re-Onboarding mit 37 Dokumenten, 0 Errors. Architekturprinzip dokumentiert: D-012 + "Ursache vor Symptom".
+
+### TD-013 — Unterstrich-Normalisierung in Origin-Erkennung
 
 - **Bereich:** Knowledge Construction / Governance
 - **Beschreibung:** `_apply_origin()` in `governance_rules.py` erkennt 

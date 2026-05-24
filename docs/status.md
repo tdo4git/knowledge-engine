@@ -1,5 +1,5 @@
 # Status – Strategic Knowledge Engine
-Zuletzt aktualisiert: 2026-05-07
+Zuletzt aktualisiert: 2026-05-25
 
 ---
 
@@ -118,21 +118,38 @@ End-to-End Validierung erfolgreich:
 - Score wird aus `chunk.document_metadata['score']` gelesen (Score-Propagation Schritt 5)
 - Threshold config-driven — Tuning ohne Code-Change möglich
 
+**`prompt_governance.py`: erweiterter System Prompt für trusted_advisor** — abgeschlossen (2026-05-25)
+- `_system_prompt` auf alle 7 Knowledge Domains erweitert (inkl. Leadership & Management, Politik und Gesellschaft)
+- Versicherungsmarkt-Hardcodierung entfernt — domainspezifischer Fokus gehört ins Bot-Prompting
+- Dreier-Unterscheidung (Regulatory fact / Supervisory interpretation / Advisory judgment) auf beide Ebenen verteilt: Rollenidentität im System Prompt, imperatives Labeling in Instructions
+
+**Taxonomie-Erweiterung: neue Knowledge Domains** — abgeschlossen (2026-05-24)
+- Systemkontext erweitert: Versicherung, Cloud, Consulting, AI + Software-Architektur,
+  Leadership & Management, Politik & Gesellschaft
+- 3 neue `KNOWLEDGE_DOMAINS`: `software_architecture`, `leadership_management`, `politics_society`
+- 9 neue `TOPICS`: software_design, system_architecture, engineering_practices, leadership,
+  team_management, organizational_development, politics, public_policy, society_technology
+- `DOMAIN_KEYWORDS`: neue Keyword-Sets für alle 3 Domains
+- `DOMAIN_PRIORITY`: neue Domains am Ende der Prioritätsliste ergänzt
+- `LLM_DOMAIN_NORMALIZATION`: 7 neue Mappings für LLM-Abweichungen
+- Geänderte Dateien: `config/taxonomy.py`, `config/governance_config.py`
+- Kein Re-Onboarding des Bestands erforderlich — neue Domains greifen nur bei neuen Dokumenten
+
 ---
 
 ## Knowledge Base (aktuell)
 
-​```
+```
 Dokumente : 81
 Chunks    : 1777
 FAISS     : 1777 entries
 Konsistenz: ✔ OK
 Stand     : 2026-05-07
 Modell    : paraphrase-multilingual-MiniLM-L12-v2
-​```
+```
 
 Origin-Verteilung:
-​```
+```
 software_vendor        16
 consulting_firm        16
 research_institution   11
@@ -143,7 +160,7 @@ corporate               7
 industry_association    3
 internal                1
 legislator              1
-​```
+```
 
 ---
 
@@ -173,18 +190,19 @@ nicht repetitiv. Direktzugang zur Engine via `scripts/run_query.py` ist ausreich
 - Weitere conet RfP-Dokumente (Fragebogen, KI-Fragebogen, Präsentation)
 - EIOPA RTS/ITS zu DORA für Versicherungen
 - VAIT (Versicherungsaufsichtliche Anforderungen an die IT)
+- Erste Dokumente für neue Domains: software_architecture, leadership_management, politics_society
 
 **Bot-Implementierung** — zurückgestellt
 - `trusted_advisor_bot/`, `marketing_bot/`, `insurance_portfolio_bot/`
 - Verzeichnisse vorhanden, Implementierung offen
 - Priorisierung nach Abschluss der explorativen Phase
 
-**Technical Debt** — 5 offene Punkte (siehe technical_debt.md)
+**Technical Debt** — 6 offene Punkte (siehe technical_debt.md)
 - TD-004: Regressionstest auf Referenzdokumente begrenzen (niedrig)
 - TD-005: Topic als Klassifikationsdimension einführen (mittel)
-- TD-007: Reklassifizierungs-Skript (mittel)
 - TD-008: Ingestion-Layer für Web-Quellen (niedrig)
 - TD-009: AUTHOR_ORIGIN_MAP Keyword-Qualität (niedrig)
 - TD-012: Chunk-Strategie überprüfen (niedrig)
+- TD-013: Unterstrich-Normalisierung in Origin-Erkennung (mittel)
 
 ---
