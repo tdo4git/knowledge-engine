@@ -26,19 +26,38 @@ KNOWLEDGE_DOMAINS = [
     "cloud_technology",
     "portfolio_gtm",
     "ai_genai_agentic",
+    "software_architecture",    # neu 2026-05-24
+    "leadership_management",    # neu 2026-05-24
+    "politics_society",         # neu 2026-05-24
     "misc"
 ]
 
 TOPICS = [
+    # Cloud
     "cloud_governance",
     "cloud_architecture",
     "cloud_security",
     "sovereign_cloud",
+    # Insurance
     "insurance_business",
+    # Strategy / Advisory
     "transformation_strategy",
-    "vendor_landscape",
     "advisory_methods",
-    "market_analysis"
+    # Market
+    "vendor_landscape",
+    "market_analysis",
+    # Software Architecture (neu 2026-05-24)
+    "software_design",
+    "system_architecture",
+    "engineering_practices",
+    # Leadership & Management (neu 2026-05-24)
+    "leadership",
+    "team_management",
+    "organizational_development",
+    # Politics & Society (neu 2026-05-24)
+    "politics",
+    "public_policy",
+    "society_technology",
 ]
 
 ORIGINS = [

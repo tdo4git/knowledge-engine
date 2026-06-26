@@ -20,6 +20,12 @@
 #     internal + vendor_marketing → internal_strategy
 #     Ursache: LLM klassifiziert Whitepapers/Präsentationen
 #     gelegentlich als vendor_marketing — Governance korrigiert.
+#
+# Änderungen 2026-05-24:
+#   - DOMAIN_KEYWORDS: 3 neue Domains ergänzt:
+#     software_architecture, leadership_management, politics_society
+#   - DOMAIN_PRIORITY: neue Domains am Ende (nach ai_genai_agentic)
+#   - LLM_DOMAIN_NORMALIZATION: neue Mappings für neue Domains
 # =========================================================
 
 
@@ -206,11 +212,6 @@ FILENAME_KEYWORDS = {
     # FIX TD-007: Generische Formatbegriffe entfernt.
     # "studie", "study", "report", "whitepaper" beschreiben
     # die Dokumentform, nicht den Author.
-    # Beispiel: ein GDV-Whitepaper ist industry_association,
-    # kein research_institution — aber "whitepaper" im
-    # Dateinamen hat research_institution mit filename_rule-
-    # Priorität gesetzt und den korrekten AUTHOR_ORIGIN_MAP-
-    # Match für "gdv" / "beltios" überschrieben.
     # --------------------------------------------------
     "research_institution": [
         "luenendonk",
@@ -454,7 +455,50 @@ DOMAIN_KEYWORDS = {
         "llm",
         "generative ai",
         "machine learning"
-    ]
+    ],
+    # --------------------------------------------------
+    # neu 2026-05-24
+    # --------------------------------------------------
+    "software_architecture": [
+        "software architecture",
+        "clean architecture",
+        "domain driven design",
+        "ddd",
+        "microservices",
+        "design patterns",
+        "system design",
+        "api design",
+        "event driven",
+        "hexagonal architecture",
+        "softwarearchitektur",
+        "architekturmuster",
+    ],
+    "leadership_management": [
+        "leadership",
+        "führung",
+        "team management",
+        "personalführung",
+        "mitarbeiterführung",
+        "organisationsentwicklung",
+        "change management",
+        "coaching",
+        "feedback",
+        "performance management",
+    ],
+    "politics_society": [
+        "politik",
+        "politics",
+        "government",
+        "policy",
+        "gesellschaft",
+        "democracy",
+        "demokratie",
+        "election",
+        "wahl",
+        "parliament",
+        "bundestag",
+        "bundesregierung",
+    ],
 }
 
 
@@ -465,7 +509,10 @@ DOMAIN_KEYWORDS = {
 DOMAIN_PRIORITY = [
     "insurance_domain",
     "cloud_technology",
-    "ai_genai_agentic"
+    "ai_genai_agentic",
+    "software_architecture",    # neu 2026-05-24
+    "leadership_management",    # neu 2026-05-24
+    "politics_society",         # neu 2026-05-24
 ]
 
 
@@ -515,6 +562,7 @@ CONFIDENCE_RULES = [
 # =========================================================
 
 LLM_DOMAIN_NORMALIZATION = {
+    # bestehend
     "digital_transformation":       "ai_genai_agentic",
     "transformation_strategy":      "ai_genai_agentic",
     "data_analytics":               "ai_genai_agentic",
@@ -524,6 +572,17 @@ LLM_DOMAIN_NORMALIZATION = {
     "regulatory_compliance":        "insurance_domain",
     "financial_services":           "insurance_domain",
     "portfolio_gtm":                "insurance_domain",
+    # neu 2026-05-24
+    "software_engineering":         "software_architecture",
+    "architecture":                 "software_architecture",
+    "engineering":                  "software_architecture",
+    "hr":                           "leadership_management",
+    "human_resources":              "leadership_management",
+    "people_management":            "leadership_management",
+    "management":                   "leadership_management",
+    "political_science":            "politics_society",
+    "public_administration":        "politics_society",
+    "social_science":               "politics_society",
 }
 
 

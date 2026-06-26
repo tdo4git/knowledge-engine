@@ -1,34 +1,35 @@
 ======================================================================
 STRATEGIC KNOWLEDGE ENGINE — SYSTEM SNAPSHOT
-Generated: 2026-05-07 22:30:51
+Generated: 2026-05-25 22:02:38
 ======================================================================
 ## Knowledge Base
-Dokumente : 81
-Chunks    : 1777
-FAISS     : 1777 entries
+Dokumente : 83
+Chunks    : 1786
+FAISS     : 1786 entries
 Konsistenz: ✔ OK
 
 ## Registry — Dokumente nach Origin
+  consulting_firm                17
   software_vendor                16
-  consulting_firm                16
   research_institution           11
   media                          11
   supervisory_authority          8
   cloud_vendor                   7
   corporate                      7
   industry_association           3
-  internal                       1
+  internal                       2
   legislator                     1
 
 ## Registry — Dokumente nach Document Type
   vendor_marketing               23
-  consulting_framework           15
+  consulting_framework           16
   press_article                  14
   research_report                12
   supervisory_guidance           8
   expert_opinion                 5
   blog_article                   3
   regulatory_text                1
+  internal_strategy              1
 
 ## Registry — Alle Dokumente
 Doc-ID                                        Origin                    Type                      Domain
@@ -114,19 +115,21 @@ doc_vendor_cloud_2b7edd                       software_vendor           vendor_m
 doc_vendor_ai_d59357                          software_vendor           vendor_marketing          cloud_technology
 doc_consulting_zeitschrift_89b4fd             consulting_firm           expert_opinion            insurance_domain
 doc_aws_cloud_95e9f7                          cloud_vendor              vendor_marketing          insurance_domain
+doc_consulting_msg20251126agenticautomationwhitepaper_2025_5aacc1 consulting_firm           consulting_framework      insurance_domain
+doc_internal_unternehmensprasentationconetdeutschlandgmbh_b0516f internal                  internal_strategy         insurance_domain
 
 ## Intake (ausstehend)
   1 Dokument(e) ausstehend:
-  - msg-20251126_Agentic-Automation_Whitepaper.pdf
+  - HeiseAcademy-Whitepaper-Eigenes-GPT-Unternehmen-260312.pdf
 
 ## Archive
-  81 Dokument(e) archiviert
+  83 Dokument(e) archiviert
 
 ## Audit Log — letzte 5 Einträge
-  2026-05-07T20:30:20  doc_eu_dora_2022_0eb896                       legislator           ✔
-  2026-05-07T20:30:28  doc_vendor_cloud_2b7edd                       software_vendor      ✔
-  2026-05-07T20:30:38  doc_vendor_ai_d59357                          software_vendor      ✔
-  2026-05-07T20:30:43  doc_consulting_zeitschrift_89b4fd             consulting_firm      ✔
   2026-05-07T20:30:47  doc_aws_cloud_95e9f7                          cloud_vendor         ✔
+  2026-05-07T21:06:07  doc_consulting_msg20251126agenticautomationwhitepaper_2025_5aacc1 consulting_firm      ⚠ REVIEW
+  2026-05-07T21:06:10  doc_internal_unternehmensprasentationconetdeutschlandgmbh_b0516f internal             ⚠ REVIEW
+  2026-05-07T21:12:54  doc_consulting_msg20251126agenticautomationwhitepaper_2025_5aacc1 consulting_firm      ✔
+  2026-05-07T21:12:59  doc_internal_unternehmensprasentationconetdeutschlandgmbh_b0516f internal             ✔
 
 ======================================================================
